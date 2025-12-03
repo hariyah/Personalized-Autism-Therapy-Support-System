@@ -1,0 +1,42 @@
+# Node.js
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+frontend/build/
+backend/dist/
+
+# Logs and temp
+*.log
+logs/
+ml_service/logs/
+*.tmp
+*.swp
+Thumbs.db
+.DS_Store
+
+# Environments
+.env
+frontend/.env
+backend/.env
+ml_service/.env
+
+# Python
+**/__pycache__/
+ml_service/__pycache__/
+ml_service/.venv/
+ml_service/venv/
+
+# Jupyter
+**/.ipynb_checkpoints/
+ml_service/models/*.ipynb
+
+# ML datasets and uploads (runtime-only)
+ml_service/dataset/
+ml_service/uploads/
+
+# Model artifacts: keep models tracked per request; ignore credentials and images
+ml_service/models/kaggle.json
+ml_service/models/*.png
+
+# Evaluation artifacts (regenerable)
+ml_service/eval_*_results.json

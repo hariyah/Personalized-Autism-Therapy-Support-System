@@ -19,6 +19,7 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
 .
 ├── backend
 │   ├── index.js          # Express API server with recommendation engine
+│   ├── emotionService.js # ML service integration
 │   ├── package.json
 │   └── package-lock.json
 ├── frontend
@@ -29,14 +30,30 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
 │   │   └── index.css
 │   ├── public
 │   └── package.json
+├── ml_service
+│   ├── train_model.py    # DenseNet-121 training script
+│   ├── predict_emotion.py # Emotion prediction script
+│   ├── app.py            # Flask API server for ML service
+│   ├── download_dataset.py # Dataset downloader
+│   ├── requirements.txt  # Python dependencies
+│   ├── README.md         # ML service documentation
+│   ├── SETUP_GUIDE.md    # Complete setup instructions
+│   ├── models/           # Trained models (after training)
+│   └── dataset/          # Dataset (after download)
 └── README.md
 ```
 
 ## 🛠️ Technologies Used
 
 *   **Frontend:** React 19, Axios, Modern CSS with gradients and animations
-*   **Backend:** Node.js, Express.js, CORS
-*   **Recommendation Engine:** Custom algorithm based on child needs, preferences, and activity matching
+*   **Backend:** Node.js, Express.js, CORS, Multer (file uploads)
+*   **ML Service:** Python, TensorFlow, Keras, DenseNet-121, Flask
+*   **Recommendation Engine:** Multi-factor algorithm based on:
+    - Real-time emotion (from CNN/DenseNet-121)
+    - Social status
+    - Financial/economic status
+    - Autism details (severity, type, specific needs)
+    - Child interests
 
 ## 🚀 Getting Started
 
@@ -101,8 +118,19 @@ The frontend will automatically open in your browser at `http://localhost:3000`
 
 ## 🎨 Features Overview
 
+### Emotion Recognition (DenseNet-121)
+- **Real-time emotion detection** from uploaded images
+- **7 emotion classes:** happy, sad, anxious, calm, excited, frustrated, neutral
+- **High accuracy** model trained on autistic children emotions dataset
+- **API integration** for seamless emotion updates
+
 ### Recommendation Algorithm
-The system uses a sophisticated scoring algorithm that considers:
+The system uses a sophisticated multi-factor scoring algorithm that considers:
+- **Real-time emotion** (from CNN/DenseNet-121) - Weight: 15 points
+- **Social status** matching - Weight: 10 points
+- **Financial/economic status** filtering - Weight: 12 points
+- **Autism details** (severity, type, specific needs) - Weight: 15 points
+- **Child interests** matching - Weight: 12 points
 - Child's needs level (high/medium/low) for each category
 - Child's preferences (visual, structured, movement, etc.)
 - Activity difficulty matching child's capabilities
@@ -131,12 +159,51 @@ The system uses a sophisticated scoring algorithm that considers:
 
 ## 🔧 API Endpoints
 
+### Child & Activity Endpoints
 - `GET /api/children` - Get all child profiles
 - `GET /api/children/:id` - Get specific child profile
+- `PUT /api/children/:id` - Update child profile
 - `GET /api/activities` - Get all activities (optional `?category=social` filter)
 - `GET /api/activities/:id` - Get specific activity details
 - `GET /api/recommendations/:childId` - Get personalized recommendations for a child
 - `GET /api/categories` - Get all activity categories
+
+### Emotion Endpoints
+- `POST /api/emotion/:childId` - Update emotion manually
+- `POST /api/emotion/:childId/recognize` - Recognize emotion from uploaded image
+- `GET /api/emotion/:childId/history` - Get emotion history
+- `GET /api/ml-service/health` - Check ML service health
+
+## 🤖 ML Service Setup
+
+### Quick Start
+
+1. **Navigate to ML service:**
+   ```bash
+   cd ml_service
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Download dataset:**
+   ```bash
+   python download_dataset.py
+   ```
+
+4. **Train the model:**
+   ```bash
+   python train_model.py
+   ```
+
+5. **Start ML service:**
+   ```bash
+   python app.py
+   ```
+
+For detailed setup instructions, see [ml_service/SETUP_GUIDE.md](ml_service/SETUP_GUIDE.md)
 
 ## 🎯 Future Enhancements
 
@@ -146,6 +213,8 @@ The system uses a sophisticated scoring algorithm that considers:
 - Activity customization and notes
 - Integration with therapy session scheduling
 - Analytics and progress reports
+- Real-time webcam emotion detection
+- Emotion trend analysis and visualization
 
 ## 📝 License
 

@@ -1,0 +1,28 @@
+# Normalize text files to avoid mass CRLF/LF diffs
+* text=auto
+
+# Explicit rules for common types
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.js  text eol=crlf
+*.ts  text eol=crlf
+*.json text eol=crlf
+*.md  text eol=crlf
+*.css text eol=crlf
+*.html text eol=crlf
+
+# Python prefers LF
+*.py  text eol=lf
+
+# Do not attempt EOL conversions on binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.h5 binary
+*.keras binary
+*.zip binary
+*.exe binary
+*.dll binary
