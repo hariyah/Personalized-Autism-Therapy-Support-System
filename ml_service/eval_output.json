@@ -1,0 +1,20 @@
+{
+  "model": "C:\\Users\\avi\\OneDrive - Sri Lanka Institute of Information Technology\\Desktop\\Personalized-Autism-Therapy-Support-System\\ml_service\\models\\densenet121_emotion_model_oversample.keras",
+  "image": "C:\\Users\\avi\\OneDrive - Sri Lanka Institute of Information Technology\\Desktop\\Personalized-Autism-Therapy-Support-System\\ml_service\\dataset\\Autism emotion recogition dataset\\Autism emotion recogition dataset\\test\\surprise\\0008_aug_1.jpg",
+  "result": {
+    "emotion": "uncertain",
+    "confidence": 0.30997294187545776,
+    "raw_prediction": "fear",
+    "uncertain": true,
+    "suggested": "fear",
+    "top2_margin": 0.057551294565200806,
+    "all_predictions": {
+      "Natural": 0.07175485044717789,
+      "anger": 0.12380573153495789,
+      "fear": 0.30997294187545776,
+      "joy": 0.03261583298444748,
+      "sadness": 0.25242164731025696,
+      "surprise": 0.2094290554523468
+    }
+  }
+}

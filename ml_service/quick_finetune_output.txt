@@ -1,0 +1,154 @@
+﻿py : 2025-11-30 22:50:20.081360: I tensorflow/core/util/port.cc:153] oneDNN 
+custom operations are on. You may see slightly different numerical results 
+due to floating-point round-off errors from different computation orders. 
+To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+At line:1 char:181
++ ...  $env:FINETUNE_EPOCHS='2'; py -3.11 -u quick_finetune.py 2>&1 | Out-F 
+...
++                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2025-11-30 22:5...ONEDNN_OPTS= 
+   0`.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2025-11-30 22:50:25.967601: I tensorflow/core/util/port.cc:153] oneDNN 
+custom operations are on. You may see slightly different numerical results 
+due to floating-point round-off errors from different computation orders. 
+To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+Starting quick fine-tune...
+Found emotion dataset at: dataset\Autism emotion recogition dataset\Autism emotion recogition dataset
+Found 960 images belonging to 6 classes.
+Found 239 images belonging to 6 classes.
+Saved class indices to models/class_indices.json
+2025-11-30 22:50:32.795108: I 
+tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary 
+is optimized to use available CPU instructions in performance-critical 
+operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX_VNNI 
+FMA, in other operations, rebuild TensorFlow with the appropriate compiler 
+flags.
+Epoch 1/2
+
+[1m 1/60[0m [37m====================[0m [1m9:05[0m 9s/step - accuracy: 0.1875 - loss: 1.8431
+[1m 2/60[0m [37m====================[0m [1m22s[0m 380ms/step - accuracy: 0.1719 - loss: 1.8766
+[1m 3/60[0m [32m=[0m[37m===================[0m [1m24s[0m 422ms/step - accuracy: 0.1701 - loss: 1.8885
+[1m 4/60[0m [32m=[0m[37m===================[0m [1m23s[0m 422ms/step - accuracy: 0.1628 - loss: 1.9031
+[1m 5/60[0m [32m=[0m[37m===================[0m [1m23s[0m 432ms/step - accuracy: 0.1577 - loss: 1.9097
+[1m 6/60[0m [32m==[0m[37m==================[0m [1m23s[0m 441ms/step - accuracy: 0.1540 - loss: 1.9094
+[1m 7/60[0m [32m==[0m[37m==================[0m [1m23s[0m 444ms/step - accuracy: 0.1537 - loss: 1.9065
+[1m 8/60[0m [32m==[0m[37m==================[0m [1m23s[0m 448ms/step - accuracy: 0.1569 - loss: 1.9025
+[1m 9/60[0m [32m===[0m[37m=================[0m [1m23s[0m 459ms/step - accuracy: 0.1580 - loss: 1.9002
+[1m10/60[0m [32m===[0m[37m=================[0m [1m23s[0m 461ms/step - accuracy: 0.1585 - loss: 1.8978
+[1m11/60[0m [32m===[0m[37m=================[0m [1m23s[0m 474ms/step - accuracy: 0.1585 - loss: 1.8970
+[1m12/60[0m [32m====[0m[37m================[0m [1m22s[0m 475ms/step - accuracy: 0.1583 - loss: 1.8960
+[1m13/60[0m [32m====[0m[37m================[0m [1m22s[0m 474ms/step - accuracy: 0.1576 - loss: 1.8952
+[1m14/60[0m [32m====[0m[37m================[0m [1m21s[0m 473ms/step - accuracy: 0.1566 - loss: 1.8952
+[1m15/60[0m [32m=====[0m[37m===============[0m [1m21s[0m 474ms/step - accuracy: 0.1561 - loss: 1.8944
+[1m16/60[0m [32m=====[0m[37m===============[0m [1m20s[0m 476ms/step - accuracy: 0.1556 - loss: 1.8935
+[1m17/60[0m [32m=====[0m[37m===============[0m [1m20s[0m 477ms/step - accuracy: 0.1551 - loss: 1.8929
+[1m18/60[0m [32m======[0m[37m==============[0m [1m19s[0m 474ms/step - accuracy: 0.1554 - loss: 1.8923
+[1m19/60[0m [32m======[0m[37m==============[0m [1m19s[0m 475ms/step - accuracy: 0.1557 - loss: 1.8913
+[1m20/60[0m [32m======[0m[37m==============[0m [1m19s[0m 476ms/step - accuracy: 0.1567 - loss: 1.8897
+[1m21/60[0m [32m=======[0m[37m=============[0m [1m18s[0m 476ms/step - accuracy: 0.1574 - loss: 1.8882
+[1m22/60[0m [32m=======[0m[37m=============[0m [1m18s[0m 474ms/step - accuracy: 0.1581 - loss: 1.8867
+[1m23/60[0m [32m=======[0m[37m=============[0m [1m17s[0m 475ms/step - accuracy: 0.1588 - loss: 1.8853
+[1m24/60[0m [32m========[0m[37m============[0m [1m17s[0m 475ms/step - accuracy: 0.1595 - loss: 1.8839
+[1m25/60[0m [32m========[0m[37m============[0m [1m16s[0m 476ms/step - accuracy: 0.1599 - loss: 1.8829
+[1m26/60[0m [32m========[0m[37m============[0m [1m16s[0m 480ms/step - accuracy: 0.1600 - loss: 1.8819
+[1m27/60[0m [32m=========[0m[37m===========[0m [1m15s[0m 482ms/step - accuracy: 0.1603 - loss: 1.8812
+[1m28/60[0m [32m=========[0m[37m===========[0m [1m15s[0m 481ms/step - accuracy: 0.1607 - loss: 1.8803
+[1m29/60[0m [32m=========[0m[37m===========[0m [1m14s[0m 480ms/step - accuracy: 0.1610 - loss: 1.8797
+[1m30/60[0m [32m==========[0m[37m==========[0m [1m14s[0m 479ms/step - accuracy: 0.1614 - loss: 1.8791
+[1m31/60[0m [32m==========[0m[37m==========[0m [1m13s[0m 478ms/step - accuracy: 0.1616 - loss: 1.8787
+[1m32/60[0m [32m==========[0m[37m==========[0m [1m13s[0m 476ms/step - accuracy: 0.1618 - loss: 1.8783
+[1m33/60[0m [32m===========[0m[37m=========[0m [1m12s[0m 475ms/step - accuracy: 0.1620 - loss: 1.8780
+[1m34/60[0m [32m===========[0m[37m=========[0m [1m12s[0m 475ms/step - accuracy: 0.1622 - loss: 1.8778
+[1m35/60[0m [32m===========[0m[37m=========[0m [1m11s[0m 473ms/step - accuracy: 0.1623 - loss: 1.8776
+[1m36/60[0m [32m============[0m[37m========[0m [1m11s[0m 473ms/step - accuracy: 0.1624 - loss: 1.8774
+[1m37/60[0m [32m============[0m[37m========[0m [1m10s[0m 471ms/step - accuracy: 0.1625 - loss: 1.8772
+[1m38/60[0m [32m============[0m[37m========[0m [1m10s[0m 470ms/step - accuracy: 0.1626 - loss: 1.8770
+[1m39/60[0m [32m=============[0m[37m=======[0m [1m9s[0m 470ms/step - accuracy: 0.1627 - loss: 1.8769 
+[1m40/60[0m [32m=============[0m[37m=======[0m [1m9s[0m 468ms/step - accuracy: 0.1628 - loss: 1.8768
+[1m41/60[0m [32m=============[0m[37m=======[0m [1m8s[0m 468ms/step - accuracy: 0.1628 - loss: 1.8767
+[1m42/60[0m [32m==============[0m[37m======[0m [1m8s[0m 467ms/step - accuracy: 0.1629 - loss: 1.8765
+[1m43/60[0m [32m==============[0m[37m======[0m [1m7s[0m 467ms/step - accuracy: 0.1629 - loss: 1.8764
+[1m44/60[0m [32m==============[0m[37m======[0m [1m7s[0m 467ms/step - accuracy: 0.1630 - loss: 1.8762
+[1m45/60[0m [32m===============[0m[37m=====[0m [1m6s[0m 466ms/step - accuracy: 0.1632 - loss: 1.8760
+[1m46/60[0m [32m===============[0m[37m=====[0m [1m6s[0m 466ms/step - accuracy: 0.1634 - loss: 1.8757
+[1m47/60[0m [32m===============[0m[37m=====[0m [1m6s[0m 466ms/step - accuracy: 0.1636 - loss: 1.8755
+[1m48/60[0m [32m================[0m[37m====[0m [1m5s[0m 466ms/step - accuracy: 0.1638 - loss: 1.8752
+[1m49/60[0m [32m================[0m[37m====[0m [1m5s[0m 466ms/step - accuracy: 0.1641 - loss: 1.8750
+[1m50/60[0m [32m================[0m[37m====[0m [1m4s[0m 467ms/step - accuracy: 0.1643 - loss: 1.8748
+[1m51/60[0m [32m=================[0m[37m===[0m [1m4s[0m 468ms/step - accuracy: 0.1644 - loss: 1.8746
+[1m52/60[0m [32m=================[0m[37m===[0m [1m3s[0m 468ms/step - accuracy: 0.1646 - loss: 1.8744
+[1m53/60[0m [32m=================[0m[37m===[0m [1m3s[0m 468ms/step - accuracy: 0.1648 - loss: 1.8742
+[1m54/60[0m [32m==================[0m[37m==[0m [1m2s[0m 468ms/step - accuracy: 0.1649 - loss: 1.8739
+[1m55/60[0m [32m==================[0m[37m==[0m [1m2s[0m 469ms/step - accuracy: 0.1651 - loss: 1.8737
+[1m56/60[0m [32m==================[0m[37m==[0m [1m1s[0m 472ms/step - accuracy: 0.1652 - loss: 1.8735
+[1m57/60[0m [32m===================[0m[37m=[0m [1m1s[0m 476ms/step - accuracy: 0.1654 - loss: 1.8733
+[1m58/60[0m [32m===================[0m[37m=[0m [1m0s[0m 479ms/step - accuracy: 0.1655 - loss: 1.8730
+[1m59/60[0m [32m===================[0m[37m=[0m [1m0s[0m 481ms/step - accuracy: 0.1655 - loss: 1.8728
+[1m60/60[0m [32m====================[0m[37m[0m [1m0s[0m 482ms/step - accuracy: 0.1656 - loss: 1.8726
+Epoch 1: val_accuracy improved from None to 0.17155, saving model to models/densenet121_emotion_model.keras
+
+[1m60/60[0m [32m====================[0m[37m[0m [1m47s[0m 643ms/step - accuracy: 0.1708 - loss: 1.8587 - val_accuracy: 0.1715 - val_loss: 1.8892
+Epoch 2/2
+
+[1m 1/60[0m [37m====================[0m [1m35s[0m 601ms/step - accuracy: 0.1250 - loss: 1.8420
+[1m 2/60[0m [37m====================[0m [1m27s[0m 473ms/step - accuracy: 0.1875 - loss: 1.8077
+[1m 3/60[0m [32m=[0m[37m===================[0m [1m29s[0m 519ms/step - accuracy: 0.1875 - loss: 1.8103
+[1m 4/60[0m [32m=[0m[37m===================[0m [1m28s[0m 517ms/step - accuracy: 0.1914 - loss: 1.8082
+[1m 5/60[0m [32m=[0m[37m===================[0m [1m28s[0m 513ms/step - accuracy: 0.2006 - loss: 1.8039
+[1m 6/60[0m [32m==[0m[37m==================[0m [1m27s[0m 513ms/step - accuracy: 0.2054 - loss: 1.8007
+[1m 7/60[0m [32m==[0m[37m==================[0m [1m28s[0m 546ms/step - accuracy: 0.2054 - loss: 1.7984
+[1m 8/60[0m [32m==[0m[37m==================[0m [1m28s[0m 543ms/step - accuracy: 0.2041 - loss: 1.7968
+[1m 9/60[0m [32m===[0m[37m=================[0m [1m28s[0m 560ms/step - accuracy: 0.2046 - loss: 1.7950
+[1m10/60[0m [32m===[0m[37m=================[0m [1m27s[0m 560ms/step - accuracy: 0.2041 - loss: 1.7941
+[1m11/60[0m [32m===[0m[37m=================[0m [1m27s[0m 561ms/step - accuracy: 0.2026 - loss: 1.7938
+[1m12/60[0m [32m====[0m[37m================[0m [1m27s[0m 572ms/step - accuracy: 0.2018 - loss: 1.7936
+[1m13/60[0m [32m====[0m[37m================[0m [1m27s[0m 585ms/step - accuracy: 0.2003 - loss: 1.7938
+[1m14/60[0m [32m====[0m[37m================[0m [1m27s[0m 607ms/step - accuracy: 0.1985 - loss: 1.7944
+[1m15/60[0m [32m=====[0m[37m===============[0m [1m27s[0m 622ms/step - accuracy: 0.1966 - loss: 1.7949
+[1m16/60[0m [32m=====[0m[37m===============[0m [1m27s[0m 630ms/step - accuracy: 0.1946 - loss: 1.7957
+[1m17/60[0m [32m=====[0m[37m===============[0m [1m27s[0m 633ms/step - accuracy: 0.1926 - loss: 1.7966
+[1m18/60[0m [32m======[0m[37m==============[0m [1m26s[0m 628ms/step - accuracy: 0.1910 - loss: 1.7974
+[1m19/60[0m [32m======[0m[37m==============[0m [1m25s[0m 624ms/step - accuracy: 0.1896 - loss: 1.7980
+[1m20/60[0m [32m======[0m[37m==============[0m [1m24s[0m 621ms/step - accuracy: 0.1881 - loss: 1.7986
+[1m21/60[0m [32m=======[0m[37m=============[0m [1m24s[0m 623ms/step - accuracy: 0.1869 - loss: 1.7989
+[1m22/60[0m [32m=======[0m[37m=============[0m [1m23s[0m 623ms/step - accuracy: 0.1857 - loss: 1.7992
+[1m23/60[0m [32m=======[0m[37m=============[0m [1m22s[0m 619ms/step - accuracy: 0.1845 - loss: 1.7996
+[1m24/60[0m [32m========[0m[37m============[0m [1m22s[0m 615ms/step - accuracy: 0.1833 - loss: 1.8000
+[1m25/60[0m [32m========[0m[37m============[0m [1m21s[0m 609ms/step - accuracy: 0.1821 - loss: 1.8004
+[1m26/60[0m [32m========[0m[37m============[0m [1m20s[0m 605ms/step - accuracy: 0.1811 - loss: 1.8008
+[1m27/60[0m [32m=========[0m[37m===========[0m [1m19s[0m 603ms/step - accuracy: 0.1801 - loss: 1.8011
+[1m28/60[0m [32m=========[0m[37m===========[0m [1m19s[0m 601ms/step - accuracy: 0.1794 - loss: 1.8012
+[1m29/60[0m [32m=========[0m[37m===========[0m [1m18s[0m 598ms/step - accuracy: 0.1788 - loss: 1.8012
+[1m30/60[0m [32m==========[0m[37m==========[0m [1m17s[0m 594ms/step - accuracy: 0.1783 - loss: 1.8012
+[1m31/60[0m [32m==========[0m[37m==========[0m [1m17s[0m 591ms/step - accuracy: 0.1781 - loss: 1.8013
+[1m32/60[0m [32m==========[0m[37m==========[0m [1m16s[0m 589ms/step - accuracy: 0.1779 - loss: 1.8012
+[1m33/60[0m [32m===========[0m[37m=========[0m [1m15s[0m 585ms/step - accuracy: 0.1778 - loss: 1.8011
+[1m34/60[0m [32m===========[0m[37m=========[0m [1m15s[0m 584ms/step - accuracy: 0.1776 - loss: 1.8009
+[1m35/60[0m [32m===========[0m[37m=========[0m [1m14s[0m 586ms/step - accuracy: 0.1774 - loss: 1.8008
+[1m36/60[0m [32m============[0m[37m========[0m [1m14s[0m 583ms/step - accuracy: 0.1771 - loss: 1.8008
+[1m37/60[0m [32m============[0m[37m========[0m [1m13s[0m 582ms/step - accuracy: 0.1768 - loss: 1.8008
+[1m38/60[0m [32m============[0m[37m========[0m [1m12s[0m 581ms/step - accuracy: 0.1763 - loss: 1.8009
+[1m39/60[0m [32m=============[0m[37m=======[0m [1m12s[0m 579ms/step - accuracy: 0.1758 - loss: 1.8011
+[1m40/60[0m [32m=============[0m[37m=======[0m [1m11s[0m 575ms/step - accuracy: 0.1753 - loss: 1.8013
+[1m41/60[0m [32m=============[0m[37m=======[0m [1m10s[0m 572ms/step - accuracy: 0.1748 - loss: 1.8015
+[1m42/60[0m [32m==============[0m[37m======[0m [1m10s[0m 570ms/step - accuracy: 0.1744 - loss: 1.8017
+[1m43/60[0m [32m==============[0m[37m======[0m [1m9s[0m 567ms/step - accuracy: 0.1741 - loss: 1.8019 
+[1m44/60[0m [32m==============[0m[37m======[0m [1m9s[0m 565ms/step - accuracy: 0.1737 - loss: 1.8020
+[1m45/60[0m [32m===============[0m[37m=====[0m [1m8s[0m 563ms/step - accuracy: 0.1734 - loss: 1.8022
+[1m46/60[0m [32m===============[0m[37m=====[0m [1m7s[0m 561ms/step - accuracy: 0.1732 - loss: 1.8024
+[1m47/60[0m [32m===============[0m[37m=====[0m [1m7s[0m 559ms/step - accuracy: 0.1729 - loss: 1.8026
+[1m48/60[0m [32m================[0m[37m====[0m [1m6s[0m 556ms/step - accuracy: 0.1726 - loss: 1.8028
+[1m49/60[0m [32m================[0m[37m====[0m [1m6s[0m 554ms/step - accuracy: 0.1723 - loss: 1.8030
+[1m50/60[0m [32m================[0m[37m====[0m [1m5s[0m 552ms/step - accuracy: 0.1720 - loss: 1.8032
+[1m51/60[0m [32m=================[0m[37m===[0m [1m4s[0m 550ms/step - accuracy: 0.1717 - loss: 1.8034
+[1m52/60[0m [32m=================[0m[37m===[0m [1m4s[0m 549ms/step - accuracy: 0.1714 - loss: 1.8036
+[1m53/60[0m [32m=================[0m[37m===[0m [1m3s[0m 547ms/step - accuracy: 0.1712 - loss: 1.8039
+[1m54/60[0m [32m==================[0m[37m==[0m [1m3s[0m 546ms/step - accuracy: 0.1710 - loss: 1.8041
+[1m55/60[0m [32m==================[0m[37m==[0m [1m2s[0m 549ms/step - accuracy: 0.1708 - loss: 1.8043
+[1m56/60[0m [32m==================[0m[37m==[0m [1m2s[0m 553ms/step - accuracy: 0.1706 - loss: 1.8045
+[1m57/60[0m [32m===================[0m[37m=[0m [1m1s[0m 552ms/step - accuracy: 0.1704 - loss: 1.8047
+[1m58/60[0m [32m===================[0m[37m=[0m [1m1s[0m 551ms/step - accuracy: 0.1703 - loss: 1.8048
+[1m59/60[0m [32m===================[0m[37m=[0m [1m0s[0m 551ms/step - accuracy: 0.1702 - loss: 1.8050

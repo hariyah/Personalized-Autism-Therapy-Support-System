@@ -31,15 +31,15 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
 │   ├── public
 │   └── package.json
 ├── ml_service
-│   ├── train_model.py    # DenseNet-121 training script
-│   ├── predict_emotion.py # Emotion prediction script
-│   ├── app.py            # Flask API server for ML service
-│   ├── download_dataset.py # Dataset downloader
-│   ├── requirements.txt  # Python dependencies
-│   ├── README.md         # ML service documentation
-│   ├── SETUP_GUIDE.md    # Complete setup instructions
-│   ├── models/           # Trained models (after training)
-│   └── dataset/          # Dataset (after download)
+│   ├── train_model.py              # DenseNet-121 emotion training script
+│   ├── train_recommendation_model.py  # Deep learning recommendation model training
+│   ├── predict_emotion.py          # Emotion prediction script
+│   ├── predict_recommendations.py   # Recommendation prediction script
+│   ├── app.py                      # Flask API server for ML service
+│   ├── download_dataset.py         # Dataset downloader
+│   ├── requirements.txt            # Python dependencies
+│   ├── models/                     # Trained models (after training)
+│   └── dataset/                    # Dataset (after download)
 └── README.md
 ```
 
@@ -48,12 +48,13 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
 *   **Frontend:** React 19, Axios, Modern CSS with gradients and animations
 *   **Backend:** Node.js, Express.js, CORS, Multer (file uploads)
 *   **ML Service:** Python, TensorFlow, Keras, DenseNet-121, Flask
-*   **Recommendation Engine:** Multi-factor algorithm based on:
-    - Real-time emotion (from CNN/DenseNet-121)
-    - Social status
-    - Financial/economic status
-    - Autism details (severity, type, specific needs)
-    - Child interests
+*   **Emotion Detection:** DenseNet-121 CNN (6 emotion classes)
+*   **Recommendation Engine:** Deep Neural Network (256→128→64) based on:
+    - Real-time emotion (from DenseNet-121)
+    - Personal interests (19 categories)
+    - Financial/economic status (4 levels)
+    - Social status (4 levels)
+    - Autism profile (severity, type)
 
 ## 🚀 Getting Started
 
@@ -61,6 +62,10 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
 
 *   Node.js (v14 or higher)
 *   npm (v6 or higher)
+*   Python (3.8 or higher)
+*   pip (Python package manager)
+
+**For detailed setup instructions, see [PROJECT_SETUP.md](PROJECT_SETUP.md) or [QUICK_START.md](QUICK_START.md)**
 
 ### Installation
 
@@ -82,6 +87,14 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
     npm install
     ```
 
+4.  Install Python ML dependencies
+    ```sh
+    cd ../ml_service
+    pip install -r requirements.txt
+    ```
+
+5.  Download dataset and train models (see [PROJECT_SETUP.md](PROJECT_SETUP.md))
+
 ## 🎮 Running the Application
 
 ### Start the Backend Server
@@ -94,6 +107,16 @@ npm start
 
 The backend server will start on `http://localhost:3001`
 
+### Start the ML Service
+
+Open a terminal and run:
+```sh
+cd ml_service
+python app.py
+```
+
+The ML service will start on `http://localhost:5000`
+
 ### Start the Frontend Application
 
 Open a new terminal and run:
@@ -103,6 +126,8 @@ npm start
 ```
 
 The frontend will automatically open in your browser at `http://localhost:3000`
+
+**Note:** All three services (ML Service, Backend, Frontend) must be running simultaneously.
 
 ## 📖 How to Use
 
@@ -120,22 +145,21 @@ The frontend will automatically open in your browser at `http://localhost:3000`
 
 ### Emotion Recognition (DenseNet-121)
 - **Real-time emotion detection** from uploaded images
-- **7 emotion classes:** happy, sad, anxious, calm, excited, frustrated, neutral
+- **6 emotion classes:** Natural (0), joy (1), fear (2), anger (3), sadness (4), surprise (5)
 - **High accuracy** model trained on autistic children emotions dataset
+- **DenseNet-121 architecture** with transfer learning and fine-tuning
 - **API integration** for seamless emotion updates
 
-### Recommendation Algorithm
-The system uses a sophisticated multi-factor scoring algorithm that considers:
-- **Real-time emotion** (from CNN/DenseNet-121) - Weight: 15 points
-- **Social status** matching - Weight: 10 points
-- **Financial/economic status** filtering - Weight: 12 points
-- **Autism details** (severity, type, specific needs) - Weight: 15 points
-- **Child interests** matching - Weight: 12 points
-- Child's needs level (high/medium/low) for each category
-- Child's preferences (visual, structured, movement, etc.)
-- Activity difficulty matching child's capabilities
-- Age appropriateness
-- Specific challenges addressed by each activity
+### Deep Learning Recommendation System
+The system uses a **neural network** (deep learning model) that considers:
+- **Real-time emotion** (from DenseNet-121) - 6 features (one-hot encoded)
+- **Personal interests** - 19 binary features (train, cartoon, music, dance, art, etc.)
+- **Financial/economic status** - 4 features (free, low, medium, high)
+- **Social status** - 4 features (alone, with-parent, group, community)
+- **Autism profile** - 2 features (severity 1-5, type)
+- **Model Architecture**: 256 → 128 → 64 → output (sigmoid activation)
+- **Training**: Synthetic data generation with rule-based labels
+- **Output**: Activity recommendation scores for personalized suggestions
 
 ### Activity Categories
 
@@ -171,8 +195,13 @@ The system uses a sophisticated multi-factor scoring algorithm that considers:
 ### Emotion Endpoints
 - `POST /api/emotion/:childId` - Update emotion manually
 - `POST /api/emotion/:childId/recognize` - Recognize emotion from uploaded image
+- `POST /api/predict-emotion` - Predict emotion from image (returns 6 emotion probabilities)
 - `GET /api/emotion/:childId/history` - Get emotion history
 - `GET /api/ml-service/health` - Check ML service health
+
+### Recommendation Endpoints
+- `GET /api/recommendations/:childId` - Get rule-based recommendations
+- `POST /api/recommendations/:childId` - Get ML-based recommendations (deep learning model)
 
 ## 🤖 ML Service Setup
 

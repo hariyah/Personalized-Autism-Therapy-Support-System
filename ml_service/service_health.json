@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "status_code": 200,
+  "json": {
+    "model_loaded": true,
+    "status": "healthy"
+  }
+}

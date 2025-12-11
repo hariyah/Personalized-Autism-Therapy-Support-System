@@ -1,0 +1,62 @@
+﻿py : 2025-11-30 22:32:52.077560: I tensorflow/core/util/port.cc:153] oneDNN 
+custom operations are on. You may see slightly different numerical results 
+due to floating-point round-off errors from different computation orders. 
+To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+At line:1 char:155
++ ... -Support-System\ml_service'; py -3.11 -u eval_testset.py 2>&1 | Out-F 
+...
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2025-11-30 22:3...ONEDNN_OPTS= 
+   0`.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2025-11-30 22:32:56.683640: I tensorflow/core/util/port.cc:153] oneDNN 
+custom operations are on. You may see slightly different numerical results 
+due to floating-point round-off errors from different computation orders. 
+To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+Found 226 test images across 6 classes
+Loading model from models/densenet121_emotion_model.keras...
+2025-11-30 22:32:59.731261: I 
+tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary 
+is optimized to use available CPU instructions in performance-critical 
+operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX_VNNI 
+FMA, in other operations, rebuild TensorFlow with the appropriate compiler 
+flags.
+C:\Users\avi\AppData\Roaming\Python\Python311\site-packages\keras\src\saving
+\saving_lib.py:797: UserWarning: Skipping variable loading for optimizer 
+'rmsprop', because it has 6 variables whereas the saved optimizer has 10 
+variables. 
+  saveable.load_own_variables(weights_store.get(inner_path))
+Model loaded successfully!
+Class indices loaded: {0: 'Natural', 1: 'anger', 2: 'fear', 3: 'joy', 4: 'sadness', 5: 'surprise'}
+Processed 50/226
+Processed 100/226
+Processed 150/226
+Processed 200/226
+
+Classification report:
+              precision    recall  f1-score   support
+
+     Natural       0.14      0.15      0.14        40
+       anger       0.16      0.42      0.24        40
+        fear       0.17      0.36      0.23        36
+         joy       0.00      0.00      0.00        35
+     sadness       0.00      0.00      0.00        38
+    surprise       0.33      0.03      0.05        37
+
+    accuracy                           0.16       226
+   macro avg       0.13      0.16      0.11       226
+weighted avg       0.14      0.16      0.11       226
+
+
+Labels order: ['Natural', 'anger', 'fear', 'joy', 'sadness', 'surprise']
+Confusion matrix:
+[[ 6 23 11  0  0  0]
+ [ 9 17 13  0  0  1]
+ [ 7 16 13  0  0  0]
+ [ 4 18 13  0  0  0]
+ [12 16  9  0  0  1]
+ [ 6 14 16  0  0  1]]
+
+Saved results to eval_testset_results.json

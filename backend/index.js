@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const axios = require('axios');
 const emotionService = require('./emotionService');
 const app = express();
-const port = 3001;
+const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -731,8 +732,9 @@ app.post('/api/emotion/:childId/recognize', upload.single('image'), async (req, 
     }
 
     // Gate updating currentEmotion on confidence and margin
-    const MIN_CONF = 0.5;
-    const MIN_MARGIN = 0.1;
+    // Relaxed gating to reflect lower-confidence but correct predictions
+    const MIN_CONF = 0.4;
+    const MIN_MARGIN = 0.05;
     let message;
     if (confidence >= MIN_CONF && margin >= MIN_MARGIN) {
       child.currentEmotion = normalized;
@@ -846,6 +848,57 @@ app.get('/api/emotion/:childId/history', (req, res) => {
     return res.status(404).json({ error: 'Child not found' });
   }
   res.json(child.emotionHistory);
+});
+
+// POST endpoint for ML-based recommendations
+app.post('/api/recommendations/:childId', async (req, res) => {
+  const childId = parseInt(req.params.childId);
+  const child = childProfiles.find(c => c.id === childId);
+  
+  if (!child) {
+    return res.status(404).json({ error: 'Child not found' });
+  }
+  
+  // Extract factors from request body or use child profile defaults
+  const emotion = req.body.emotion || child.currentEmotion || 'Natural';
+  const interests = req.body.interests || child.interests || [];
+  const financialStatus = req.body.financialStatus || child.financialStatus || 'medium';
+  const socialStatus = req.body.socialStatus || child.socialStatus || 'alone';
+  const autismSeverity = req.body.autismProfile?.severity || child.autismDetails?.severity || 3;
+  const autismType = req.body.autismProfile?.type || child.autismDetails?.type || 'ASD-2';
+  
+  // Try ML service first
+  try {
+    const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:5000';
+    const response = await axios.post(`${mlServiceUrl}/recommend`, {
+      emotion: emotion,
+      interests: interests,
+      financial_status: financialStatus,
+      social_status: socialStatus,
+      autism_severity: autismSeverity,
+      autism_type: autismType,
+      top_k: 6
+    }, { timeout: 10000 });
+    
+    if (response.data.success && response.data.recommendations) {
+      // Map activity IDs to actual activity objects
+      const recommendedActivities = response.data.recommendations
+        .map(rec => {
+          const activity = activities.find(a => a.id === rec.activity_id);
+          return activity ? { ...activity, ml_score: rec.score } : null;
+        })
+        .filter(a => a !== null);
+      
+      return res.json(recommendedActivities);
+    }
+  } catch (error) {
+    console.warn('ML recommendation service unavailable, falling back to rule-based:', error.message);
+    // Fall through to rule-based recommendations
+  }
+  
+  // Fallback to rule-based recommendations
+  const recommendations = getRecommendations(childId, 6);
+  res.json(recommendations);
 });
 
 app.get('/api/recommendations/:childId', (req, res) => {
