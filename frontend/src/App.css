@@ -431,8 +431,8 @@ html {
 }
 
 .stat-value {
-  font-size: 3.5rem;
-  font-weight: 800;
+  font-size: 4rem;
+  font-weight: 900;
   color: #2c3e50;
   margin-bottom: 0.25rem;
   animation: countUp 0.8s ease-out;
@@ -451,15 +451,16 @@ html {
 }
 
 .stat-title {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: #2c3e50;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
 .stat-subtitle {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #34495e;
+  font-weight: 600;
 }
 
 /* Category Stats */
@@ -468,10 +469,10 @@ html {
 }
 
 .section-title {
-  font-size: 2.8rem;
+  font-size: 3.2rem;
   color: #2c3e50;
   margin-bottom: 0.5rem;
-  font-weight: 800;
+  font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -555,8 +556,8 @@ html {
 }
 
 .category-stat-value {
-  font-size: 2.8rem;
-  font-weight: 800;
+  font-size: 3.2rem;
+  font-weight: 900;
   color: #2c3e50;
   animation: countUp 0.8s ease-out;
   margin-bottom: 0.25rem;
@@ -564,10 +565,10 @@ html {
 }
 
 .category-stat-label {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #34495e;
   text-transform: capitalize;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Dashboard Sections */
@@ -624,8 +625,8 @@ html {
 .section-description {
   color: #7f8c8d;
   margin-top: 0.5rem;
-  font-size: 1.15rem;
-  font-weight: 500;
+  font-size: 1.3rem;
+  font-weight: 600;
   line-height: 1.6;
   letter-spacing: 0.2px;
   text-align: left;
@@ -692,16 +693,17 @@ html {
 }
 
 .child-card h3 {
-  font-size: 1.6rem;
+  font-size: 1.85rem;
   margin-bottom: 0.5rem;
   color: #2c3e50;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .child-age {
   color: #7f8c8d;
   margin-bottom: 1rem;
-  font-size: 1rem;
+  font-size: 1.15rem;
+  font-weight: 600;
 }
 
 .needs-indicators {
@@ -715,19 +717,20 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 .need-label {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .need-badge {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   color: white;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   text-transform: capitalize;
 }
 
@@ -818,30 +821,30 @@ html {
   padding: 0.4rem 1rem;
   border-radius: 20px;
   color: #2c3e50;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   text-transform: capitalize;
   background: rgba(255, 255, 255, 0.5);
 }
 
 .activity-title {
-  font-size: 1.6rem;
+  font-size: 1.85rem;
   color: #2c3e50;
   margin-bottom: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.3;
 }
 
 .activity-description-short {
   color: #34495e;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   line-height: 1.7;
   margin-bottom: 1rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .activity-footer {
@@ -855,15 +858,15 @@ html {
 
 .activity-duration {
   color: #2c3e50;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .difficulty-badge {
   padding: 0.3rem 0.8rem;
   border-radius: 15px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   text-transform: capitalize;
 }
 
@@ -941,9 +944,9 @@ html {
 }
 
 .action-text {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   color: #2c3e50;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Activities Page */
@@ -1171,9 +1174,9 @@ html {
 }
 
 .form-label {
-  font-weight: 600;
+  font-weight: 700;
   color: #2c3e50;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -1203,7 +1206,7 @@ html {
   padding: 0.9rem 1rem 0.9rem 3rem;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 1.15rem;
   transition: all 0.3s ease;
   background: #fafafa;
 }
@@ -1224,7 +1227,7 @@ html {
   padding: 0.9rem 1rem;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 1.15rem;
   transition: all 0.3s ease;
   background: #fafafa;
   cursor: pointer;
@@ -1339,8 +1342,8 @@ html {
   padding: 1rem 2rem;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -1415,9 +1418,10 @@ html {
 }
 
 .modal-header h2 {
-  font-size: 2rem;
+  font-size: 2.4rem;
   color: #2c3e50;
   margin-bottom: 1rem;
+  font-weight: 800;
 }
 
 .category-badge-large {
@@ -1425,8 +1429,8 @@ html {
   padding: 0.5rem 1.5rem;
   border-radius: 25px;
   color: white;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   text-transform: capitalize;
 }
 
@@ -3051,15 +3055,16 @@ html {
 
 .profile-info h2 {
   color: white;
-  font-size: 1.8rem;
+  font-size: 2.1rem;
   margin-bottom: 0.3rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .profile-subtitle {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   margin: 0;
+  font-weight: 600;
 }
 
 .total-card {
@@ -3082,16 +3087,17 @@ html {
 }
 
 .total-number {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 3rem;
+  font-weight: 800;
   color: #2c3e50;
   display: block;
 }
 
 .total-label {
   color: #34495e;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   margin-top: 0.5rem;
+  font-weight: 600;
 }
 
 /* Progress Card */
@@ -3163,12 +3169,12 @@ html {
 
 /* Emotion Status Section */
 .emotion-status-section {
-  background: transparent;
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
   padding: 2.5rem;
   border-radius: 24px;
   border: none;
   backdrop-filter: none;
-  box-shadow: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
 .emotion-status-header {
@@ -3198,18 +3204,18 @@ html {
 }
 
 .emotion-section-title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.4rem;
+  font-weight: 900;
   color: #2c3e50;
   margin: 0;
   letter-spacing: -0.5px;
 }
 
 .emotion-subtitle {
-  font-size: 1rem;
+  font-size: 1.15rem;
   color: #7f8c8d;
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .emotion-status-grid {
@@ -3227,10 +3233,10 @@ html {
 
 /* Main Emotion Card */
 .emotion-main-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8B9FE8 0%, #E0C3FC 100%);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 40px rgba(139, 159, 232, 0.4);
   transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
@@ -3254,7 +3260,7 @@ html {
 
 .emotion-main-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 15px 50px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 15px 50px rgba(139, 159, 232, 0.6);
 }
 
 .emotion-card-header {
@@ -3264,12 +3270,12 @@ html {
 }
 
 .emotion-label-text {
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.2);
+  color: #2c3e50;
+  background: rgba(255, 255, 255, 0.6);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   display: inline-block;
@@ -3297,31 +3303,31 @@ html {
 }
 
 .emotion-text-large {
-  font-size: 2rem;
-  font-weight: 800;
-  color: white;
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #2c3e50;
   text-transform: capitalize;
   letter-spacing: 1px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 /* Profile Details Card */
 .emotion-details-card {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #8B9FE8 0%, #E0C3FC 100%);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 10px 40px rgba(240, 147, 251, 0.4);
+  box-shadow: 0 10px 40px rgba(139, 159, 232, 0.4);
   transition: all 0.3s ease;
 }
 
 .emotion-details-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 50px rgba(240, 147, 251, 0.6);
+  box-shadow: 0 15px 50px rgba(139, 159, 232, 0.6);
 }
 
 .emotion-details-card .emotion-label-text {
-  color: white;
-  background: rgba(255, 255, 255, 0.3);
+  color: #2c3e50;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .emotion-details-grid {
@@ -3374,26 +3380,26 @@ html {
 }
 
 .detail-label {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #7f8c8d;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .detail-value {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #2c3e50;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: capitalize;
 }
 
 /* Emotion Update Card */
 .emotion-update-card {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #8B9FE8 0%, #E0C3FC 100%);
   border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 12px 40px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 12px 40px rgba(139, 159, 232, 0.4);
   border: 2px solid rgba(255, 255, 255, 0.5);
   transition: all 0.3s ease;
   position: relative;
@@ -3418,7 +3424,7 @@ html {
 
 .emotion-update-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 50px rgba(79, 172, 254, 0.6);
+  box-shadow: 0 15px 50px rgba(139, 159, 232, 0.6);
   border-color: rgba(255, 255, 255, 0.7);
 }
 
@@ -3431,13 +3437,13 @@ html {
 
 .update-icon {
   font-size: 2rem;
-  color: white;
+  color: #2c3e50;
 }
 
 .update-title {
-  font-size: 1.1rem;
-  color: white;
-  font-weight: 700;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  font-weight: 800;
   letter-spacing: 0.3px;
 }
 
@@ -3457,12 +3463,12 @@ html {
 .emotion-select-modern {
   flex: 1;
   padding: 1rem 1.5rem;
-  font-size: 1rem;
+  font-size: 1.15rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.95);
   color: #2c3e50;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
@@ -3496,8 +3502,8 @@ html {
   color: #667eea;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
