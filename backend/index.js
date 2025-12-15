@@ -416,24 +416,18 @@ const acceptedEmotions = new Set([
   'Uncertain','uncertain' // UI uncertain state
 ]);
 function normalizeEmotion(label) {
-  if (!label) return 'neutral';
+  if (!label) return 'Natural';
   const trimmed = String(label).trim();
-  if (!trimmed) return 'neutral';
+  if (!trimmed) return 'Natural';
   // Handle uncertain (any case) as distinct state
-  if (trimmed.toLowerCase() === 'uncertain') return 'uncertain';
-  // Direct dataset mapping (case-sensitive in keys), try fallback case-insensitive
-  if (datasetToInternalMap[trimmed]) return datasetToInternalMap[trimmed];
-  const lower = trimmed.toLowerCase();
-  const ciMap = {
-    'natural': 'calm',
-    'anger': 'frustrated',
-    'fear': 'anxious',
-    'joy': 'happy',
-    'sadness': 'sad',
-    'surprise': 'excited'
-  };
-  if (ciMap[lower]) return ciMap[lower];
-  return trimmed; // assume already internal or neutral
+  if (trimmed.toLowerCase() === 'uncertain') return 'Uncertain';
+  // Only allow dataset/model labels
+  const datasetLabels = ['Natural','anger','fear','joy','sadness','surprise'];
+  if (datasetLabels.includes(trimmed)) return trimmed;
+  // Fallback: try case-insensitive match
+  const found = datasetLabels.find(l => l.toLowerCase() === trimmed.toLowerCase());
+  if (found) return found;
+  return 'Natural'; // fallback to a safe default
 }
 
 // Enhanced child profiles with all 5 factors

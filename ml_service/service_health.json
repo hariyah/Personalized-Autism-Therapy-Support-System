@@ -2,7 +2,9 @@
   "ok": true,
   "status_code": 200,
   "json": {
-    "model_loaded": true,
-    "status": "healthy"
+    "healthy": true,
+    "modelLoaded": true,
+    "port": 5000,
+    "tfAvailable": true
   }
 }

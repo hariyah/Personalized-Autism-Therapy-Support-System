@@ -20,8 +20,9 @@ set EMOTION_ALLOW_UNCERTAIN=1
 rem Force UTF-8 to reduce encoding issues
 set PYTHONIOENCODING=UTF-8
 rem Stricter defaults to avoid low-confidence mislabels
-set EMOTION_MIN_MARGIN=0.20
-set EMOTION_MIN_CONF=0.60
+
+set EMOTION_MIN_MARGIN=0.05
+set EMOTION_MIN_CONF=0.2
 
 echo [service] Using ML_MODEL_PATH: %ML_MODEL_PATH%
 echo [service] Logging to %BASEDIR%logs\ml_service.log

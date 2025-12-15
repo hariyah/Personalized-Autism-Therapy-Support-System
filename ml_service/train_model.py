@@ -28,7 +28,7 @@ CONFIG = {
     'epochs': 50,
     'learning_rate': 0.001,
     'num_classes': 6,  # Natural (0), joy (1), fear (2), anger (3), sadness (4), surprise (5)
-    'data_dir': 'dataset',  # Update this path after downloading dataset
+    'data_dir': os.path.join('dataset', 'Autism emotion recogition dataset', 'train'),  # Updated to match actual dataset location
     'model_save_path': 'models/densenet121_emotion_model.h5',
     'class_indices_save_path': 'models/class_indices.json'
 }

@@ -91,8 +91,8 @@ function App() {
       // Refresh recommendations after emotion update
       fetchRecommendations(childId);
     } catch (error) {
+      // Only log error, do not show pop-up or alert
       console.error('Error updating emotion:', error);
-      alert('Error updating emotion: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -466,7 +466,8 @@ function DashboardView({
   handleViewAnalytics
 }) {
   // 6 emotions as required: Natural (0), joy (1), fear (2), anger (3), sadness (4), surprise (5)
-  const validEmotions = ["Natural", "joy", "fear", "anger", "sadness", "surprise"];
+  // Use the exact order and names from class_indices.json
+  const validEmotions = ["Natural", "anger", "fear", "joy", "sadness", "surprise"];
 
   const handleEmotionUpdate = () => {
     if (selectedChild && emotionInput && validEmotions.includes(emotionInput)) {
@@ -800,15 +801,15 @@ function DashboardView({
                   className="btn-apply-emotion"
                   onClick={() => {
                     const e = (predictedEmotion?.emotion || '').trim();
-                    const allowedEmotions = ["Natural", "joy", "fear", "anger", "sadness", "surprise"];
+                    // Only allow validEmotions from the model
                     if (!e || e.toLowerCase() === 'uncertain') {
                       alert('Cannot apply Uncertain emotion to profile. Please upload a clearer image or choose a specific emotion.');
                       return;
                     }
                     // Normalize emotion label (case-insensitive)
-                    const normalizedEmotion = allowedEmotions.find(em => em.toLowerCase() === e.toLowerCase());
+                    const normalizedEmotion = validEmotions.find(em => em.toLowerCase() === e.toLowerCase());
                     if (!normalizedEmotion) {
-                      alert('Invalid emotion label: ' + e + '\nPlease use one of: ' + allowedEmotions.join(', '));
+                      alert('Invalid emotion label: ' + e + '\nPlease use one of: ' + validEmotions.join(', '));
                       return;
                     }
                     updateEmotion(selectedChild.id, normalizedEmotion, predictedEmotion.confidence);

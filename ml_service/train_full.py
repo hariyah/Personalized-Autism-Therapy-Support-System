@@ -224,7 +224,7 @@ def main():
                 yield np.stack(batch_x)[:batch_size], np.stack(batch_y)[:batch_size]
         steps_per_epoch = max(1, sum(len(v) for v in files_by_class.values()) // args.batch_size)
         val_steps = max(1, val_gen.samples // args.batch_size)
-        history = model.fit(balanced_gen(), epochs=args.epochs, steps_per_epoch=steps_per_epoch, validation_data=val_gen, validation_steps=val_steps, callbacks=callbacks, class_weight=class_weights, verbose=1)
+        history = model.fit(balanced_gen(), epochs=args.epochs, steps_per_epoch=steps_per_epoch, validation_data=val_gen, validation_steps=val_steps, callbacks=callbacks, verbose=1)
     else:
         history = model.fit(train_gen, epochs=args.epochs, validation_data=val_gen, callbacks=callbacks, class_weight=class_weights, verbose=1)
 
