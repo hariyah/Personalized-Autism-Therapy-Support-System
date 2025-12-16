@@ -1,60 +1,60 @@
 ╔════════════════════════════════════════════════════════════════╗
 ║                                                                ║
-║   ✨ PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM ✨             ║
+║   PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM              ║
 ║                                                                ║
-║              🎉 SUCCESSFULLY DEPLOYED & OPERATIONAL 🎉        ║
+║       SUCCESSFULLY DEPLOYED & OPERATIONAL        ║
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- ✅ SYSTEM STATUS: ALL SERVICES RUNNING
+  SYSTEM STATUS: ALL SERVICES RUNNING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   FRONTEND (React UI)
-    🌐 Port 3000
-    📍 http://localhost:3000
-    ✅ Status: RUNNING
+     Port 3000
+     http://localhost:3000
+     Status: RUNNING
 
   BACKEND API (Node.js)
-    🔌 Port 3001
-    📍 http://localhost:3001
-    ✅ Status: RUNNING
+     Port 3001
+     http://localhost:3001
+     Status: RUNNING
     
   ML SERVICE (Python/Flask)
-    🧠 Port 5000
-    📍 http://localhost:5000
-    ✅ Status: RUNNING
+     Port 5000
+     http://localhost:5000
+     Status: RUNNING
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 🚀 QUICK START
+  QUICK START
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  1️⃣  Open your browser → http://localhost:3000
+    Open your browser → http://localhost:3000
 
-  2️⃣  Upload a photo of an autistic child
+    Upload a photo of an autistic child
 
-  3️⃣  System predicts emotion (anger, fear, joy, etc.)
+   System predicts emotion (anger, fear, joy, etc.)
 
-  4️⃣  View confidence score and emotion breakdown
+   View confidence score and emotion breakdown
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 📊 WHAT'S RUNNING
+  WHAT'S RUNNING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ✅ Deep Learning Model
+   Deep Learning Model
      • Architecture: MobileNetV2
      • Training: 10 epochs complete
      • Model Format: Keras native (.keras)
      • File Size: 11.4 MB
      • Validation Accuracy: 16.32%
      
-  ✅ Dataset
+   Dataset
      • Total Images: 1,199 (1,199 training + 239 validation)
      • Source: Kaggle - Autistic Children Emotions
      • Emotions: 6 classes (anger, fear, joy, natural, sadness, surprise)
      • Distribution: Balanced (≈200 images per emotion)
      
-  ✅ Emotion Classes
+   Emotion Classes
      🔴 Anger     - Aggressive/frustrated state
      🔵 Fear      - Anxious/scared reaction
      🟢 Joy       - Happy/positive emotion
@@ -62,13 +62,13 @@
      🟡 Sadness   - Unhappy/distressed state
      🟣 Surprise  - Shocked/unexpected reaction
      
-  ✅ API Services
+   API Services
      • ML Service: Flask REST API (Python)
      • Backend: Express.js API (Node.js)
      • Frontend: React 18+ (JavaScript)
      • Communication: JSON over HTTP
      
-  ✅ Features Active
+   Features Active
      • 15 Therapeutic Activities Loaded
      • 3 Child Profiles Available
      • Multi-factor Recommendation System
@@ -76,7 +76,7 @@
      • Real-time Emotion Prediction
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 🔗 SYSTEM FLOW
+  SYSTEM FLOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   User (http://localhost:3000)
@@ -92,7 +92,7 @@
   Display Result to User
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 📋 RUNNING SERVICES SUMMARY
+  RUNNING SERVICES SUMMARY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   SERVICE              PORT  PROCESS             TERMINAL
@@ -103,7 +103,7 @@
   ─────────────────────────────────────────────────────────────
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 📁 KEY FILES
+  KEY FILES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   ml_service/models/
@@ -122,7 +122,7 @@
     └── App.js                          [React Component - RUNNING]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 🎯 NEXT STEPS
+  NEXT STEPS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   IMMEDIATE:
@@ -144,7 +144,7 @@
     • Therapy activity recommendations
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 🆘 TROUBLESHOOTING
+  TROUBLESHOOTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Issue: Port already in use
@@ -165,7 +165,7 @@
     → Expected: 50-70% accuracy
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 📚 DOCUMENTATION
+  DOCUMENTATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Complete guides available:
@@ -177,7 +177,7 @@
     • README.md               - Main project documentation
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- ✅ VERIFICATION CHECKLIST
+  VERIFICATION CHECKLIST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   ☑ ML Service running (port 5000)
@@ -190,22 +190,22 @@
   ☑ Browser can access http://localhost:3000
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 🎉 YOU'RE READY TO USE THE SYSTEM!
+  YOU'RE READY TO USE THE SYSTEM!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   All three services are running and ready for:
   
-    ✨ Emotion Recognition ✨
-    📸 Image Analysis
-    🎯 Therapy Support
-    👶 Autistic Child Support
+     Emotion Recognition 
+     Image Analysis
+     Therapy Support
+     Autistic Child Support
 
   Open http://localhost:3000 NOW and start using it!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Last Updated: 2025-11-30 18:04 UTC
-  Status: ✅ FULLY OPERATIONAL
-  All Systems: ✅ GO
+  Status:  FULLY OPERATIONAL
+  All Systems:  GO
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
