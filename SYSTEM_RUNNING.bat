@@ -7,23 +7,23 @@ cls
 echo.
 echo ========================================================
 echo.
-echo   ^⭐ PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM ^⭐
+echo    PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM 
 echo.
 echo   STATUS: FULLY OPERATIONAL
 echo.
 echo ========================================================
 echo.
-echo   ^✅ Frontend (React UI)
+echo   Frontend (React UI)
 echo      URL: http://localhost:3000
 echo      Status: RUNNING
 echo      Port: 3000
 echo.
-echo   ^✅ Backend API (Node.js)
+echo   Backend API (Node.js)
 echo      URL: http://localhost:3001
 echo      Status: RUNNING
 echo      Port: 3001
 echo.
-echo   ^✅ ML Service (Python/Flask)
+echo   ML Service (Python/Flask)
 echo      URL: http://localhost:5000
 echo      Status: RUNNING
 echo      Port: 5000
