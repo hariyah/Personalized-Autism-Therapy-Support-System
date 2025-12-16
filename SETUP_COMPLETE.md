@@ -1,35 +1,35 @@
-# ✅ System Setup Status - November 30, 2025
+#  System Setup Status - November 30, 2025
 
-## 🎯 Current Status Summary
+##  Current Status Summary
 
-### ✅ Completed Setup Steps
+### Completed Setup Steps
 
 1. **Backend Server (Port 3001)**
-   - ✅ npm dependencies installed (95 packages)
-   - ✅ Server started and LISTENING on port 3001
+   -  npm dependencies installed (95 packages)
+   -  Server started and LISTENING on port 3001
    - Status: **READY**
 
 2. **Frontend Application (Port 3000)**
-   - ✅ npm dependencies installed (881 packages)
-   - ✅ React development server started
+   -  npm dependencies installed (881 packages)
+   -  React development server started
    - Status: **READY** (should be accessible at http://localhost:3000)
 
 3. **Database/API**
-   - ✅ Backend API configured to serve on http://localhost:3001/api/
-   - ✅ Endpoints available: /api/children, /api/activities, /api/recommendations
+   -  Backend API configured to serve on http://localhost:3001/api/
+   -  Endpoints available: /api/children, /api/activities, /api/recommendations
    - Status: **READY**
 
-### ⏳ Pending Setup Steps
+###  Pending Setup Steps
 
 1. **Python ML Service (Port 5000)** - PENDING
-   - ❌ Python 3.11+ not yet installed on system
-   - ❌ ML dependencies (TensorFlow, Keras, Flask) not installed
-   - ❌ Emotion recognition model not trained
-   - ❌ ML API service not running
+   -  Python 3.11+ not yet installed on system
+   -  ML dependencies (TensorFlow, Keras, Flask) not installed
+   -  Emotion recognition model not trained
+   -  ML API service not running
 
 ---
 
-## 📱 How to Access the Application
+##  How to Access the Application
 
 ### Frontend Application
 - **URL:** http://localhost:3000
@@ -49,7 +49,7 @@
 
 ---
 
-## 🤖 Setting Up Emotion Recognition ML Service
+##  Setting Up Emotion Recognition ML Service
 
 ### Option A: Automatic Setup (Requires Manual Installation)
 
@@ -132,7 +132,7 @@ Expected response:
 
 ---
 
-## 🚀 Running the Complete System
+##  Running the Complete System
 
 ### All Services Running:
 
@@ -161,26 +161,26 @@ python app.py
 
 ---
 
-## 📝 Current Application Features
+##  Current Application Features
 
-### ✅ Working Features (No ML Required)
-- ✅ View/manage child profiles
-- ✅ Browse therapy activities library
-- ✅ Filter activities by category (Social, Behavioral, Emotional)
-- ✅ Get activity recommendations for each child
-- ✅ Manually update child's emotion from dropdown
-- ✅ Beautiful, responsive UI
-- ✅ Activity details (materials, duration, benefits, age recommendations)
+###  Working Features (No ML Required)
+-  View/manage child profiles
+-  Browse therapy activities library
+-  Filter activities by category (Social, Behavioral, Emotional)
+-  Get activity recommendations for each child
+-  Manually update child's emotion from dropdown
+-  Beautiful, responsive UI
+-  Activity details (materials, duration, benefits, age recommendations)
 
-### ⏳ Features Awaiting ML Service
-- ⏳ Upload images for emotion detection
-- ⏳ Automatic emotion prediction via DenseNet-121 CNN
-- ⏳ Real-time emotion analysis with confidence scores
-- ⏳ Personalized activity recommendations based on detected emotions
+###  Features Awaiting ML Service
+-  Upload images for emotion detection
+-  Automatic emotion prediction via DenseNet-121 CNN
+-  Real-time emotion analysis with confidence scores
+-  Personalized activity recommendations based on detected emotions
 
 ---
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Frontend not loading?
 1. Check if port 3000 is free: `netstat -ano | findstr :3000`
@@ -206,7 +206,7 @@ python app.py
 
 ---
 
-## 📊 System Requirements
+##  System Requirements
 
 - **Node.js:** v14+ (already installed)
 - **Python:** 3.8+ (needs installation)
@@ -216,7 +216,7 @@ python app.py
 
 ---
 
-## 📚 Additional Resources
+##  Additional Resources
 
 - **Frontend Docs:** `frontend/README.md`
 - **Backend Docs:** `backend/package.json`
@@ -233,4 +233,4 @@ python app.py
 4. Follow Option B steps to set up ML service
 5. Once ML service is running, you can upload images for emotion prediction
 
-Happy exploring! 🎉
+Happy exploring! 
