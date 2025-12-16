@@ -8,17 +8,17 @@ echo ====================================================
 echo.
 echo System is now FULLY OPERATIONAL!
 echo.
-echo ^✅ ML Service (Port 5000): RUNNING
+echo ML Service (Port 5000): RUNNING
 echo    - Model: MobileNetV2 (10 epochs trained)
 echo    - Classes: anger, fear, joy, Natural, sadness, surprise
 echo    - Status: Ready for predictions
 echo.
-echo ^✅ Backend API (Port 3001): RUNNING
+echo Backend API (Port 3001): RUNNING
 echo    - Activities: Loaded
 echo    - Child Profiles: Available
 echo    - Multi-factor Recommendation: Active
 echo.
-echo ^✅ Frontend UI (Port 3000): RUNNING
+echo Frontend UI (Port 3000): RUNNING
 echo    - React app ready
 echo    - Image upload interface active
 echo.
