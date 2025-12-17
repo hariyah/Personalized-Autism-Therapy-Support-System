@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-## 🚀 Fast Setup (5 Minutes)
+##  Fast Setup (5 Minutes)
 
 ### Prerequisites Check
 ```bash
@@ -79,7 +79,7 @@ npm start
 
 Open browser: **http://localhost:3000**
 
-## ✅ Quick Test
+##  Quick Test
 
 1. Upload an image of a child
 2. System detects emotion (6 categories)
@@ -87,14 +87,14 @@ Open browser: **http://localhost:3000**
 4. Click "Generate Recommendations"
 5. View personalized activity recommendations
 
-## 🎯 Key Features
+##  Key Features
 
 - **6 Emotion Detection**: Natural, joy, fear, anger, sadness, surprise
 - **Deep Learning Recommendations**: Neural network based on 5 factors
 - **Beautiful UI**: Modern, responsive design
 - **Real-time Updates**: Recommendations change with emotion
 
-## 📖 Full Documentation
+##  Full Documentation
 
 See `PROJECT_SETUP.md` for complete setup instructions and troubleshooting.
 
