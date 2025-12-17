@@ -1,33 +1,33 @@
 # Complete Setup Checklist
 
-## ✅ Implementation Status: 100% COMPLETE
+## Implementation Status: 100% COMPLETE
 
 All code has been implemented and is ready to use!
 
-## 📋 Setup Checklist
+## Setup Checklist
 
-### Phase 1: Python Environment ✅ (Can be automated)
+### Phase 1: Python Environment (Can be automated)
 - [x] Python installed
 - [ ] Python dependencies installed → Run: `pip install -r requirements.txt`
 - [ ] Kaggle CLI installed → Run: `pip install kaggle`
 
-### Phase 2: Dataset ⚠️ (Requires Kaggle account)
+### Phase 2: Dataset  (Requires Kaggle account)
 - [ ] Kaggle API credentials set up
   - Go to: https://www.kaggle.com/account
   - Create API token
   - Place `kaggle.json` in `~/.kaggle/` or `C:\Users\<user>\.kaggle\`
 - [ ] Dataset downloaded → Run: `python download_dataset.py`
 
-### Phase 3: Model Training ⏱️ (Takes 30-60 min)
+### Phase 3: Model Training  (Takes 30-60 min)
 - [ ] Model trained → Run: `python train_model.py`
 - [ ] Model file exists: `models/densenet121_emotion_model.h5`
 
-### Phase 4: Services 🚀 (Start when ready)
+### Phase 4: Services  (Start when ready)
 - [ ] ML Service running → `python ml_service/app.py`
 - [ ] Backend running → `npm start` in `backend/`
 - [ ] Frontend running → `npm start` in `frontend/`
 
-## 🎯 Quick Start Commands
+## Quick Start Commands
 
 ```bash
 # 1. Install Python dependencies
@@ -62,11 +62,11 @@ npm start
 - ✅ All documentation
 - ✅ Backend dependencies installed
 
-## 🎉 Summary
+##  Summary
 
-**Code Implementation: 100% ✅**
+**Code Implementation: 100% **
 
-**Operational Status: Needs setup steps above ⚠️**
+**Operational Status: Needs setup steps above **
 
 Once you complete the setup checklist, the system will be fully operational!
 
