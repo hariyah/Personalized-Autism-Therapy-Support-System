@@ -1,13 +1,13 @@
-# 🎯 COMPLETE SYSTEM SETUP - VERIFICATION & TESTING GUIDE
+#  COMPLETE SYSTEM SETUP - VERIFICATION & TESTING GUIDE
 
-## ✅ CURRENT SYSTEM STATUS
+##  CURRENT SYSTEM STATUS
 
 All three services are **NOW RUNNING** and ready for use:
 
 ```
 ╔════════════════════════════════════════════════════════════╗
 ║           PERSONALIZED AUTISM THERAPY SYSTEM              ║
-║                  ✅ FULLY OPERATIONAL                      ║
+║                   FULLY OPERATIONAL                      ║
 ╠════════════════════════════════════════════════════════════╣
 ║  Service                Port    Status        Process      ║
 ╠════════════════════════════════════════════════════════════╣
@@ -19,7 +19,7 @@ All three services are **NOW RUNNING** and ready for use:
 
 ---
 
-## 🚀 QUICK START - TEST THE SYSTEM
+##  QUICK START - TEST THE SYSTEM
 
 ### Step 1: Open the Application
 1. Open your web browser
@@ -39,7 +39,7 @@ The system will display:
 
 ---
 
-## 📊 SYSTEM COMPONENTS DETAILED
+##  SYSTEM COMPONENTS DETAILED
 
 ### 1. FRONTEND (Port 3000)
 **Technology:** React 18+  
@@ -51,7 +51,7 @@ The system will display:
 - Child-friendly interface
 - Responsive design
 
-**Current Status:** ✅ RUNNING  
+**Current Status:**  RUNNING  
 **Access:** http://localhost:3000
 
 ### 2. BACKEND API (Port 3001)
@@ -62,7 +62,7 @@ The system will display:
 - Accepts multipart/form-data with image file
 - Returns JSON with emotion and confidence
 
-**Current Status:** ✅ RUNNING  
+**Current Status:**  RUNNING  
 **Features Loaded:**
 - 15 Activities
 - 3 Child Profiles
@@ -77,7 +77,7 @@ The system will display:
 - Validation Accuracy: 16.32%
 - Supported Emotions: 6 classes
 
-**Current Status:** ✅ RUNNING  
+**Current Status:**  RUNNING  
 **Endpoints:**
 - `POST /predict` - Predict emotion from uploaded image
 - `POST /predict-base64` - Predict from base64 encoded image
@@ -86,7 +86,7 @@ The system will display:
 
 ---
 
-## 🧠 EMOTION CLASSES
+##  EMOTION CLASSES
 
 The model can predict **6 different emotions**:
 
@@ -101,7 +101,7 @@ The model can predict **6 different emotions**:
 
 ---
 
-## 📈 MODEL INFORMATION
+##  MODEL INFORMATION
 
 ### Current Model (Quick Preview)
 - **Type:** Transfer Learning with MobileNetV2
@@ -128,7 +128,7 @@ ml_service/models/
 
 ---
 
-## 🔗 SYSTEM FLOW DIAGRAM
+##  SYSTEM FLOW DIAGRAM
 
 ```
 User Interface (Frontend - Port 3000)
@@ -176,7 +176,7 @@ User sees: "Joy - Confidence: 67%"
 
 ---
 
-## 🛠️ RUNNING THE SERVICES
+##  RUNNING THE SERVICES
 
 ### Option 1: All Services Already Running
 If you see three terminal windows running (backend, frontend, ML service), the system is already operational. Skip to testing.
@@ -190,8 +190,8 @@ py -3.11 app.py
 ```
 Expected output:
 ```
-✅ Model loaded successfully!
-🚀 Starting Emotion Recognition API Server on port 5000
+ Model loaded successfully!
+ Starting Emotion Recognition API Server on port 5000
 ```
 
 **Terminal 2 - Start Backend:**
