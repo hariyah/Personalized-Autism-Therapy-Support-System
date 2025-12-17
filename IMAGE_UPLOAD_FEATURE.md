@@ -1,10 +1,10 @@
-# 📸 Image Upload Feature - NOW AVAILABLE! ✅
+#  Image Upload Feature - NOW AVAILABLE! 
 
 ## What's New
 
 The **Emotion Recognition via Image** feature has been added to the application! You can now:
 
-### ✨ Features Added
+###  Features Added
 
 1. **Image Upload Interface**
    - Beautiful drag-and-drop upload area
@@ -41,15 +41,15 @@ The **Emotion Recognition via Image** feature has been added to the application!
 
 ### Layout:
 ```
-📊 Dashboard
+ Dashboard
     ↓
-😊 Emotion Status (manual selector)
+ Emotion Status (manual selector)
     ↓
-📸 IMAGE UPLOAD SECTION ← NEW!
+ IMAGE UPLOAD SECTION ← NEW!
     ↓
-👶 Child Profiles
+ Child Profiles
     ↓
-✨ Recommendations
+ Recommendations
 ```
 
 ---
@@ -109,13 +109,13 @@ POST /api/emotion/:childId
 
 ## Prerequisites for Full Functionality
 
-### ✅ Currently Working (Backend & Frontend)
+###  Currently Working (Backend & Frontend)
 - Image upload UI
 - File validation
 - Image preview
 - Error handling
 
-### ⏳ Requires Python ML Service
+###  Requires Python ML Service
 - Actual emotion prediction
 - DenseNet-121 model inference
 - Results display
