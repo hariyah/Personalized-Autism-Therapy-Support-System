@@ -11,7 +11,7 @@ echo    PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM
 echo.
 echo   STATUS: FULLY OPERATIONAL
 echo.
-echo ========================================================
+echo 
 echo.
 echo   Frontend (React UI)
 echo      URL: http://localhost:3000
