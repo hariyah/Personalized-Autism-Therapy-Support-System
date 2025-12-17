@@ -1,6 +1,6 @@
 # How to View Training Output - Quick Guide
 
-## 🎯 Best Way: Run in Your Own Terminal
+## Best Way: Run in Your Own Terminal
 
 Since the automated tool doesn't show real-time output well, **run these commands directly in your Command Prompt or PowerShell**:
 
@@ -18,11 +18,11 @@ python test_and_show_output.py
 ```
 
 This shows:
-- ✅ Python version
-- ✅ TensorFlow installation
-- ✅ GPU/CPU status
-- ✅ Dataset status
-- ✅ Model status
+-  Python version
+-  TensorFlow installation
+-  GPU/CPU status
+-  Dataset status
+-  Model status
 
 ### Step 4: Run Training (See All Output)
 ```bash
@@ -50,7 +50,7 @@ python train_model.py
 - Model saving confirmation
 - Final results
 
-## 📊 Alternative: Check Progress Files
+##  Alternative: Check Progress Files
 
 After training starts, check these files:
 
@@ -65,7 +65,7 @@ dir ml_service\models\*.png
 dir ml_service\models\*.json
 ```
 
-## 🔍 What's Happening Now
+##  What's Happening Now
 
 I've started the training process in the background. To see the output:
 
@@ -78,14 +78,14 @@ Or check if the model file is being created:
 dir ml_service\models\*.h5
 ```
 
-## ⚠️ If You See Dataset Error
+##  If You See Dataset Error
 
 If training shows "Dataset not found":
 1. Set up Kaggle API (see SETUP_GUIDE.md)
 2. Run: `python download_dataset.py`
 3. Then: `python train_model.py`
 
-## 💡 Quick Status Check
+##  Quick Status Check
 
 Run this anytime to see current status:
 ```bash
