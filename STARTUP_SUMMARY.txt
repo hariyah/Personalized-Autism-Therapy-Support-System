@@ -1,29 +1,29 @@
 ═══════════════════════════════════════════════════════════════════════════════
-  PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM - STARTUP COMPLETE ✅
+  PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM - STARTUP COMPLETE 
 ═══════════════════════════════════════════════════════════════════════════════
 
-🎉 AUTOMATIC SETUP COMPLETED SUCCESSFULLY!
+ AUTOMATIC SETUP COMPLETED SUCCESSFULLY!
 
 ────────────────────────────────────────────────────────────────────────────────
-📊 SERVICE STATUS
+ SERVICE STATUS
 ────────────────────────────────────────────────────────────────────────────────
 
-✅ BACKEND API SERVER (Port 3001)
+ BACKEND API SERVER (Port 3001)
    Status: RUNNING
    URL: http://localhost:3001/api/
    Node.js Process: Active
    
-✅ FRONTEND APPLICATION (Port 3000)
+ FRONTEND APPLICATION (Port 3000)
    Status: RUNNING
    URL: http://localhost:3000
    React Dev Server: Active
    
-⏳ ML EMOTION SERVICE (Port 5000)
+ ML EMOTION SERVICE (Port 5000)
    Status: NOT YET STARTED (Python installation pending)
    Setup: See SETUP_COMPLETE.md for instructions
 
 ────────────────────────────────────────────────────────────────────────────────
-🌐 ACCESS YOUR APPLICATION
+ ACCESS YOUR APPLICATION
 ────────────────────────────────────────────────────────────────────────────────
 
 OPEN IN BROWSER:
@@ -32,15 +32,15 @@ OPEN IN BROWSER:
 This is your main Personalized Autism Therapy Support System interface.
 
 ────────────────────────────────────────────────────────────────────────────────
-🚀 WHAT'S WORKING NOW
+ WHAT'S WORKING NOW
 ────────────────────────────────────────────────────────────────────────────────
 
-✅ Child Profile Management
+ Child Profile Management
    - View all registered children
    - Create new child profiles
    - Track child-specific needs (Social, Behavioral, Emotional)
 
-✅ Activity Library
+ Activity Library
    - Browse 50+ therapy activities
    - Filter by category (Social, Behavioral, Emotional)
    - View detailed activity information:
@@ -49,38 +49,38 @@ This is your main Personalized Autism Therapy Support System interface.
      * Difficulty level
      * Benefits and age recommendations
 
-✅ Personalized Recommendations
+ Personalized Recommendations
    - Get AI-powered activity recommendations for each child
    - Recommendations based on child's needs profile
    - Dynamically updated based on emotion state
 
-✅ Emotion Selection
+ Emotion Selection
    - Manually select child's emotion from dropdown
    - Available emotions: Happy, Sad, Anxious, Calm, Excited, Frustrated, Neutral
    - Recommendations update based on emotion
 
-✅ Beautiful UI/UX
+ Beautiful UI/UX
    - Responsive design (works on desktop, tablet, mobile)
    - Modern gradient styling
    - Intuitive navigation
    - Visual indicators for activity categories
 
 ────────────────────────────────────────────────────────────────────────────────
-⏳ WHAT'S COMING NEXT (Requires Python Setup)
+ WHAT'S COMING NEXT (Requires Python Setup)
 ────────────────────────────────────────────────────────────────────────────────
 
-⏳ Image Upload for Emotion Detection
+ Image Upload for Emotion Detection
    - Upload image file
    - DenseNet-121 CNN analyzes facial emotion
    - Returns predicted emotion with confidence
 
-⏳ Automatic Emotion Recognition
+ Automatic Emotion Recognition
    - Real-time emotion detection from camera/images
    - Confidence scores for each emotion
    - Integrated into activity recommendations
 
 ────────────────────────────────────────────────────────────────────────────────
-📋 NEXT STEPS
+ NEXT STEPS
 ────────────────────────────────────────────────────────────────────────────────
 
 IMMEDIATE (5 minutes):
@@ -104,7 +104,7 @@ DETAILED INSTRUCTIONS:
    See: SETUP_COMPLETE.md
 
 ────────────────────────────────────────────────────────────────────────────────
-🛠️ USEFUL COMMANDS
+ USEFUL COMMANDS
 ────────────────────────────────────────────────────────────────────────────────
 
 Check if services are running:
@@ -122,7 +122,7 @@ View logs (from service directories):
    ML Service: cd ml_service && python app.py
 
 ────────────────────────────────────────────────────────────────────────────────
-📚 API ENDPOINTS AVAILABLE
+ API ENDPOINTS AVAILABLE
 ────────────────────────────────────────────────────────────────────────────────
 
 GET  http://localhost:3001/api/children
@@ -149,7 +149,7 @@ POST http://localhost:3001/api/predict-emotion
      (multipart/form-data with image file)
 
 ────────────────────────────────────────────────────────────────────────────────
-❓ TROUBLESHOOTING
+ TROUBLESHOOTING
 ────────────────────────────────────────────────────────────────────────────────
 
 Q: Application not loading at http://localhost:3000?
@@ -171,7 +171,7 @@ A: Open Microsoft Store and install Python 3.11
    ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1
 
 ────────────────────────────────────────────────────────────────────────────────
-📞 SUPPORT & DOCUMENTATION
+ SUPPORT & DOCUMENTATION
 ────────────────────────────────────────────────────────────────────────────────
 
 README.md                 - Project overview and features
