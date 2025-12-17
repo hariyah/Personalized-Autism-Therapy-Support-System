@@ -52,7 +52,7 @@ cd ../frontend
 npm start
 ```
 
-## ✅ What's Already Complete
+## What's Already Complete
 
 - ✅ All backend code
 - ✅ All frontend code  
