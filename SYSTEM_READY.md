@@ -1,11 +1,11 @@
-# 🎉 PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM - FULLY OPERATIONAL
+#  PERSONALIZED AUTISM THERAPY SUPPORT SYSTEM - FULLY OPERATIONAL
 
-## ✅ SYSTEM STATUS: ALL SERVICES RUNNING
+##  SYSTEM STATUS: ALL SERVICES RUNNING
 
-### 🚀 Active Services
+###  Active Services
 
 #### 1. **Frontend (React UI)** - Port 3000
-- Status: ✅ RUNNING
+- Status: RUNNING
 - URL: http://localhost:3000
 - Features:
   - Image upload interface
@@ -14,7 +14,7 @@
   - Responsive design for therapy sessions
 
 #### 2. **Backend API (Node.js/Express)** - Port 3001
-- Status: ✅ RUNNING
+- Status: RUNNING
 - Endpoints:
   - `POST /api/predict-emotion` - Main emotion prediction endpoint
   - Routes image uploads to ML service
@@ -26,7 +26,7 @@
   - Multi-factor recommendation system active
 
 #### 3. **ML Service (Python/Flask)** - Port 5000
-- Status: ✅ RUNNING
+- Status: RUNNING
 - Model: MobileNetV2 (Fast, CPU-optimized)
 - Training: 10 epochs with early stopping
 - Accuracy: 16.32% validation (preview model)
@@ -36,7 +36,7 @@
   - `GET /health` - Service health status
   - `GET /emotions` - Get supported emotions
 
-### 📊 Dataset Status
+### Dataset Status
 
 **Dataset Source:** Kaggle - `fatmamtalaat/autistic-children-emotions-dr-fatma-m-talaat`
 
@@ -50,7 +50,7 @@
 
 **Validation Samples:** 239 images (same distribution)
 
-### 🧠 Model Details
+###  Model Details
 
 - **Architecture:** MobileNetV2 with custom emotion classification head
 - **Image Size:** 224×224 pixels
@@ -62,7 +62,7 @@
 - **Model File:** `ml_service/models/densenet121_emotion_model.keras`
 - **Class Mapping:** `ml_service/models/class_indices.json`
 
-### 📈 Emotion Classes Supported
+###  Emotion Classes Supported
 
 1. **Natural** - Neutral/baseline emotion
 2. **Anger** - Aggressive or frustrated response
@@ -73,7 +73,7 @@
 
 ---
 
-## 🎯 HOW TO USE THE SYSTEM
+## HOW TO USE THE SYSTEM
 
 ### Quick Start
 
@@ -290,7 +290,7 @@ taskkill /PID <PID> /F
 
 ---
 
-## 📞 SYSTEM REQUIREMENTS
+##  SYSTEM REQUIREMENTS
 
 - **CPU:** Minimum 2-core processor (tested on i7)
 - **RAM:** 4GB minimum (8GB recommended)
@@ -301,7 +301,7 @@ taskkill /PID <PID> /F
 
 ---
 
-## 🔐 PRIVACY & SECURITY NOTES
+##  PRIVACY & SECURITY NOTES
 
 - Images uploaded to ML service are **not stored** permanently
 - Predictions are processed in-memory
@@ -311,7 +311,7 @@ taskkill /PID <PID> /F
 
 ---
 
-## 📄 FILES SUMMARY
+##  FILES SUMMARY
 
 ```
 ml_service/
@@ -338,27 +338,27 @@ frontend/
 
 ---
 
-## ✨ SYSTEM STATUS INDICATOR
+##  SYSTEM STATUS INDICATOR
 
 ```
 ┌─────────────────────────────────────────┐
 │  AUTISM THERAPY SUPPORT SYSTEM          │
 ├─────────────────────────────────────────┤
-│  Frontend (3000):        ✅ RUNNING      │
-│  Backend API (3001):     ✅ RUNNING      │
-│  ML Service (5000):      ✅ RUNNING      │
-│  Dataset:               ✅ 1,199 IMAGES │
-│  Model:                 ✅ LOADED       │
-│  Database:              ✅ INITIALIZED  │
+│  Frontend (3000):         RUNNING      │
+│  Backend API (3001):      RUNNING      │
+│  ML Service (5000):       RUNNING      │
+│  Dataset:                1,199 IMAGES │
+│  Model:                  LOADED       │
+│  Database:               INITIALIZED  │
 ├─────────────────────────────────────────┤
-│  Overall Status:        ✅ FULLY READY  │
+│  Overall Status:         FULLY READY  │
 └─────────────────────────────────────────┘
 ```
 
 ---
 
 **Last Updated:** 2025-11-30 18:04 UTC  
-**System Started:** Training Complete ✅  
-**All Services Online:** Yes ✅
+**System Started:** Training Complete   
+**All Services Online:** Yes 
 
 For questions or issues, check the terminal windows where services are running for detailed logs.
