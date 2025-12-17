@@ -4,7 +4,7 @@
 
 A comprehensive web application that uses DenseNet-121 for emotion detection and deep learning for personalized activity recommendations.
 
-## 🎯 System Overview
+##  System Overview
 
 This system consists of three main components:
 
@@ -14,7 +14,7 @@ This system consists of three main components:
    - DenseNet-121 emotion recognition model (6 emotions)
    - Deep learning recommendation model (neural network)
 
-## 📋 Prerequisites
+##  Prerequisites
 
 ### Required Software
 
@@ -35,7 +35,7 @@ This system consists of three main components:
 - **CUDA-enabled GPU** (for faster model training)
 - **Git** (for version control)
 
-## 🚀 Installation Steps
+##  Installation Steps
 
 ### Step 1: Clone/Download the Project
 
@@ -163,7 +163,7 @@ npm start
 
 The frontend will automatically open in your browser at `http://localhost:3000`
 
-## ✅ Verification
+##  Verification
 
 ### Check ML Service Health
 
@@ -195,7 +195,7 @@ Upload an image through the web interface or use curl:
 curl -X POST -F "image=@test_image.jpg" http://localhost:3001/api/predict-emotion
 ```
 
-## 📊 System Architecture
+##  System Architecture
 
 ```
 ┌─────────────┐
@@ -216,7 +216,7 @@ curl -X POST -F "image=@test_image.jpg" http://localhost:3001/api/predict-emotio
        └──► Activity Recommendations
 ```
 
-## 🎯 Features
+##  Features
 
 ### Emotion Detection
 - **6 Emotion Categories**: Natural (0), joy (1), fear (2), anger (3), sadness (4), surprise (5)
@@ -237,7 +237,7 @@ curl -X POST -F "image=@test_image.jpg" http://localhost:3001/api/predict-emotio
   - Architecture: 256 → 128 → 64 → output (sigmoid)
   - Output: Activity recommendation scores
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### ML Service Not Starting
 
@@ -264,7 +264,7 @@ curl -X POST -F "image=@test_image.jpg" http://localhost:3001/api/predict-emotio
 2. **Out of memory**: Reduce batch size in `train_model.py`
 3. **CUDA errors**: Install correct CUDA version or use CPU
 
-## 📝 Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -276,7 +276,7 @@ curl -X POST -F "image=@test_image.jpg" http://localhost:3001/api/predict-emotio
 - `ML_MODEL_PATH`: Path to emotion model (auto-detected if not set)
 - `EMOTION_ALLOW_UNCERTAIN`: Allow uncertain predictions (default: 1)
 
-## 📚 File Structure
+##  File Structure
 
 ```
 Personalized-Autism-Therapy-Support-System/
@@ -301,7 +301,7 @@ Personalized-Autism-Therapy-Support-System/
 └── README.md
 ```
 
-## 🎓 Usage Guide
+##  Usage Guide
 
 ### For Caregivers/Therapists
 
@@ -324,7 +324,7 @@ Personalized-Autism-Therapy-Support-System/
 - **Sadness (4)**: Sad, down expression
 - **Surprise (5)**: Surprised, excited expression
 
-## 🔬 Technical Details
+##  Technical Details
 
 ### Emotion Detection Model
 
@@ -343,7 +343,7 @@ Personalized-Autism-Therapy-Support-System/
 - **Loss**: Binary Cross-Entropy
 - **Training**: Synthetic data generation with rule-based labels
 
-## 📞 Support
+##  Support
 
 For issues or questions:
 1. Check the troubleshooting section
@@ -351,11 +351,11 @@ For issues or questions:
 3. Verify all services are running
 4. Check file paths and permissions
 
-## 📄 License
+##  License
 
 This project is for educational/research purposes.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Dataset: "Autistic Children Emotions" by Dr. Fatma M. Talaat (Kaggle)
 - DenseNet-121: Pre-trained on ImageNet
