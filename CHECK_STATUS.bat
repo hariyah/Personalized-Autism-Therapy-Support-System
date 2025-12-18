@@ -65,7 +65,7 @@ echo   - SETUP_COMPLETE.md ........... Complete setup & ML guide
 echo   - INSTALL_PYTHON_AND_ML.bat .. ML installer script
 echo   - STARTUP_SUMMARY.txt ........ Quick reference guide
 echo.
-echo ════════════════════════════════════════════════════════════════════════
+echo ═══════════════════════════════════════════════════════════════════════
 echo.
 pause
 
