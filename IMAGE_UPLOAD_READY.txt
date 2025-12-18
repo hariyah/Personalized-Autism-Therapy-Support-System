@@ -2,7 +2,7 @@
   IMAGE UPLOAD FEATURE ADDED 
 ════════════════════════════════════════════════════════════════════════════════
 
-📸 EMOTION RECOGNITION VIA IMAGE - NOW AVAILABLE!
+ EMOTION RECOGNITION VIA IMAGE - NOW AVAILABLE!
 
 You now have a complete image upload interface to detect emotions!
 
@@ -13,7 +13,7 @@ You now have a complete image upload interface to detect emotions!
 In your browser at http://localhost:3000, scroll down to find:
 
   ┌──────────────────────────────────────────────────────────────┐
-  │  📸 Emotion Recognition via Image                           │
+  │   Emotion Recognition via Image                           │
   │  Upload an image to automatically detect emotion            │
   └──────────────────────────────────────────────────────────────┘
   │
@@ -50,7 +50,7 @@ SOON (With ML Service Running):
 
 1. Open http://localhost:3000
 2. Select a child from the child profiles section
-3. Scroll up to "📸 Emotion Recognition via Image"
+3. Scroll up to " Emotion Recognition via Image"
 4. Click the upload area or drag-drop an image
 5. See image preview appear instantly
 
