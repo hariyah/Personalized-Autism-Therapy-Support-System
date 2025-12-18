@@ -1,0 +1,35 @@
+# Ignore large model files
+/03_models/issue_classifier/checkpoints/checkpoint-1314/model.safetensors
+/03_models/issue_classifier/checkpoints/checkpoint-1314/optimizer.pt
+/03_models/issue_classifier/checkpoints/checkpoint-438/model.safetensors
+/03_models/issue_classifier/checkpoints/checkpoint-438/optimizer.pt
+
+# Ignore all contents of checkpoint folders except the config files
+/03_models/issue_classifier/checkpoints/checkpoint-1314/*
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/config.json
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/special_tokens_map.json
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/tokenizer_config.json
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/tokenizer.json
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/trainer_state.json
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/training_args.bin
+!/03_models/issue_classifier/checkpoints/checkpoint-1314/vocab.txt
+
+/03_models/issue_classifier/checkpoints/checkpoint-438/*
+!/03_models/issue_classifier/checkpoints/checkpoint-438/config.json
+!/03_models/issue_classifier/checkpoints/checkpoint-438/special_tokens_map.json
+!/03_models/issue_classifier/checkpoints/checkpoint-438/tokenizer_config.json
+!/03_models/issue_classifier/checkpoints/checkpoint-438/tokenizer.json
+!/03_models/issue_classifier/checkpoints/checkpoint-438/trainer_state.json
+!/03_models/issue_classifier/checkpoints/checkpoint-438/training_args.bin
+!/03_models/issue_classifier/checkpoints/checkpoint-438/vocab.txt
+
+# Ignore other potentially large or generated files
+*.pt
+*.pth
+*.safetensors
+*.bin
+*checkpoint*
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.DS_Store
