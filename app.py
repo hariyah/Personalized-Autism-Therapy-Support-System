@@ -6,11 +6,21 @@ import numpy as np
 import pytesseract
 from PIL import Image
 import os
+import shap
+import matplotlib.pyplot as plt
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Configure Gemini
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # 1. POINT TO TESSERACT INSTALLATION
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# 2. PATHS TO YOUR BACKEND
+# 2. PATHS TO  BACKEND
 MODEL_PATH = r'C:\Users\rorojith\Desktop\Autism\models\dsm5_severity_random_forest_model.pkl'
 META_PATH = r'C:\Users\rorojith\Desktop\Autism\models\model_metadata.pkl'
 
@@ -131,3 +141,105 @@ if st.button("Generate DSM-5 Severity Level"):
     
     st.success(f"### Predicted Result: {result}")
     st.balloons()
+
+    # --- EXPLAINABLE AI (XAI) ---
+    st.markdown("---")
+    st.subheader("Why this prediction?")
+    st.write("The chart below shows how each symptom contributed to the result.")
+
+    # Calculate SHAP values
+    # TreeExplainer is efficient for Random Forests
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(input_df)
+
+    # SHAP returns a list of arrays for classification (one per class) OR a single array.
+    if isinstance(shap_values, list):
+        # Case A: List of arrays (one per class), each (n_samples, n_features)
+        shap_val = shap_values[prediction][0]
+        expected_val = explainer.expected_value[prediction]
+    
+    elif isinstance(shap_values, np.ndarray):
+        if len(shap_values.shape) == 3:
+             # Case B: Array of shape (n_samples, n_features, n_classes)
+             # shap_val should be (n_features,)
+             shap_val = shap_values[0, :, prediction]
+             expected_val = explainer.expected_value[prediction]
+        elif len(shap_values.shape) == 2:
+             # Case C: Single output (binary/regression), shape (n_samples, n_features)
+             shap_val = shap_values[0]
+             expected_val = explainer.expected_value[0] if isinstance(explainer.expected_value, (list, np.ndarray)) else explainer.expected_value
+        else:
+             st.error(f"Unexpected SHAP values shape: {shap_values.shape}")
+             st.stop()
+    else:
+        st.error(f"Unexpected SHAP values type: {type(shap_values)}")
+        st.stop()
+
+    # Create figure for the plot
+    fig, ax = plt.subplots()
+    
+    # Force plot or waterfall plot are good for local explanation
+    # Waterfall is often clearer for single instances
+    shap.plots.waterfall(shap.Explanation(values=shap_val, 
+                                         base_values=expected_val, 
+                                         data=input_df.iloc[0], 
+                                         feature_names=input_df.columns), 
+                         show=False)
+    
+    st.pyplot(fig)
+    
+    # Simple textual explanation of top contributor
+    # Find feature with max absolute impact
+    max_idx = np.argmax(np.abs(shap_val))
+    top_feature = input_df.columns[max_idx]
+    impact = "increased" if shap_val[max_idx] > 0 else "decreased"
+    
+    st.info(f"**Key Driver:** The feature **'{top_feature}'** had the strongest influence and **{impact}** the severity score.")
+
+    # --- GEMINI AI PROFILE ---
+    st.markdown("---")
+    st.subheader("AI Clinical Profile")
+
+    if not os.getenv("GEMINI_API_KEY"):
+        st.warning("⚠️ Gemini API Key not found. Please set `GEMINI_API_KEY` in your `.env` file to generate the clinical profile.")
+    else:
+        with st.spinner("Generating human-readable profile..."):
+            try:
+                # Prepare data for the LLM
+                top_features_indices = np.argsort(np.abs(shap_val))[-5:][::-1] # Top 5 features
+                top_features_desc = []
+                for idx in top_features_indices:
+                    feat_name = input_df.columns[idx]
+                    feat_impact = shap_val[idx]
+                    direction = "contributes to higher severity" if feat_impact > 0 else "contributes to lower severity"
+                    top_features_desc.append(f"- {questions.get(feat_name, feat_name)} ({direction})")
+                
+                features_text = "\n".join(top_features_desc)
+                
+                prompt = f"""
+                You are a helpful clinical assistant for autism diagnosis support.
+                
+                Patient Demographics:
+                - Age: {age} years
+                - Sex: {"Male" if sex == 1 else "Female"}
+                
+                Clinical Assessment Result:
+                - Predicted DSM-5 Severity Level: {result}
+                
+                Key Clinical Observations (from automated analysis):
+                {features_text}
+                
+                Task:
+                Write a coherent, human-readable profile for this patient. 
+                Explain the severity level and the reasons for detection based on the observations. 
+                Use a professional but accessible tone. Avoid medical jargon where simple terms suffice.
+                Do not give a medical diagnosis, but rather a "support profile" based on the screener.
+                """
+                
+                model_gemini = genai.GenerativeModel('gemini-2.5-flash')
+                response = model_gemini.generate_content(prompt)
+                
+                st.markdown(response.text)
+                
+            except Exception as e:
+                st.error(f"Error generating profile: {e}")
