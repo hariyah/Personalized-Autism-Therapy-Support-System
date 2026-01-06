@@ -3,7 +3,7 @@ setlocal ENABLEDELAYEDEXPANSION
 REM Automated pipeline: venv setup -> install -> diagnostics -> conservative train -> eval -> start services
 
 REM Move to repo root based on this script location
-pushd "%~dp0.."
+pushd "%~dp0..\.."
 
 REM 1) Create/activate venv and install dependencies
 REM Use a short venv path to avoid Windows MAX_PATH issues with TensorFlow
@@ -46,12 +46,12 @@ if not defined ML_MODEL_PATH (
 )
 
 REM 6) Start services (ML service, backend, frontend)
-if exist START_ALL_SERVICES.bat (
+if exist "additional files\START_ALL_SERVICES.bat" (
   echo Starting all services via START_ALL_SERVICES.bat...
-  call START_ALL_SERVICES.bat
+  call "additional files\START_ALL_SERVICES.bat"
 ) else (
   echo Starting ML service...
-  start "ml_service" cmd /c "ml_service\start_ml_service.bat"
+  start "ml_service" cmd /c "additional files\ml_service\start_ml_service.bat"
   echo Starting backend...
   start "backend" cmd /c "backend\index.js"
   echo Starting frontend...

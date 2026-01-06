@@ -86,9 +86,10 @@ def main():
             print(f'[OK] Timestamped Keras copy saved: {ts_keras}')
             ts_path = ts_keras  # prefer keras format
 
-    # Update BEST_MODEL_PATH.txt
+    # Update BEST_MODEL_PATH.txt in additional files/ml_service
     abs_best = os.path.abspath(ts_path)
-    with open('BEST_MODEL_PATH.txt','w') as f:
+    best_path_txt = os.path.join(os.path.dirname(__file__), '..', 'additional files', 'ml_service', 'BEST_MODEL_PATH.txt')
+    with open(best_path_txt, 'w') as f:
         f.write(abs_best)
     print(f'[OK] BEST_MODEL_PATH.txt updated -> {abs_best}')
 

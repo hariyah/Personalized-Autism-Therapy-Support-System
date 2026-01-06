@@ -31,7 +31,9 @@ def load_model_if_available():
         return False
     # Try BEST_MODEL_PATH.txt, else env ML_MODEL_PATH
     base_dir = os.path.dirname(__file__)
-    best_path_txt = os.path.join(base_dir, 'BEST_MODEL_PATH.txt')
+    # Look in additional files/ml_service for BEST_MODEL_PATH.txt
+    repo_root = os.path.dirname(base_dir)
+    best_path_txt = os.path.join(repo_root, 'additional files', 'ml_service', 'BEST_MODEL_PATH.txt')
     model_path = None
     if os.path.exists(best_path_txt):
         with open(best_path_txt, 'r') as f:

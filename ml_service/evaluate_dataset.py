@@ -32,7 +32,7 @@ def resolve_model_path(arg):
     env_path = os.environ.get('ML_MODEL_PATH')
     if env_path and os.path.exists(env_path):
         return env_path
-    best_txt = 'BEST_MODEL_PATH.txt'
+    best_txt = os.path.join(os.path.dirname(__file__), '..', 'additional files', 'ml_service', 'BEST_MODEL_PATH.txt')
     if os.path.exists(best_txt):
         with open(best_txt,'r') as f:
             p = f.read().strip()

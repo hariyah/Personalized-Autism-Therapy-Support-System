@@ -65,7 +65,7 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
 *   Python (3.8 or higher)
 *   pip (Python package manager)
 
-**For detailed setup instructions, see [PROJECT_SETUP.md](PROJECT_SETUP.md) or [QUICK_START.md](QUICK_START.md)**
+**For detailed setup instructions, see [PROJECT_SETUP.md](additional files/PROJECT_SETUP.md) or [QUICK_START.md](additional files/QUICK_START.md)**
 
 ### Installation
 
@@ -93,7 +93,7 @@ A beautiful, modern web-based platform that helps caregivers and therapists deli
     pip install -r requirements.txt
     ```
 
-5.  Download dataset and train models (see [PROJECT_SETUP.md](PROJECT_SETUP.md))
+5.  Download dataset and train models (see [PROJECT_SETUP.md](additional files/PROJECT_SETUP.md))
 
 ## 🎮 Running the Application
 
@@ -232,7 +232,7 @@ The system uses a **neural network** (deep learning model) that considers:
    python app.py
    ```
 
-For detailed setup instructions, see [ml_service/SETUP_GUIDE.md](ml_service/SETUP_GUIDE.md)
+For detailed setup instructions, see [SETUP_GUIDE.md](additional files/ml_service/SETUP_GUIDE.md)
 
 ## 🎯 Future Enhancements
 

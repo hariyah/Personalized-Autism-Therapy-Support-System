@@ -23,8 +23,8 @@ if defined ML_MODEL_PATH (
         echo   ML_MODEL_PATH is set but file not found: %ML_MODEL_PATH%
     )
 ) else (
-    if exist "ml_service\BEST_MODEL_PATH.txt" (
-        for /f "usebackq delims=" %%B in ("ml_service\BEST_MODEL_PATH.txt") do set "ML_MODEL_PATH=%%B"
+    if exist "additional files\ml_service\BEST_MODEL_PATH.txt" (
+        for /f "usebackq delims=" %%B in ("additional files\ml_service\BEST_MODEL_PATH.txt") do set "ML_MODEL_PATH=%%B"
         if defined ML_MODEL_PATH if "!ML_MODEL_PATH:~0,3!"=="ï»¿" set "ML_MODEL_PATH=!ML_MODEL_PATH:~3!"
         rem Remove any embedded double quotes
         if defined ML_MODEL_PATH set "ML_MODEL_PATH=!ML_MODEL_PATH:\"=!"
@@ -51,7 +51,7 @@ if !MODEL_FOUND! neq 1 echo   Model not found - skipping ML Service
 echo.
 if !MODEL_FOUND! equ 1 (
     echo [STEP 2] Starting ML Service on Port 5000...
-    start "ML Service - Port 5000" "%CD%\ml_service\start_service_with_env.bat" "!ML_MODEL_PATH!"
+    start "ML Service - Port 5000" "%CD%\additional files\ml_service\start_service_with_env.bat" "!ML_MODEL_PATH!"
     echo   Waiting for ML Service health (up to 15s)...
     set "_ML_HEALTH=0"
     for /l %%I in (1,1,15) do (

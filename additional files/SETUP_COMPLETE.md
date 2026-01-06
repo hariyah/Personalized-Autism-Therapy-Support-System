@@ -220,7 +220,7 @@ python app.py
 
 - **Frontend Docs:** `frontend/README.md`
 - **Backend Docs:** `backend/package.json`
-- **ML Service Setup:** `ml_service/SETUP_GUIDE.md`
+- **ML Service Setup:** `ml_service/SETUP_GUIDE.md` (moved to `additional files/ml_service/SETUP_GUIDE.md`)
 - **ML Service README:** `ml_service/README.md`
 - **Dataset:** https://www.kaggle.com/datasets/fatmamtalaat/autistic-children-emotions-dr-fatma-m-talaat
 
