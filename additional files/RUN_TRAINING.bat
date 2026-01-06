@@ -26,6 +26,9 @@ echo ========================================
 echo.
 
 cd /d "%~dp0"
+REM Navigate to ml_service directory (one level up, then into ml_service)
+cd ..\..
+cd ml_service
 python train_model.py
 
 echo.
