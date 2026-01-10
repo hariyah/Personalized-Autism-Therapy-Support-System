@@ -1,135 +1,99 @@
-# Personalized Autism Therapy Support System
 
-A beautiful, modern web-based platform that helps caregivers and therapists deliver personalized autism care through intelligent activity recommendations. The system recommends activities to improve social, behavioral, and emotional aspects of children with autism.
+# AI-Driven Personalized Behavioral, Emotional & Social Therapy Autism Appropriate Activity Recommendation System 
+<img width="400" height="500" alt="image" src="https://github.com/user-attachments/assets/e0adf18a-a1b5-4f83-b7d5-c54f4ba787d1"  /> <img width="300" height="900" alt="image" src="https://github.com/user-attachments/assets/850018e9-e915-4d0d-a3f4-f78a91617773" /> <img width="300" height="300" alt="image" src="https://github.com/user-attachments/assets/8555da41-850d-4eb5-9777-49f047972557"/> 
 
-## 🌟 Features
 
-- **Personalized Activity Recommendations**: AI-powered recommendations based on each child's unique profile and needs
-- **Child Profile Management**: Create and manage profiles for multiple children with specific needs tracking
+
+
+## 1. PROJECT OVERVIEW
+
+This project proposes an **Emotion-Aware Personalized Therapy Activity Recommendation System** to assist caregivers and therapists in delivering adaptive therapy for children across the autism spectrum. Facial images are captured through a camera-based input or image upload, enabling flexible real-time or offline emotion analysis and applies a **DenseNet-121 Convolutional Neural Network** to perform **real-time** emotion detection. The detected emotions are classified into predefined categories and combined with child profile and interest data using a **deep learning–based recommendation model** to generate suitable **behavioral**, **emotional**, and **social** therapy activities.
+
+The model classifies the child’s emotional state into six predefined emotions: **Neutral**, **Joy**, **Fear**, **Anger**, **Sadness** and **Surprise**. These detected emotions are combined with the child’s personal interests and profile information using a deep learning–based recommendation model to generate suitable behavioral, emotional, and social therapy activities.
+
+To improve transparency and usability, the system integrates an explainable AI module using a lightweight **Large Language Model** (Phi-2 via Ollama), which provides step-by-step activity instructions, adaptation tips, and safety warnings. Implemented as a scalable web-based application, the solution offers an objective, interest-driven, and cost-effective approach to enhancing therapy engagement and personalization.
+
+
+## 3. ARCHITECHTURAL DIAGRAM
+
+<img width="1018" height="568" alt="image" src="https://github.com/user-attachments/assets/fbfb5548-73ab-46c6-98b7-300e9708ff14" />
+
+
+
+## 2. FEATURES &  MAJOR UPDATES AND BREAKTHROUGHS OF THE PROJECT
+
+- **Real Time Emotion Detection :** Use Densenet-121 model to detect emotion through image upload and camera integration to capture image and detect emotion.
+- **Personalized Activity Recommendations**: AI-powered recommendations based on each child's unique profile and needs.
+- **Child Profile Management**: Create and manage profiles for multiple children with specific needs tracking.
 - **Activity Library**: Comprehensive collection of activities categorized by:
-  - **Social**: Activities to improve social interactions, communication, and peer relationships
-  - **Behavioral**: Activities to support behavior management, routines, and self-regulation
-  - **Emotional**: Activities to enhance emotional awareness, expression, and regulation
-- **Beautiful, Modern UI**: Responsive design with intuitive interface for caregivers and therapists
-- **Detailed Activity Information**: Each activity includes materials, duration, difficulty, benefits, and age recommendations
+  - **Social**: Activities to improve social interactions, communication, and peer relationships.
+  - **Behavioral**: Activities to support behavior management, routines, and self-regulation.
+  - **Emotional**: Activities to enhance emotional awareness, expression, and regulation.
+- **Beautiful, Modern UI**: Responsive design with intuitive interface for caregivers and therapists.
+- **Detailed Activity Information**: Each activity includes materials, duration, difficulty, benefits, and age recommendations.
 
-## 🎯 Project Structure
 
-```
-.
-├── backend
-│   ├── index.js          # Express API server with recommendation engine
-│   ├── emotionService.js # ML service integration
-│   ├── package.json
-│   └── package-lock.json
-├── frontend
-│   ├── src
-│   │   ├── App.js        # Main React application component
-│   │   ├── App.css       # Beautiful styling and responsive design
-│   │   ├── index.js
-│   │   └── index.css
-│   ├── public
-│   └── package.json
-├── ml_service
-│   ├── train_model.py              # DenseNet-121 emotion training script
-│   ├── train_recommendation_model.py  # Deep learning recommendation model training
-│   ├── predict_emotion.py          # Emotion prediction script
-│   ├── predict_recommendations.py   # Recommendation prediction script
-│   ├── app.py                      # Flask API server for ML service
-│   ├── download_dataset.py         # Dataset downloader
-│   ├── requirements.txt            # Python dependencies
-│   ├── models/                     # Trained models (after training)
-│   └── dataset/                    # Dataset (after download)
-└── README.md
-```
+## 4. SYSTEM ARCHITECTURE AND WORKFLOW
 
-## 🛠️ Technologies Used
+1) Real-Time Emotion Prediction Using DenseNet-121
+2) Child Interest and Contextual Data Collection
+3) Personalized Activity Recommendation Engine
+4) Explainable Guidance and Decision Support
+5) Web-Based Integration and User Interface
 
-*   **Frontend:** React 19, Axios, Modern CSS with gradients and animations
-*   **Backend:** Node.js, Express.js, CORS, Multer (file uploads)
-*   **ML Service:** Python, TensorFlow, Keras, DenseNet-121, Flask
-*   **Emotion Detection:** DenseNet-121 CNN (6 emotion classes)
-*   **Recommendation Engine:** Deep Neural Network (256→128→64) based on:
-    - Real-time emotion (from DenseNet-121)
-    - Personal interests (19 categories)
-    - Financial/economic status (4 levels)
-    - Social status (4 levels)
-    - Autism profile (severity, type)
 
-## 🚀 Getting Started
+## 5. PROJECT DEPENDENCIES
 
-### Prerequisites
+### 1) Root Package (Project-level)
+-  {
+      "dotenv": "^17.2.3"
+   }
+  
 
-*   Node.js (v14 or higher)
-*   npm (v6 or higher)
-*   Python (3.8 or higher)
-*   pip (Python package manager)
+### 2) Frontend (React JS - Port 3000)
+-  Framework: React 19.2.0
 
-**For detailed setup instructions, see [PROJECT_SETUP.md](PROJECT_SETUP.md) or [QUICK_START.md](QUICK_START.md)**
+### 3) Core Dependencies:
+-  react: 19.2.0
+-  react-dom: 19.2.0
+-  react-scripts: 5.0.1
+-  axios: 1.6.0 (HTTP client for API calls)
+-  react-icons: 5.5.0 (Icon library)
 
-### Installation
+### 4) Testing Libraries:
+- @testing-library/react: 16.3.0
+- @testing-library/jest-dom: 6.9.1
+- @testing-library/dom: 10.4.1
+- @testing-library/user-event: 13.5.0
+- web-vitals: 2.1.4
 
-1.  Clone the repository
-    ```sh
-    git clone https://github.com/your_username_/Personalized-Autism-Therapy-Support-System.git
-    cd Personalized-Autism-Therapy-Support-System
-    ```
+### 5) Backend (MONGO DB, Express API - Port 3001)
+- Framework: Express 5.1.0
 
-2.  Install backend dependencies
-    ```sh
-    cd backend
-    npm install
-    ```
+### 6) Other Dependencies:
+- express: 5.1.0 (Web server framework)
+- cors: 2.8.5 (Cross-origin resource sharing)
+- multer: 1.4.5-lts.1 (File upload middleware)
+- axios: 1.6.0 (HTTP client for ML service)
+- form-data: 4.0.0 (Multipart form handling)
 
-3.  Install frontend dependencies
-    ```sh
-    cd ../frontend
-    npm install
-    ```
+### 7) Web Framework:
+- Fast API
+- werkzeug
 
-4.  Install Python ML dependencies
-    ```sh
-    cd ../ml_service
-    pip install -r requirements.txt
-    ```
+### 8) Machine Learning & Deep Learning:
+- Tensorflow (DenseNet-121 model)
+- Keras
+- Numpy
+- Scikit-learn
+- Scipy
 
-5.  Download dataset and train models (see [PROJECT_SETUP.md](PROJECT_SETUP.md))
+### 9) Image Processing:
+- Opencv-python (Face detection, Haar cascade)
+- Pillow (Image manipulation)
 
-## 🎮 Running the Application
 
-### Start the Backend Server
-
-Open a terminal and run:
-```sh
-cd backend
-npm start
-```
-
-The backend server will start on `http://localhost:3001`
-
-### Start the ML Service
-
-Open a terminal and run:
-```sh
-cd ml_service
-python app.py
-```
-
-The ML service will start on `http://localhost:5000`
-
-### Start the Frontend Application
-
-Open a new terminal and run:
-```sh
-cd frontend
-npm start
-```
-
-The frontend will automatically open in your browser at `http://localhost:3000`
-
-**Note:** All three services (ML Service, Backend, Frontend) must be running simultaneously.
-
-## 📖 How to Use
+### 6. HOW TO USE MY COMPONENT
 
 1. **Select a Child Profile**: Choose from available child profiles to view personalized recommendations
 2. **View Recommendations**: See top 6 recommended activities based on the child's specific needs
@@ -141,16 +105,16 @@ The frontend will automatically open in your browser at `http://localhost:3000`
    - Age range
    - Specific benefits
 
-## 🎨 Features Overview
+## 7. CORE FEATURES OVERVIEW
 
-### Emotion Recognition (DenseNet-121)
+### (1) Emotion Recognition (DenseNet-121)
 - **Real-time emotion detection** from uploaded images
 - **6 emotion classes:** Natural (0), joy (1), fear (2), anger (3), sadness (4), surprise (5)
 - **High accuracy** model trained on autistic children emotions dataset
 - **DenseNet-121 architecture** with transfer learning and fine-tuning
 - **API integration** for seamless emotion updates
 
-### Deep Learning Recommendation System
+### (2) Deep Learning Recommendation System
 The system uses a **neural network** (deep learning model) that considers:
 - **Real-time emotion** (from DenseNet-121) - 6 features (one-hot encoded)
 - **Personal interests** - 19 binary features (train, cartoon, music, dance, art, etc.)
@@ -161,80 +125,27 @@ The system uses a **neural network** (deep learning model) that considers:
 - **Training**: Synthetic data generation with rule-based labels
 - **Output**: Activity recommendation scores for personalized suggestions
 
-### Activity Categories
+### (3) Activity Categories
 
-**Social Activities** (Blue theme)
+**Social Activities** 
 - Social story reading
 - Role-playing games
 - Group circle time
 - Peer buddy systems
 
-**Behavioral Activities** (Orange theme)
+**Behavioral Activities** 
 - Visual schedule routines
 - Calm down corners
 - Token reward systems
 - Sensory break activities
 
-**Emotional Activities** (Green theme)
+**Emotional Activities** 
 - Emotion identification
 - Feelings journals
 - Mindfulness breathing
 - Empathy building stories
 
-## 🔧 API Endpoints
-
-### Child & Activity Endpoints
-- `GET /api/children` - Get all child profiles
-- `GET /api/children/:id` - Get specific child profile
-- `PUT /api/children/:id` - Update child profile
-- `GET /api/activities` - Get all activities (optional `?category=social` filter)
-- `GET /api/activities/:id` - Get specific activity details
-- `GET /api/recommendations/:childId` - Get personalized recommendations for a child
-- `GET /api/categories` - Get all activity categories
-
-### Emotion Endpoints
-- `POST /api/emotion/:childId` - Update emotion manually
-- `POST /api/emotion/:childId/recognize` - Recognize emotion from uploaded image
-- `POST /api/predict-emotion` - Predict emotion from image (returns 6 emotion probabilities)
-- `GET /api/emotion/:childId/history` - Get emotion history
-- `GET /api/ml-service/health` - Check ML service health
-
-### Recommendation Endpoints
-- `GET /api/recommendations/:childId` - Get rule-based recommendations
-- `POST /api/recommendations/:childId` - Get ML-based recommendations (deep learning model)
-
-## 🤖 ML Service Setup
-
-### Quick Start
-
-1. **Navigate to ML service:**
-   ```bash
-   cd ml_service
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Download dataset:**
-   ```bash
-   python download_dataset.py
-   ```
-
-4. **Train the model:**
-   ```bash
-   python train_model.py
-   ```
-
-5. **Start ML service:**
-   ```bash
-   python app.py
-   ```
-
-For detailed setup instructions, see [ml_service/SETUP_GUIDE.md](ml_service/SETUP_GUIDE.md)
-
-## 🎯 Future Enhancements
+## 8. FUTURE ENHANCEMENTS
 
 - User authentication for caregivers and therapists
 - Progress tracking and activity completion logging
@@ -245,14 +156,6 @@ For detailed setup instructions, see [ml_service/SETUP_GUIDE.md](ml_service/SETU
 - Real-time webcam emotion detection
 - Emotion trend analysis and visualization
 
-## 📝 License
-
-ISC
-
-## 💝 Contributing
-
-This is a research project for 4th year studies. Contributions and feedback are welcome!
-
-## 🙏 Acknowledgments
+## 9. ACKNOWLEDGEMENT
 
 Built with care for caregivers and therapists supporting children with autism spectrum disorder.
