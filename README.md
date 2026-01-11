@@ -1,103 +1,116 @@
-Personalized-Autism-Therapy-Support-System
-A web-based AI-powered platform that helps parents, guardians, and therapists deliver personalized autism care through intelligent analytics, behavior tracking, and real-time therapy recommendations.
- AI-Assisted Caregiver–Therapist Collaboration System for Autism Support (ACT-CS)
-Final Year Research Project – PP1 (Checklist Submission)
- Project Overview
-This project presents an AI-Assisted Caregiver–Therapist Collaboration System for Autism Support, designed to improve communication and response efficiency between caregivers and therapists using voice-based AI processing.
-Caregivers often describe a child’s behavior verbally, which can be time-consuming and difficult for therapists to analyze at scale. This system enables caregivers to submit voice notes, which are automatically processed using speech and natural language processing models to generate structured insights for therapists.
+1.	AI-Assisted Caregiver–Therapist Collaboration System for Autism Support (ACT-CS)
+A Web-Based Voice-Driven AI System for Intelligent Autism Therapy Support
+Final Year Research Project – PP1
+________________________________________
 
-The system performs:
-  Voice → Text transcription
-  Issue identification
-  Urgency assessment
-  Therapist-friendly summarization
-The final output supports decision-making, not diagnosis, and aims to reduce therapist workload while improving response prioritization.
+2.	1. PROJECT OVERVIEW
+The AI-Assisted Caregiver–Therapist Collaboration System (ACT-CS) is a web-based AI-powered platform designed to enhance communication efficiency, response prioritization, and workload reduction in autism therapy support.
+Caregivers often describe a child’s behavioral concerns verbally, which results in unstructured, subjective, and time-consuming information for therapists to process. ACT-CS addresses this challenge by allowing caregivers to submit voice recordings, which are automatically processed using speech recognition and transformer-based natural language processing (NLP) models.
+The system converts caregiver speech into structured, therapist-friendly insights, including:
+•	Identified behavioral issues
+•	Assessed urgency level
+•	Concise summaries for quick review
+________________________________________
 
-  Main Objectives
- Build a voice-based AI pipeline for autism caregiver reporting
- Train and compare multiple Transformer-based NLP models
- Select the best-performing models based on evaluation
- Develop a web application (frontend + backend) for real-world interaction
- Demonstrate software engineering best practices and reproducibility
+3.	2. SYSTEM ARCHITECTURAL DIAGRAM
+ <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/6168fa1b-18c8-450e-8230-622c148e9fa5" />
+ 
+________________________________
 
-  System Architecture
-  High-Level Workflow
-Caregiver Voice Input
-        │
-        ▼
-Speech-to-Text (Whisper)
-        │
-        ▼
-Issue Classification (RoBERTa)
-        │
-        ▼
-Urgency Classification (DistilBERT)
-        │
-        ▼
-Text Summarization (T5)
-        │
-        ▼
-Therapist Dashboard (Web Application)
+4.	3. FEATURES & MAJOR BREAKTHROUGHS
+•	Voice-Based Caregiver Reporting
+Caregivers submit real-world behavioral observations using voice input instead of lengthy forms.
+•	Automatic Speech-to-Text Transcription
+Uses Whisper-small for accurate transcription of caregiver speech.
+•	Issue Classification Using Transformer Models
+Classifies reported concerns using RoBERTa-base, achieving near-perfect accuracy.
+•	Urgency Assessment Engine
+Predicts priority levels using DistilBERT, enabling therapist response prioritization.
+•	Therapist-Friendly Summarization
+Generates concise summaries using T5-small to reduce cognitive load.
+•	Modern Web Dashboard
+Clean, responsive interface for therapists to review submissions efficiently.
+•	Microservice-Based AI Architecture
+Scalable FastAPI-based AI service separated from the main backend.
+________________________________________
+5.	4. SYSTEM WORKFLOW
+6.	Caregiver records and uploads a voice note
+7.	Speech-to-Text transcription using Whisper
+8.	Behavioral issue classification using RoBERTa
+9.	Urgency level prediction using DistilBERT
+10.	Therapist-friendly summarization using T5
+11.	Results displayed on therapist dashboard
+________________________________________
 
-  Models Used
+12.	5. AI PIPELINE OVERVIEW
+flowchart TD
+ <img width="940" height="298" alt="image" src="https://github.com/user-attachments/assets/05decd55-2088-48d3-bca9-81803ab1270b" />
+A[Caregiver Voice Input] --> B[Whisper ASR]
+B --> C[Text Transcript]
+C --> D[Issue Classification - RoBERTa]
+D --> E[Urgency Classification - DistilBERT]
+E --> F[Text Summarization - T5]
+F --> G[Therapist Dashboard]
+________________________________________
 
-  Speech-to-Text (ASR)
+13.	6. MODELS USED & PERFORMANCE
+14.	(1) Speech-to-Text
+•	Model: Whisper-small
+•	Framework: HuggingFace Transformers
+•	Output: Clean caregiver transcript
+________________________________________
 
- Model: Whisper-small
- Framework: HuggingFace Transformers
- Input: Caregiver voice recordings
- Output: Clean text transcript
+15.	(2) Issue Classification
+Model	Accuracy	Weighted F1
+DistilBERT	~92%	~91%
+RoBERTa (Selected)	≈100%	≈100%
+DeBERTa	~99%	~99%
 
-  Issue Classification
- Models Trained:
-   DistilBERT (baseline)
-   RoBERTa (final)
-   DeBERTa (comparison)
+Selected Model: RoBERTa-base
+Reason: Best accuracy-efficiency trade-off for deployment
+📁 models/issue_classifier_roberta/
+________________________________________
 
- Final Selected Model: RoBERTa-base
- Performance: Test Accuracy ≈ 100%, Weighted F1 ≈ 100%
- Reason for Selection:
-   Best performance–efficiency trade-off
-   Faster inference than DeBERTa
-   Suitable for deployment
+16.	(3) Urgency Classification
+•	Model: DistilBERT
+•	Accuracy: 85–95%
+•	Reason: Lightweight and reliable for priority prediction
+📁 models/urgency_classifier/
+________________________________________
 
-Saved Model Folder:
+17.	(4) Text Summarization
+•	Model: T5-small
+•	Evaluation: Qualitative (clarity & relevance)
+📁 models/summarization_t5/
+________________________________________
 
+18.	7. WEB APPLICATION OVERVIEW
+19.	Frontend
+•	Framework: React
+•	Styling: Tailwind CSS
+•	Features:
+o	Voice upload
+o	AI result visualization
+o	Therapist dashboard
+________________________________________
+20.	Backend
+•	Framework: Node.js + Express
+•	Database: MongoDB
+•	Responsibilities:
+o	Submission management
+o	AI service communication
+o	Dashboard data delivery
+________________________________________
 
-models/issue_classifier_roberta/
+21.	AI Microservice
+•	Framework: FastAPI (Python)
+•	Responsibilities:
+o	Load trained models
+o	Execute inference pipeline
+o	Return structured AI outputs
+________________________________________
 
-  Urgency Classification
- Models Trained:
-   DistilBERT (final)
-   RoBERTa (comparison)
-
- Final Selected Model: DistilBERT
- Performance: Test Accuracy ≈ 85–95%
- Reason for Selection:
-   Simpler classification task
-   Strong baseline performance
-   Lightweight and efficient
-
-Saved Model Folder:
-models/urgency_classifier/
-
-  Text Summarization
- Model: T5-small
- Purpose: Generate concise therapist-friendly summaries
- Evaluation: Qualitative (clarity and relevance)
-
-Saved Model Folder:
-
-
-models/summarization_t5/
-  Final Selected Models (Used in System)
-Task                   	Model            
-Speech-to-Text         	Whisper-small    
-Issue Classification   	RoBERTa-base
-Urgency Classification	DistilBERT
-Summarization   	T5-small     
-
-  Project Folder Structure
+22.	8. PROJECT STRUCTURE
 ACT-CS/
 │
 ├── models/
@@ -110,95 +123,52 @@ ACT-CS/
 │   ├── 02_train_issue_classifier_bert.ipynb
 │   ├── 03_train_urgency_classifier_bert.ipynb
 │   ├── 04_train_summarization_t5.ipynb
+│   ├── 05_full_pipeline_inference_with_voice.ipynb
 │   ├── 06_train_text_classifier_compare.ipynb
-│   ├── 07_train_issue_classifier_deberta.ipynb
-│   └── 05_full_pipeline_inference_with_voice.ipynb
+│   └── 07_train_issue_classifier_deberta.ipynb
 │
-├── client/         React + Tailwind frontend
-├── server/         Node.js + Express backend
-├── ai-service/     Python FastAPI AI microservice
+├── client/        # React frontend
+├── server/        # Node.js backend
+├── ai-service/    # FastAPI AI service
 ├── README.md
 └── requirements.txt
+________________________________________
 
-  Notebook Responsibilities
-Notebook                                                         	Purpose   
-01_data_preparation.ipynb                   	  Dataset cleaning & train/val/test splits
-02_train_issue_classifier_bert.ipynb        	  Baseline issue model                     
-03_train_urgency_classifier_bert.ipynb      	  Final urgency model                  
-04_train_summarization_t5.ipynb             	  Summarization model training             
-05_full_pipeline_inference_with_voice.ipynb	   Final end-to-end voice pipeline 
-06_train_text_classifier_compare.ipynb      	  Final issue model (RoBERTa)          
-07_train_issue_classifier_deberta.ipynb     	  Issue model comparison                   
+23.	9. ETHICS, SAFETY & LIMITATIONS
+•	 Not a diagnostic or clinical decision system
+•	 Designed strictly for decision support
+•	 No automated medical recommendations
+•	 AI outputs require therapist interpretation
+•	 Model bias mitigated through comparison and evaluation
+________________________________________
 
-  Web Application Overview
- Frontend
- Framework: React
- Styling: Tailwind CSS
- Features:
+24.	10. FUTURE ENHANCEMENTS
+•	Therapist authentication & role management
+•	Caregiver feedback loop
+•	Historical behavior trend analysis
+•	Multilingual speech support
+•	Emotion detection integration
+•	Clinical dataset fine-tuning
+________________________________________
 
-   Voice upload
-   Result visualization
-   Therapist dashboard
+25.	11. PP1 CHECKLIST COMPLIANCE
+✔ Git repository created
+✔ README documentation completed
+✔ Model architectures explained
+✔ Notebooks clearly structured
+✔ Frontend & backend implemented
+✔ End-to-end demo pipeline available
+________________________________________
 
- Backend
- Framework: Node.js + Express
- Database: MongoDB
- Role:
-
-   Store submissions
-   Communicate with AI service
-   Serve dashboard data
-
- AI Service
- Framework: FastAPI (Python)
- Role:
-   Run trained models
-   Return structured AI outputs via API
-
-  Dependencies
- Core
- Python 3.9+
- Transformers (HuggingFace)
- Torch
- NumPy, Pandas
- Scikit-learn
-
- Web
- Node.js
- Express
- MongoDB
- React
- Tailwind CSS
-
- Audio
- Whisper
- Librosa
- FFmpeg
-
-  Version Control & Collaboration (PP1 Requirement)
-This repository demonstrates:
-•	 Structured Git commits
-•	 Incremental development
-•	 Multiple notebooks with clear progression
-•	 Reproducible experiments
-•	 Clear separation of training, evaluation, and deployment
-Evaluators can verify progress through commit history and repository structure.
-
- PP1 Checklist Summary
-•	 Git repository created
-•	 README documentation completed
-•	 Model architecture explained
-•	 Notebooks clearly defined
-•	 Frontend + backend development included
-•	 Final demo pipeline implemented
-
-  Author Contribution
+26.	12. AUTHOR CONTRIBUTION
 Role: AI Modeling & System Integration
-Contributions:
- Dataset preparation
- NLP model training & evaluation
- Overfitting analysis & model selection
- End-to-end voice pipeline
- AI backend integration
- Web application architecture
+•	Dataset preparation
+•	Transformer model training & evaluation
+•	Overfitting analysis & model selection
+•	End-to-end voice pipeline development
+•	AI microservice integration
+•	System architecture design
+________________________________________
 
+27.	13. ACKNOWLEDGEMENT
+Developed with the goal of supporting caregivers and therapists in delivering efficient, ethical, and scalable autism care using responsible artificial intelligence.
