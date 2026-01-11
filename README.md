@@ -1,26 +1,26 @@
 Personalized-Autism-Therapy-Support-System
 A web-based AI-powered platform that helps parents, guardians, and therapists deliver personalized autism care through intelligent analytics, behavior tracking, and real-time therapy recommendations.
-🧩 AI-Assisted Caregiver–Therapist Collaboration System for Autism Support (ACT-CS)
+ AI-Assisted Caregiver–Therapist Collaboration System for Autism Support (ACT-CS)
 Final Year Research Project – PP1 (Checklist Submission)
-📌 Project Overview
+ Project Overview
 This project presents an AI-Assisted Caregiver–Therapist Collaboration System for Autism Support, designed to improve communication and response efficiency between caregivers and therapists using voice-based AI processing.
 Caregivers often describe a child’s behavior verbally, which can be time-consuming and difficult for therapists to analyze at scale. This system enables caregivers to submit voice notes, which are automatically processed using speech and natural language processing models to generate structured insights for therapists.
 
 The system performs:
- 🎙️ Voice → Text transcription
- 🧠 Issue identification
- 🚨 Urgency assessment
- 📝 Therapist-friendly summarization
+  Voice → Text transcription
+  Issue identification
+  Urgency assessment
+  Therapist-friendly summarization
 The final output supports decision-making, not diagnosis, and aims to reduce therapist workload while improving response prioritization.
 
- 🎯 Main Objectives
+  Main Objectives
  Build a voice-based AI pipeline for autism caregiver reporting
  Train and compare multiple Transformer-based NLP models
  Select the best-performing models based on evaluation
  Develop a web application (frontend + backend) for real-world interaction
  Demonstrate software engineering best practices and reproducibility
 
- 🧠 System Architecture
+  System Architecture
  🔹 High-Level Workflow
 Caregiver Voice Input
         │
@@ -48,7 +48,7 @@ Therapist Dashboard (Web Application)
  Input: Caregiver voice recordings
  Output: Clean text transcript
 
- 🧠 Issue Classification
+  Issue Classification
  Models Trained:
    DistilBERT (baseline)
    RoBERTa (final)
@@ -90,7 +90,7 @@ Saved Model Folder:
 
 
 models/summarization_t5/
- 🏆 Final Selected Models (Used in System)
+  Final Selected Models (Used in System)
 Task                   	  Model            
 Speech-to-Text         	  Whisper-small    
 Issue Classification   	  RoBERTa-base
@@ -120,7 +120,7 @@ ACT-CS/
 ├── README.md
 └── requirements.txt
 
- 📓 Notebook Responsibilities
+ Notebook Responsibilities
 
 | Notebook                                    | Purpose                                  
 | ------------------------------------------- | ---------------------------------------- 
@@ -132,7 +132,7 @@ ACT-CS/
 | 04_train_summarization_t5.ipynb             | Summarization model training        
 | 05_full_pipeline_inference_with_voice.ipynb | Final end-to-end voice pipeline     
 
- 🌐 Web Application Overview
+  Web Application Overview
  Frontend
  Framework: React
  Styling: Tailwind CSS
@@ -187,7 +187,7 @@ This repository demonstrates:
 ✅ Clear separation of training, evaluation, and deployment
 Evaluators can verify progress through commit history and repository structure.
 
- ✅ PP1 Checklist Summary
+ PP1 Checklist Summary
  ✔ Git repository created
  ✔ README documentation completed
  ✔ Model architecture explained
