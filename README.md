@@ -21,7 +21,7 @@ The final output supports decision-making, not diagnosis, and aims to reduce the
  Demonstrate software engineering best practices and reproducibility
 
   System Architecture
- 🔹 High-Level Workflow
+  High-Level Workflow
 Caregiver Voice Input
         │
         ▼
@@ -39,9 +39,9 @@ Text Summarization (T5)
         ▼
 Therapist Dashboard (Web Application)
 
- 🧪 Models Used
+  Models Used
 
- 🎙️ Speech-to-Text (ASR)
+  Speech-to-Text (ASR)
 
  Model: Whisper-small
  Framework: HuggingFace Transformers
@@ -66,7 +66,7 @@ Saved Model Folder:
 
 models/issue_classifier_roberta/
 
- 🚨 Urgency Classification
+  Urgency Classification
  Models Trained:
    DistilBERT (final)
    RoBERTa (comparison)
@@ -81,7 +81,7 @@ models/issue_classifier_roberta/
 Saved Model Folder:
 models/urgency_classifier/
 
- 📝 Text Summarization
+  Text Summarization
  Model: T5-small
  Purpose: Generate concise therapist-friendly summaries
  Evaluation: Qualitative (clarity and relevance)
@@ -91,13 +91,13 @@ Saved Model Folder:
 
 models/summarization_t5/
   Final Selected Models (Used in System)
-Task                   	  Model            
-Speech-to-Text         	  Whisper-small    
-Issue Classification   	  RoBERTa-base
-Urgency Classification	  DistilBERT
-Summarization   	        T5-small     
+Task                   	Model            
+Speech-to-Text         	Whisper-small    
+Issue Classification   	RoBERTa-base
+Urgency Classification	DistilBERT
+Summarization   	T5-small     
 
- 📁 Project Folder Structure
+  Project Folder Structure
 ACT-CS/
 │
 ├── models/
@@ -120,17 +120,15 @@ ACT-CS/
 ├── README.md
 └── requirements.txt
 
- Notebook Responsibilities
-
-| Notebook                                    | Purpose                                  
-| ------------------------------------------- | ---------------------------------------- 
-| 01_data_preparation.ipynb                   | Dataset cleaning & train/val/test splits 
-| 02_train_issue_classifier_bert.ipynb        | Baseline issue model               
-| 06_train_text_classifier_compare.ipynb      | Final issue model (RoBERTa) 
-| 07_train_issue_classifier_deberta.ipynb     | Issue model comparison       
-| 03_train_urgency_classifier_bert.ipynb      | Final urgency model       
-| 04_train_summarization_t5.ipynb             | Summarization model training        
-| 05_full_pipeline_inference_with_voice.ipynb | Final end-to-end voice pipeline     
+  Notebook Responsibilities
+Notebook                                                         	Purpose   
+01_data_preparation.ipynb                   	  Dataset cleaning & train/val/test splits
+02_train_issue_classifier_bert.ipynb        	  Baseline issue model                     
+03_train_urgency_classifier_bert.ipynb      	  Final urgency model                  
+04_train_summarization_t5.ipynb             	  Summarization model training             
+05_full_pipeline_inference_with_voice.ipynb	   Final end-to-end voice pipeline 
+06_train_text_classifier_compare.ipynb      	  Final issue model (RoBERTa)          
+07_train_issue_classifier_deberta.ipynb     	  Issue model comparison                   
 
   Web Application Overview
  Frontend
@@ -157,7 +155,7 @@ ACT-CS/
    Run trained models
    Return structured AI outputs via API
 
- ⚙️ Dependencies
+  Dependencies
  Core
  Python 3.9+
  Transformers (HuggingFace)
@@ -177,25 +175,24 @@ ACT-CS/
  Librosa
  FFmpeg
 
- 🔁 Version Control & Collaboration (PP1 Requirement)
-
+  Version Control & Collaboration (PP1 Requirement)
 This repository demonstrates:
-✅ Structured Git commits
-✅ Incremental development
-✅ Multiple notebooks with clear progression
-✅ Reproducible experiments
-✅ Clear separation of training, evaluation, and deployment
+•	 Structured Git commits
+•	 Incremental development
+•	 Multiple notebooks with clear progression
+•	 Reproducible experiments
+•	 Clear separation of training, evaluation, and deployment
 Evaluators can verify progress through commit history and repository structure.
 
  PP1 Checklist Summary
- ✔ Git repository created
- ✔ README documentation completed
- ✔ Model architecture explained
- ✔ Notebooks clearly defined
- ✔ Frontend + backend development included
- ✔ Final demo pipeline implemented
+•	 Git repository created
+•	 README documentation completed
+•	 Model architecture explained
+•	 Notebooks clearly defined
+•	 Frontend + backend development included
+•	 Final demo pipeline implemented
 
- 👤 Author Contribution
+  Author Contribution
 Role: AI Modeling & System Integration
 Contributions:
  Dataset preparation
