@@ -2,9 +2,13 @@
 
 A production-ready web application that recommends personalized cognitive activities for children with Autism Spectrum Disorder (ASD) based on child profiles, preferences, recent behavior, and past activity outcomes.
 
-## ⚠️ Important Safety Notice
+## Key Breakthroughs
 
-**This application is NOT for diagnosis or medical advice.** It is a tool to assist therapists and parents in selecting appropriate cognitive activities. Always consult with qualified healthcare professionals for medical decisions.
+- **RAG-Powered Recommendations**: Combines FAISS vector search with LLM enhancement for semantically-aware activity matching
+- **Reinforcement Learning Integration**: Activity scoring system that learns from historical outcomes to improve recommendations over time
+- **Multi-Provider LLM Architecture**: Flexible provider pattern supporting both cloud (OpenAI) and local (Ollama) LLM backends
+- **Semantic Activity Search**: Vector embeddings enable understanding of activity context, goals, and child preferences beyond keyword matching
+- **Real-time Personalization**: Dynamic recommendations based on current mood, attention level, and environmental context
 
 ## Features
 
@@ -25,6 +29,8 @@ A production-ready web application that recommends personalized cognitive activi
 - **MongoDB** - Database
 - **Pydantic** - Data validation
 - **Motor** - Async MongoDB driver
+- **FAISS** - Vector similarity search
+- **Sentence Transformers** - Semantic embeddings
 - **OpenAI API** or **Local LLaMA** - LLM integration
 
 ### Frontend
@@ -41,206 +47,198 @@ A production-ready web application that recommends personalized cognitive activi
 - MongoDB (local or remote)
 - OpenAI API key (if using OpenAI provider) OR local LLaMA endpoint (if using local provider)
 
-## Installation & Setup
+## Quick Setup
 
-### 1. Backend Setup
+### Backend
 
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Create virtual environment (recommended)
 python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
-
-# Create .env file from example
 cp .env.example .env
-
-# Edit .env file with your settings:
-# - MONGODB_URI (default: mongodb://localhost:27017)
-# - MONGODB_DB_NAME (default: cognitive_plan)
-# - LLM_PROVIDER (openai or ollama) - default: ollama
-# - OLLAMA_ENDPOINT (default: http://localhost:11434/api/chat)
-# - OLLAMA_MODEL (default: llama3.1)
-# - OPENAI_API_KEY (only if using OpenAI)
-# - JWT_SECRET_KEY (change in production)
-```
-
-### 2. Frontend Setup
-
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Create .env file (optional, defaults to http://localhost:8000)
-echo "VITE_API_URL=http://localhost:8000" > .env
-```
-
-### 3. Database Setup
-
-Make sure MongoDB is running:
-
-```bash
-# If using local MongoDB, start it:
-# On Windows (if installed as service, it should auto-start)
-# On macOS with Homebrew:
-brew services start mongodb-community
-# On Linux:
-sudo systemctl start mongod
-```
-
-### 4. Seed Sample Data
-
-```bash
-# From backend directory, with virtual environment activated
-python run_seed.py
-```
-
-This will populate the database with 17 sample activities across different categories.
-
-## Running the Application
-
-### Start Backend
-
-```bash
-# From backend directory, with virtual environment activated
+# Edit .env with your configuration
+python run_seed.py  # Seed sample data
 uvicorn app.main:app --reload --port 8000
 ```
 
-The API will be available at `http://localhost:8000`
-
-API documentation (Swagger UI): `http://localhost:8000/docs`
-
-### Start Frontend
+### Frontend
 
 ```bash
-# From frontend directory
+cd frontend
+npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`
+## Architecture
 
-## Usage Guide
+### System Architecture Diagram
 
-### 1. Create a Child Profile
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        UI[React UI<br/>TypeScript + Tailwind CSS]
+        Router[React Router]
+        AuthCtx[Auth Context]
+        API_Client[API Client<br/>Axios]
+    end
 
-1. Navigate to the Dashboard
-2. Click "Create New Profile"
-3. Fill in:
-   - Name and age
-   - Communication level (nonverbal/limited/verbal)
-   - Cognitive level (low/medium/high)
-   - Sensory sensitivities (sound/light/touch: low/med/high)
-   - Interests (tags)
-   - Triggers (tags to avoid)
-   - Goals (attention/memory/social/motor/emotion)
+    subgraph "Backend API Layer"
+        FastAPI[FastAPI Server<br/>Port 8000]
+        Auth[Authentication<br/>JWT]
+        Routers[API Routers]
+        RecEngine[Recommendation Engine]
+        RL[Reinforcement Learning<br/>Activity Scorer]
+    end
 
-### 2. Get Recommendations
+    subgraph "Data Layer"
+        MongoDB[(MongoDB<br/>Profiles, Activities, Outcomes)]
+        VectorStore[FAISS Vector Store<br/>Semantic Search]
+        Embeddings[Sentence Transformers<br/>Embeddings]
+    end
 
-1. Click on a profile from the Dashboard
-2. Fill in "Get Recommendations" form:
-   - Current mood
-   - Attention level
-   - Environment
-3. Click "Get Recommendations"
-4. Review the top 5 recommended activities with:
-   - Reason for recommendation
-   - Difficulty adaptations
-   - Step-by-step instructions
-   - Sensory-safe variants
-   - Expected benefits
-   - Success checklist
+    subgraph "LLM Layer"
+        LLM_Provider[LLM Provider Interface]
+        OpenAI[OpenAI API<br/>GPT-4 Turbo]
+        Ollama[Ollama<br/>Local LLaMA]
+    end
 
-### 3. Log Activity Outcomes
+    UI --> Router
+    Router --> AuthCtx
+    AuthCtx --> API_Client
+    API_Client -->|HTTP/REST| FastAPI
+    
+    FastAPI --> Auth
+    FastAPI --> Routers
+    Routers --> RecEngine
+    RecEngine --> RL
+    RecEngine --> VectorStore
+    RecEngine --> LLM_Provider
+    
+    RecEngine --> MongoDB
+    Routers --> MongoDB
+    
+    VectorStore --> Embeddings
+    VectorStore -->|Semantic Search| MongoDB
+    
+    LLM_Provider --> OpenAI
+    LLM_Provider --> Ollama
+    
+    RL -->|Learns from| MongoDB
+```
 
-1. After trying a recommended activity, click "Log Activity Outcome"
-2. Rate:
-   - Engagement (1-5)
-   - Stress level (1-5)
-   - Success (1-5)
-3. Add optional notes
-4. Submit
+### Architecture Components
 
-This feedback will be used to improve future recommendations.
+#### Frontend Layer
+- **React 18**: Modern UI framework with hooks and context API
+- **TypeScript**: Type-safe development
+- **React Router**: Client-side routing and navigation
+- **Auth Context**: Global authentication state management
+- **API Client**: Type-safe HTTP client with Axios
+- **Tailwind CSS**: Utility-first CSS framework
 
-### 4. Browse Activity Library
+#### Backend API Layer
+- **FastAPI**: High-performance async Python web framework
+- **Authentication**: JWT-based user authentication and authorization
+- **API Routers**: Modular route handlers for profiles, recommendations, outcomes
+- **Recommendation Engine**: Core logic combining RAG, filtering, and LLM enhancement
+- **Reinforcement Learning**: Activity scoring based on historical outcomes
 
-Navigate to "Activity Library" to view all available activities, filter by category, and see detailed information.
+#### Data Layer
+- **MongoDB**: Document database storing:
+  - User profiles and child profiles
+  - Activity library
+  - Activity outcomes and feedback
+- **FAISS Vector Store**: Fast similarity search for semantic activity matching
+- **Sentence Transformers**: Embedding model for semantic search (all-MiniLM-L6-v2)
 
-## API Endpoints
+#### LLM Layer
+- **Provider Pattern**: Abstract interface supporting multiple LLM backends
+- **OpenAI Provider**: GPT-4 Turbo for cloud-based recommendations
+- **Ollama Provider**: Local LLaMA models (llama3.2:3b default) for privacy
 
-### Profiles
-- `GET /profiles` - List all profiles
-- `GET /profiles/{id}` - Get profile by ID
-- `POST /profiles` - Create profile
-- `PUT /profiles/{id}` - Update profile
-- `DELETE /profiles/{id}` - Delete profile
+### Data Flow
 
-### Activities
-- `GET /activities` - List all activities
-- `GET /activities/{id}` - Get activity by ID
-- `POST /activities` - Create activity
-- `PUT /activities/{id}` - Update activity
-- `DELETE /activities/{id}` - Delete activity
+1. **User Request**: Frontend sends recommendation request with profile ID and context
+2. **Authentication**: JWT token validated, user ID extracted
+3. **Profile Retrieval**: Fetch child profile and recent outcomes from MongoDB
+4. **Query Building**: Construct semantic search query from profile, context, and outcomes
+5. **Vector Search**: FAISS performs semantic similarity search on activity embeddings
+6. **Safety Filtering**: Apply filters (age, sensory sensitivity, triggers)
+7. **RL Enhancement**: Reinforcement learning adjusts scores based on past outcomes
+8. **LLM Enhancement**: Top candidates sent to LLM for personalized recommendations
+9. **Response**: Structured activity plan returned to frontend
+10. **Feedback Loop**: User logs outcomes, which improve future recommendations
 
-### Recommendations
-- `POST /recommend` - Get activity recommendations
-  ```json
-  {
-    "profile_id": "string",
-    "today_context": {
-      "mood": "calm|anxious|energetic|tired|focused|distracted",
-      "attention_level": "low|medium|high",
-      "environment": "home|therapy|school|outdoor"
-    }
-  }
-  ```
+## Dependencies
 
-### Outcomes
-- `GET /outcomes?profile_id={id}&activity_id={id}` - List outcomes
-- `POST /outcomes` - Create outcome
-- `GET /outcomes/{id}` - Get outcome by ID
+### Backend Dependencies
 
-## LLM Provider Configuration
+#### Core Framework
+- **fastapi** (0.104.1): Modern, fast web framework for building APIs
+- **uvicorn[standard]** (0.24.0): ASGI server for FastAPI
 
-### Using Ollama (Default - Recommended)
+#### Database
+- **pymongo** (4.6.0): MongoDB driver for Python
+- **motor** (3.3.2): Async MongoDB driver
+- **dnspython** (2.8.0): DNS toolkit for MongoDB connection strings
 
-1. Install Ollama from https://ollama.ai
-2. Pull a small model (3B recommended for most systems):
-   ```bash
-   ollama pull llama3.2:3b
-   ```
-   For systems with more GPU memory, you can use a larger model:
-   ```bash
-   ollama pull llama3.1:8b
-   ```
-3. Start Ollama (usually runs automatically as a service)
-4. Set in `.env` (or use defaults):
-   ```
-   LLM_PROVIDER=ollama
-   OLLAMA_ENDPOINT=http://localhost:11434/api/chat
-   OLLAMA_MODEL=llama3.2:3b
-   ```
-5. The system will use Ollama's chat API for recommendations
+#### Data Validation
+- **pydantic** (>=2.5.0,<3.0.0): Data validation using Python type annotations
+- **pydantic-settings** (>=2.1.0,<3.0.0): Settings management using Pydantic
 
-**Note:** The default is `llama3.2:3b` (3B model) which works on most systems. If you encounter "out of memory" errors, try CPU mode: `set OLLAMA_NUM_GPU=0` before starting Ollama.
+#### Environment & Configuration
+- **python-dotenv** (1.0.0): Load environment variables from .env files
 
-### Using OpenAI
+#### LLM Integration
+- **openai** (1.3.7): OpenAI API client
+- **httpx** (0.25.2): Async HTTP client for Ollama API
 
-1. Set `LLM_PROVIDER=openai` in `.env`
-2. Set `OPENAI_API_KEY=your_key_here` in `.env`
-3. The system will use GPT-4 Turbo for recommendations
+#### Authentication
+- **python-jose[cryptography]** (3.3.0): JWT token encoding/decoding
+- **passlib[bcrypt]** (1.7.4): Password hashing
+- **python-multipart** (0.0.6): Form data parsing
+
+#### Vector Search & ML
+- **sentence-transformers** (2.2.2): Semantic embeddings for RAG
+- **faiss-cpu** (1.7.4): Facebook AI Similarity Search for vector operations
+- **numpy** (1.24.3): Numerical computing
+- **pandas** (2.1.4): Data manipulation and CSV processing
+
+### Frontend Dependencies
+
+#### Core Framework
+- **react** (^18.2.0): UI library
+- **react-dom** (^18.2.0): React DOM renderer
+
+#### Routing & Navigation
+- **react-router-dom** (^6.20.0): Declarative routing for React
+
+#### HTTP Client
+- **axios** (^1.6.2): Promise-based HTTP client
+
+#### UI Components
+- **react-icons** (^4.12.0): Popular icons library
+
+#### Development Dependencies
+- **typescript** (^5.2.2): TypeScript language
+- **vite** (^5.0.0): Next-generation frontend build tool
+- **@vitejs/plugin-react** (^4.2.0): Vite plugin for React
+- **tailwindcss** (^3.3.5): Utility-first CSS framework
+- **postcss** (^8.4.31): CSS post-processor
+- **autoprefixer** (^10.4.16): CSS vendor prefixing
+- **eslint** (^8.53.0): JavaScript/TypeScript linter
+- **@typescript-eslint/parser** (^6.10.0): TypeScript ESLint parser
+- **@typescript-eslint/eslint-plugin** (^6.10.0): TypeScript ESLint plugin
+- **@types/react** (^18.2.37): TypeScript types for React
+- **@types/react-dom** (^18.2.15): TypeScript types for React DOM
+
+### External Services
+
+- **MongoDB**: Document database (local or cloud)
+- **OpenAI API** (optional): Cloud-based LLM service
+- **Ollama** (optional): Local LLM runtime for privacy-focused deployments
 
 ## Project Structure
 
@@ -255,6 +253,8 @@ cognitive_plan/
 │   │   ├── schemas.py            # Pydantic models
 │   │   ├── llm_providers.py     # LLM provider pattern
 │   │   ├── recommendation_engine.py  # Recommendation logic
+│   │   ├── vector_store.py      # FAISS vector store
+│   │   ├── reinforcement_learning.py  # RL activity scorer
 │   │   ├── seed_data.py         # Sample activities
 │   │   └── routers/
 │   │       ├── profiles.py
@@ -285,70 +285,3 @@ cognitive_plan/
 │   └── vite.config.ts
 └── README.md
 ```
-
-## Safety Features
-
-- **Sensory Filtering**: Automatically filters out activities with high sensory load if child has high sensitivity
-- **Trigger Avoidance**: Excludes activities containing known triggers
-- **Age Appropriateness**: Validates activities match child's age
-- **Safety Notes**: All activities include safety considerations
-- **No Medical Claims**: LLM prompts explicitly prohibit medical advice
-- **Therapist-Friendly Language**: All recommendations use clear, professional language
-
-## Troubleshooting
-
-### Backend Issues
-
-- **MongoDB Connection Error**: Ensure MongoDB is running and `MONGODB_URI` is correct
-- **LLM Provider Error**: Check API key (OpenAI) or endpoint (local LLM) configuration
-- **Import Errors**: Ensure virtual environment is activated and dependencies are installed
-
-### Frontend Issues
-
-- **API Connection Error**: Check that backend is running on port 8000, or update `VITE_API_URL`
-- **Build Errors**: Run `npm install` again, check Node.js version (18+)
-
-### Recommendation Issues
-
-- **No Recommendations**: Ensure activities are seeded, check LLM provider configuration
-- **JSON Parse Errors**: LLM response may be malformed; system includes fallback recommendations
-
-## Development
-
-### Running Tests (Future)
-
-```bash
-# Backend tests
-cd backend
-pytest
-
-# Frontend tests
-cd frontend
-npm test
-```
-
-### Code Quality
-
-- Backend: Follow PEP 8, use type hints
-- Frontend: Follow ESLint rules, use TypeScript strictly
-
-## License
-
-This project is for educational and therapeutic use. Please ensure compliance with healthcare regulations in your jurisdiction.
-
-## Contributing
-
-When contributing:
-1. Maintain safety constraints
-2. Keep therapist/parent-friendly language
-3. Add appropriate validation
-4. Update documentation
-
-## Support
-
-For issues or questions, please review the troubleshooting section or check the API documentation at `/docs` when the backend is running.
-
----
-
-**Remember**: This tool is designed to assist, not replace, professional therapy and medical advice. Always consult qualified professionals for healthcare decisions.
-
