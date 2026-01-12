@@ -1,6 +1,6 @@
 # Personalized-Autism-Therapy-Support-System
 
-## OVERALL PROJECT OVERVIEW
+## PROJECT OVERVIEW
 A web-based AI-powered platform that helps parents, guardians, and therapists deliver personalized autism care through intelligent analytics, behavior tracking, and real-time therapy recommendations.
 
 Autism Spectrum Disorder (ASD) affects approximately 1 in 100 children worldwide, making it a major global public health concern. ASD is highly heterogeneous—each child presents a unique combination of cognitive, behavioral, emotional, and social traits that vary in type, severity, and developmental trajectory. As a result, generalized, one-size-fits-all intervention strategies are often ineffective.
@@ -9,7 +9,7 @@ Parents and caregivers frequently struggle to interpret clinical assessments and
 
 To address these gaps, this project proposes an end-to-end AI-powered autism support ecosystem that combines explainable machine learning, real-time emotion analysis, personalized activity recommendations, and intelligent caregiver–therapist collaboration. The system is designed to be individualized, adaptive, interpretable, and accessible, ensuring practical impact in both clinical and home-based environments.
 
-## OVERALL SYSTEM ARCHITECTURE DIAGRAM
+## SYSTEM ARCHITECTURE DIAGRAM
 
 <img width="708" height="450" alt="image" src="https://github.com/user-attachments/assets/609b67bb-7380-4f4d-a89d-053a7b102c47" />
 
