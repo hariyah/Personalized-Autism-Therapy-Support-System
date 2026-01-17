@@ -14,13 +14,14 @@ The model classifies the child’s emotional state into six predefined emotions:
 To improve transparency and usability, the system integrates an explainable AI module using a lightweight **Large Language Model** (Phi-2 via Ollama), which provides step-by-step activity instructions, adaptation tips, and safety warnings. Implemented as a scalable web-based application, the solution offers an objective, interest-driven, and cost-effective approach to enhancing therapy engagement and personalization.
 
 
-## 3. ARCHITECHTURAL DIAGRAM
-
-<img width="1018" height="568" alt="image" src="https://github.com/user-attachments/assets/fbfb5548-73ab-46c6-98b7-300e9708ff14" />
+## 2. ARCHITECHTURAL DIAGRAM
 
 
+<img width="1511" height="891" alt="personalized_therapy_system_architecture drawio" src="https://github.com/user-attachments/assets/8ac55edc-b101-491e-bb68-b5c2271ab7f2" />
 
-## 2. FEATURES &  MAJOR UPDATES AND BREAKTHROUGHS OF THE PROJECT
+
+
+## 3. FEATURES &  MAJOR UPDATES AND BREAKTHROUGHS OF THE PROJECT
 
 - **Real Time Emotion Detection :** Use Densenet-121 model to detect emotion through image upload and camera integration to capture image and detect emotion.
 - **Personalized Activity Recommendations**: AI-powered recommendations based on each child's unique profile and needs.
