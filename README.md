@@ -3,7 +3,7 @@
 ## PROJECT OVERVIEW
 A web-based AI-powered platform that helps parents, guardians, and therapists deliver personalized autism care through intelligent analytics, behavior tracking, and real-time therapy recommendations.
 
-Autism Spectrum Disorder (ASD) affects approximately 1 in 100 children worldwide, making it a major global public health concern. ASD is highly heterogeneous—each child presents a unique combination of cognitive, behavioral, emotional, and social traits that vary in type, severity, and developmental trajectory. As a result, generalized, one-size-fits-all intervention strategies are often ineffective.
+Autism Spectrum Disorder (ASD) affects approximately 1 in 100 children worldwide, making it a major global public health concern. ASD is highly heterogeneous each child presents a unique combination of cognitive, behavioral, emotional, and social traits that vary in type, severity, and developmental trajectory. As a result, generalized, one-size-fits-all intervention strategies are often ineffective.
 
 Parents and caregivers frequently struggle to interpret clinical assessments and translate them into meaningful daily interventions. Existing digital tools are largely static, fragmented, and non-adaptive, offering limited personalization or real-time feedback. Therapists, particularly in low-resource settings, face challenges in maintaining continuous monitoring, tracking progress objectively, and updating therapy plans based on reliable data.
 
