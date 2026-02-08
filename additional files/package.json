@@ -1,0 +1,21 @@
+{
+  "name": "personalized-autism-therapy-support-system",
+  "version": "1.0.0",
+  "description": "A web-based AI-powered platform that helps parents, guardians, and therapists deliver personalized autism care through intelligent analytics, behavior tracking, and real-time therapy recommendations.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hariyah/Personalized-Autism-Therapy-Support-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hariyah/Personalized-Autism-Therapy-Support-System/issues"
+  },
+  "homepage": "https://github.com/hariyah/Personalized-Autism-Therapy-Support-System#readme"
+}
