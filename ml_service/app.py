@@ -1,120 +1,157 @@
 import os
 import json
-from typing import Optional
+import io
+from typing import Dict
 
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import JSONResponse
 
 # Optional TensorFlow import for real inference
-MODEL = None
-LABELS = ["Natural", "anger", "fear", "joy", "sadness", "surprise"]
 try:
     import tensorflow as tf
     from tensorflow.keras.applications.densenet import preprocess_input
     import numpy as np
     from PIL import Image
     import cv2
+
     TF_AVAILABLE = True
 except Exception:
     TF_AVAILABLE = False
 
 app = FastAPI()
 
-# Basic config
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+BASE_DIR = os.path.dirname(__file__)
+
+DEFAULT_LABELS = ["Natural", "anger", "fear", "joy", "sadness", "surprise"]
+MODEL_PATHS = {
+    "upload": os.path.join(BASE_DIR, "models", "densenet121_emotion_recognition_correct.keras"),
+}
+MODELS: Dict[str, object] = {"upload": None}
+LABELS_BY_SOURCE: Dict[str, list] = {
+    "upload": DEFAULT_LABELS.copy(),
+    "camera": DEFAULT_LABELS.copy(),
+}
+
+def _labels_from_map(data):
+    classes = data.get("classes") or data.get("labels")
+    if isinstance(classes, list) and classes:
+        return classes
+
+    if "class_indices" in data and isinstance(data["class_indices"], dict):
+        by_idx = sorted(data["class_indices"].items(), key=lambda item: int(item[1]))
+        return [name for name, _ in by_idx]
+
+    if data and all(isinstance(k, str) for k in data.keys()) and all(
+        isinstance(v, int) for v in data.values()
+    ):
+        by_idx = sorted(data.items(), key=lambda item: int(item[1]))
+        return [name for name, _ in by_idx]
+
+    return None
 
 
-def safe_filename(filename: Optional[str]) -> str:
-    if not filename:
-        return "upload.jpg"
-    filename = os.path.basename(filename)
-    return filename or "upload.jpg"
+def _load_labels_for_source(source: str, model_path: str):
+    try:
+        label_dir = os.path.dirname(model_path)
+        candidate_paths = [
+            os.path.join(label_dir, "label_map.json"),
+            os.path.join(BASE_DIR, "models", "label_map.json"),
+            os.path.join(BASE_DIR, "models", "class_indices.json"),
+        ]
+        for lp in candidate_paths:
+            if not os.path.exists(lp):
+                continue
+            with open(lp, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            labels = _labels_from_map(data)
+            if labels:
+                LABELS_BY_SOURCE[source] = labels
+                return
+    except Exception:
+        pass
 
 
-def load_model_if_available():
-    global MODEL, LABELS
+def load_model_if_available(source: str) -> bool:
+    if source not in MODEL_PATHS:
+        return False
     if not TF_AVAILABLE:
         return False
-    # Try BEST_MODEL_PATH.txt, else env ML_MODEL_PATH
-    base_dir = os.path.dirname(__file__)
-    best_path_txt = os.path.join(base_dir, "BEST_MODEL_PATH.txt")
-    model_path = None
-    if os.path.exists(best_path_txt):
-        with open(best_path_txt, "r") as f:
-            model_path = f.read().strip()
-        if not os.path.isabs(model_path):
-            model_path = os.path.join(base_dir, model_path)
-    else:
-        model_path = os.environ.get("ML_MODEL_PATH")
-        if model_path and not os.path.isabs(model_path):
-            model_path = os.path.join(base_dir, model_path)
-    if model_path and os.path.exists(model_path):
+    if MODELS[source] is not None:
+        return True
+
+    model_path = MODEL_PATHS[source]
+    if not os.path.exists(model_path):
+        print(f"[ERROR] Model path not found for '{source}': {model_path}")
+        return False
+
+    try:
+        MODELS[source] = tf.keras.models.load_model(model_path)
+        _load_labels_for_source(source, model_path)
+        return True
+    except Exception as e:
+        print(f"[ERROR] Failed to load '{source}' model from {model_path}: {e}")
+        MODELS[source] = None
+        return False
+
+
+def infer_camera_with_main(image_bytes: bytes):
+    try:
         try:
-            MODEL = tf.keras.models.load_model(model_path)
-            # Try to load label map if present next to the model or in models dir
-            try:
-                label_dir = os.path.dirname(model_path)
-                candidate_paths = [
-                    os.path.join(label_dir, "label_map.json"),
-                    os.path.join(os.path.dirname(__file__), "models", "label_map.json"),
-                ]
-                for lp in candidate_paths:
-                    if os.path.exists(lp):
-                        with open(lp, "r", encoding="utf-8") as f:
-                            data = json.load(f)
-                        classes = data.get("classes") or data.get("labels")
-                        if isinstance(classes, list) and len(classes) > 0:
-                            LABELS = classes
-                            break
-            except Exception:
-                pass
-            return True
+            from main import predict_camera_emotion_from_frame
         except Exception:
-            MODEL = None
-            return False
-    return False
+            from ml_service.main import predict_camera_emotion_from_frame
+
+        try:
+            import numpy as np
+            import cv2
+        except Exception as e:
+            print(f"[ERROR] Camera dependencies unavailable: {e}")
+            return None
+
+        frame_arr = np.frombuffer(image_bytes, dtype=np.uint8)
+        frame = cv2.imdecode(frame_arr, cv2.IMREAD_COLOR)
+        if frame is None:
+            print("[ERROR] Failed to decode camera image bytes")
+            return None
+
+        return predict_camera_emotion_from_frame(frame)
+    except Exception as e:
+        print(f"[ERROR] Camera inference (main.py) failed: {e}")
+        return None
 
 
-def infer_image(img_path):
-    """Return (pred_label, probs_dict) using loaded model, or None if unavailable."""
-    if not TF_AVAILABLE or MODEL is None:
+def infer_image(image_bytes: bytes, model, labels):
+    """Return (pred_label, probs_dict) using the given model, or None if unavailable."""
+    if not TF_AVAILABLE or model is None:
         return None
 
     # Load image
     try:
-        im = Image.open(img_path).convert("RGB")
+        im = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     except Exception as e:
         print(f"[ERROR] Failed to open image: {e}")
         return None
 
-    # Try face detection and cropping (same as predict_emotion.py)
+    # Try face detection and cropping
     try:
         img_np = np.array(im)
         img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-
-        # Load Haar cascade
         cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         face_cascade = cv2.CascadeClassifier(cascade_path)
-
         gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         if len(faces) > 0:
-            # Choose the largest detected face
             x, y, w, h = max(faces, key=lambda rect: rect[2] * rect[3])
-            # Add padding around face
             pad = int(0.25 * max(w, h))
             x1 = max(0, x - pad)
             y1 = max(0, y - pad)
             x2 = min(img_bgr.shape[1], x + w + pad)
             y2 = min(img_bgr.shape[0], y + h + pad)
             face_img = img_bgr[y1:y2, x1:x2]
-            # Convert back to RGB PIL Image
             face_rgb = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB)
             im = Image.fromarray(face_rgb)
         else:
-            # No face found: center-crop to square
             w, h = im.size
             min_edge = min(w, h)
             left = (w - min_edge) // 2
@@ -122,7 +159,6 @@ def infer_image(img_path):
             im = im.crop((left, top, left + min_edge, top + min_edge))
     except Exception as e:
         print(f"[ERROR] Face detection/cropping failed: {e}")
-        # If OpenCV not available or any error, fallback to center crop
         w, h = im.size
         min_edge = min(w, h)
         left = (w - min_edge) // 2
@@ -135,56 +171,54 @@ def infer_image(img_path):
         x = np.array(im).astype("float32")
         x = preprocess_input(x)
         x = np.expand_dims(x, 0)
-        probs = MODEL.predict(x, verbose=0)[0]
+        probs = model.predict(x, verbose=0)[0]
+
+        labels_for_output = list(labels or DEFAULT_LABELS)
+        if len(labels_for_output) < len(probs):
+            labels_for_output.extend([f"class_{i}" for i in range(len(labels_for_output), len(probs))])
+        elif len(labels_for_output) > len(probs):
+            labels_for_output = labels_for_output[: len(probs)]
+
         top_idx = int(np.argmax(probs))
-        pred = LABELS[top_idx]
-        probs_dict = {LABELS[i]: float(probs[i]) for i in range(len(LABELS))}
+        pred = labels_for_output[top_idx]
+        probs_dict = {labels_for_output[i]: float(probs[i]) for i in range(len(labels_for_output))}
         return pred, probs_dict
     except Exception as e:
         print(f"[ERROR] Model inference failed: {e}")
         return None
 
 
-@app.get("/health")
-async def health():
-    return {
-        "healthy": True,
-        "modelLoaded": MODEL is not None,
-        "tfAvailable": TF_AVAILABLE,
-        "port": 5000,
-    }
-
-
-@app.post("/predict")
-async def predict(file: UploadFile = File(default=None)):
+async def _predict_with_source(file: UploadFile, source: str):
     if file is None:
         print("[ERROR] No file uploaded")
         return JSONResponse(status_code=400, content={"error": "No file uploaded"})
 
-    filename = safe_filename(file.filename)
-    save_path = os.path.join(UPLOAD_FOLDER, filename)
     contents = await file.read()
-    with open(save_path, "wb") as f:
-        f.write(contents)
+    if not contents:
+        print("[ERROR] Uploaded file is empty")
+        return JSONResponse(status_code=400, content={"error": "Uploaded file is empty"})
 
-    # Force reload model for debugging
-    global MODEL
-    MODEL = None
-    model_loaded = load_model_if_available()
-    if not model_loaded:
-        print("[ERROR] Model could not be loaded!")
-
-    # Try real inference first
     pred = None
     probs_dict = None
-    if MODEL is not None:
-        try:
-            res = infer_image(save_path)
-            if res is not None:
-                pred, probs_dict = res
-        except Exception as e:
-            print(f"[ERROR] Exception during inference: {e}")
-            pred, probs_dict = None, None
+    labels = LABELS_BY_SOURCE.get(source, DEFAULT_LABELS)
+    if source == "camera":
+        res = infer_camera_with_main(contents)
+        if res is not None:
+            pred, probs_dict = res
+    else:
+        model_loaded = load_model_if_available(source)
+        if not model_loaded:
+            print(f"[ERROR] Model could not be loaded for source '{source}'")
+
+        model = MODELS.get(source)
+        if model is not None:
+            try:
+                res = infer_image(contents, model, labels)
+                if res is not None:
+                    pred, probs_dict = res
+            except Exception as e:
+                print(f"[ERROR] Exception during inference: {e}")
+                pred, probs_dict = None, None
 
     allow_uncertain = os.environ.get("EMOTION_ALLOW_UNCERTAIN", "1") == "1"
     if pred and probs_dict:
@@ -195,8 +229,7 @@ async def predict(file: UploadFile = File(default=None)):
             "allPredictions": probs_dict,
         }
 
-    # Fallback stub
-    all_preds = {label: 0.0 for label in LABELS}
+    all_preds = {label: 0.0 for label in labels}
     print("[ERROR] Prediction failed, returning uncertain.")
     return {
         "emotion": "uncertain" if allow_uncertain else "Natural",
@@ -204,6 +237,38 @@ async def predict(file: UploadFile = File(default=None)):
         "allPredictions": all_preds,
         "details": {"note": "Stub ML service: real model not loaded or inference failed."},
     }
+
+
+@app.get("/health")
+async def health():
+    upload_loaded = MODELS["upload"] is not None
+    return {
+        "healthy": True,
+        "modelLoaded": upload_loaded,
+        "modelsLoaded": {
+            "upload": upload_loaded,
+            "camera": False,
+        },
+        "modelPaths": {
+            "upload": MODEL_PATHS["upload"],
+            "camera": os.path.join(BASE_DIR, "models", "model.h5"),
+        },
+        "cameraInference": "main.py:model.h5",
+        "tfAvailable": TF_AVAILABLE,
+        "port": 5000,
+    }
+
+
+@app.post("/predict")
+async def predict(file: UploadFile = File(default=None)):
+    # Image upload flow uses DenseNet upload model.
+    return await _predict_with_source(file, "upload")
+
+
+@app.post("/predict-camera")
+async def predict_camera(file: UploadFile = File(default=None)):
+    # Camera flow uses main.py with models/model.h5.
+    return await _predict_with_source(file, "camera")
 
 
 @app.post("/recommend")
@@ -269,7 +334,7 @@ async def recommend(request: Request):
 
 if __name__ == "__main__":
     # Attempt eager load to surface errors at startup
-    load_model_if_available()
+    load_model_if_available("upload")
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=5000)

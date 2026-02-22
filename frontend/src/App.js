@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
 import { 
@@ -6,7 +6,8 @@ import {
   FiSmile, FiHeart, FiDollarSign, FiUsers, FiInfo, 
   FiCheckCircle, FiX, FiArrowRight, FiStar, FiTrendingUp,
   FiActivity, FiAward, FiZap, FiSearch, FiFileText, FiBarChart2,
-  FiUserPlus, FiLayers, FiTrendingDown, FiPieChart, FiCpu, FiMapPin
+  FiUserPlus, FiLayers, FiTrendingDown, FiPieChart, FiCpu, FiMapPin,
+  FiCamera
 } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -468,6 +469,19 @@ function DashboardView({
   // 6 emotions as required: Natural (0), joy (1), fear (2), anger (3), sadness (4), surprise (5)
   // Use the exact order and names from class_indices.json
   const validEmotions = ["Natural", "anger", "fear", "joy", "sadness", "surprise"];
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const liveIntervalRef = useRef(null);
+  const liveLoadingRef = useRef(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const [liveDetecting, setLiveDetecting] = useState(false);
+  const [lastDetectedAt, setLastDetectedAt] = useState('');
+  const [cameraCapturedImage, setCameraCapturedImage] = useState(null);
+  const [cameraPredictedEmotion, setCameraPredictedEmotion] = useState(null);
+  const cameraConfidence = Number(cameraPredictedEmotion?.confidence || 0);
 
   const handleEmotionUpdate = () => {
     if (selectedChild && emotionInput && validEmotions.includes(emotionInput)) {
@@ -476,6 +490,140 @@ function DashboardView({
     } else {
       alert('Please enter a valid emotion: ' + validEmotions.join(', '));
     }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (liveIntervalRef.current) {
+        clearInterval(liveIntervalRef.current);
+        liveIntervalRef.current = null;
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
+  const startCamera = async () => {
+    if (cameraActive) return;
+    setCameraError(null);
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setCameraError('Camera access is not supported in this browser.');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setCameraActive(true);
+    } catch (error) {
+      console.error('Camera access error:', error);
+      setCameraError('Unable to access camera. Please allow camera permissions and try again.');
+      setCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (liveIntervalRef.current) {
+      clearInterval(liveIntervalRef.current);
+      liveIntervalRef.current = null;
+    }
+    setLiveDetecting(false);
+    setCameraLoading(false);
+    liveLoadingRef.current = false;
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setCameraActive(false);
+  };
+
+  const captureAndPredict = async () => {
+    if (!cameraActive) {
+      setCameraError('Start the camera to capture a frame.');
+      return;
+    }
+    if (!videoRef.current || !canvasRef.current) return;
+    if (liveLoadingRef.current) return;
+
+    setCameraError(null);
+    setCameraLoading(true);
+    liveLoadingRef.current = true;
+
+    try {
+      const video = videoRef.current;
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        throw new Error('Camera is not ready yet.');
+      }
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      setCameraCapturedImage(dataUrl);
+
+      const blob = await (await fetch(dataUrl)).blob();
+      const formData = new FormData();
+      formData.append('image', blob, 'camera.jpg');
+
+      const response = await axios.post(`${API_BASE_URL}/predict-emotion`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 30000
+      });
+
+      if (response.data.success) {
+        setCameraPredictedEmotion({
+          emotion: response.data.emotion,
+          confidence: response.data.confidence,
+          allPredictions: response.data.all_predictions || {}
+        });
+        setLastDetectedAt(new Date().toLocaleTimeString());
+      } else {
+        setCameraError(response.data.message || 'Failed to predict emotion');
+      }
+    } catch (error) {
+      console.error('Error predicting emotion from camera:', error);
+      setCameraError(
+        error.response?.data?.error || 
+        error.message || 
+        'ML service not available. Please ensure the Python ML service is running on port 5000.'
+      );
+    } finally {
+      setCameraLoading(false);
+      liveLoadingRef.current = false;
+    }
+  };
+
+  const toggleLiveDetection = () => {
+    if (!cameraActive) return;
+    if (liveDetecting) {
+      if (liveIntervalRef.current) {
+        clearInterval(liveIntervalRef.current);
+        liveIntervalRef.current = null;
+      }
+      setLiveDetecting(false);
+      return;
+    }
+    setLiveDetecting(true);
+    captureAndPredict();
+    liveIntervalRef.current = setInterval(() => {
+      if (!cameraActive || liveLoadingRef.current) return;
+      captureAndPredict();
+    }, 3000);
   };
 
   return (
@@ -821,6 +969,175 @@ function DashboardView({
                   Apply to {selectedChild.name}'s Profile
                 </button>
               )}
+            </div>
+          )}
+        </div>
+
+        <div className="camera-detection">
+          <div className="camera-header">
+            <div className="camera-title">
+              <div className="camera-icon-wrapper">
+                <FiCamera className="camera-title-icon" />
+              </div>
+              <div className="camera-title-text">
+                <h3>Live Camera Detection</h3>
+                <p>Capture real-time emotion snapshots with your camera</p>
+              </div>
+            </div>
+            <div className="camera-status">
+              <span className={`status-dot ${cameraActive ? 'on' : 'off'}`}></span>
+              <span>{cameraActive ? 'Camera On' : 'Camera Off'}</span>
+            </div>
+          </div>
+
+          <div className="camera-body">
+            <div className="camera-preview">
+              <video ref={videoRef} className="camera-video" autoPlay playsInline muted />
+              {!cameraActive && (
+                <div className="camera-placeholder">
+                  <FiCamera className="camera-placeholder-icon" />
+                  <p>Start the camera to preview</p>
+                </div>
+              )}
+              {cameraLoading && (
+                <div className="camera-loading-overlay">
+                  <div className="camera-spinner"></div>
+                  <span>Analyzing frame...</span>
+                </div>
+              )}
+            </div>
+
+            <div className="camera-capture-panel">
+              <div className="capture-header">
+                <FiCheckCircle className="capture-icon" />
+                <h4>Captured Image</h4>
+              </div>
+              <div className="capture-preview">
+                {cameraCapturedImage ? (
+                  <img src={cameraCapturedImage} alt="Camera capture" />
+                ) : (
+                  <div className="capture-placeholder">
+                    <FiUpload className="capture-placeholder-icon" />
+                    <p>Captured image will appear here</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="camera-controls-row">
+            <div className="camera-controls">
+              <button className="camera-btn primary" onClick={startCamera} disabled={cameraActive}>
+                Start Camera
+              </button>
+              <button className="camera-btn secondary" onClick={stopCamera} disabled={!cameraActive}>
+                Stop Camera
+              </button>
+              <button
+                className="camera-btn"
+                onClick={captureAndPredict}
+                disabled={!cameraActive || cameraLoading || liveDetecting}
+              >
+                Capture & Analyze
+              </button>
+              <button
+                className={`camera-btn ${liveDetecting ? 'danger' : 'ghost'}`}
+                onClick={toggleLiveDetection}
+                disabled={!cameraActive}
+              >
+                {liveDetecting ? 'Stop Live Detection' : 'Start Live Detection'}
+              </button>
+              <p className="camera-hint">Live detection captures a frame every 3 seconds.</p>
+              {lastDetectedAt && (
+                <p className="camera-last-detect">Last capture: {lastDetectedAt}</p>
+              )}
+              {cameraError && <p className="camera-error">{cameraError}</p>}
+            </div>
+          </div>
+
+          <canvas ref={canvasRef} className="camera-canvas" />
+        </div>
+
+        <div className="camera-analysis-section">
+          <div className="camera-analysis-header">
+            <div className="camera-analysis-title">
+              <FiTarget className="camera-analysis-icon" />
+              <span>Analysis Complete</span>
+            </div>
+            <span className="camera-analysis-subtitle">Camera-based emotion insights</span>
+          </div>
+
+          {cameraPredictedEmotion ? (
+            <>
+              <div className="camera-analysis-hero">
+                <div className="camera-analysis-label">Detected Emotion</div>
+                <div className={`camera-detected-pill emotion-${String(cameraPredictedEmotion.emotion || '').toLowerCase()}`}>
+                  <FiSmile className="camera-detected-icon" />
+                  <span>{cameraPredictedEmotion.emotion}</span>
+                </div>
+                <div className="camera-confidence">
+                  <div className="camera-confidence-track">
+                    <div
+                      className="camera-confidence-fill"
+                      style={{ width: `${(cameraConfidence * 100).toFixed(2)}%` }}
+                    ></div>
+                  </div>
+                  <div className="camera-confidence-text">
+                    <strong>{(cameraConfidence * 100).toFixed(2)}%</strong> Confidence
+                  </div>
+                </div>
+              </div>
+
+              {cameraPredictedEmotion.allPredictions && Object.keys(cameraPredictedEmotion.allPredictions).length > 0 && (
+                <div className="camera-analysis-breakdown">
+                  <h4>
+                    <FiBarChart2 className="camera-analysis-subicon" />
+                    Detailed Emotion Breakdown
+                  </h4>
+                  <div className="camera-analysis-bars">
+                    {Object.entries(cameraPredictedEmotion.allPredictions)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([emotion, confidence]) => (
+                        <div key={emotion} className="camera-analysis-bar">
+                          <span className="camera-analysis-name">{emotion}</span>
+                          <div className="camera-analysis-track">
+                            <div
+                              className={`camera-analysis-fill emotion-${String(emotion).toLowerCase()}`}
+                              style={{ width: `${(confidence * 100).toFixed(1)}%` }}
+                            ></div>
+                          </div>
+                          <span className="camera-analysis-value">{(confidence * 100).toFixed(1)}%</span>
+                        </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedChild && (
+                <button
+                  className="camera-apply-btn"
+                  onClick={() => {
+                    const e = (cameraPredictedEmotion?.emotion || '').trim();
+                    if (!e || e.toLowerCase() === 'uncertain') {
+                      alert('Cannot apply Uncertain emotion to profile. Please capture a clearer image or choose a specific emotion.');
+                      return;
+                    }
+                    const normalizedEmotion = validEmotions.find(em => em.toLowerCase() === e.toLowerCase());
+                    if (!normalizedEmotion) {
+                      alert('Invalid emotion label: ' + e + '\nPlease use one of: ' + validEmotions.join(', '));
+                      return;
+                    }
+                    updateEmotion(selectedChild.id, normalizedEmotion, cameraConfidence);
+                  }}
+                  disabled={String(cameraPredictedEmotion?.emotion || '').toLowerCase() === 'uncertain'}
+                >
+                  Apply to {selectedChild.name}'s Profile
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="camera-analysis-empty">
+              Capture a frame to generate camera analysis results.
             </div>
           )}
         </div>

@@ -701,8 +701,9 @@ app.post('/api/emotion/:childId/recognize', upload.single('image'), async (req, 
   }
   
   try {
-    // Call ML service to predict emotion
-    const prediction = await emotionService.predictEmotionFromImage(req.file.buffer, 'file');
+    // Child profile recognition endpoint remains upload-based.
+    const filename = req.file.originalname || 'upload.jpg';
+    const prediction = await emotionService.predictEmotionFromImage(req.file.buffer, filename, 'upload');
     const normalized = normalizeEmotion(prediction.emotion);
     const confidence = prediction.confidence || 0;
     const allPreds = prediction.allPredictions || {};
@@ -795,29 +796,117 @@ app.post('/api/predict-emotion', upload.single('image'), async (req, res) => {
   }
 
   try {
-    const prediction = await emotionService.predictEmotionFromImage(req.file.buffer, 'file');
+    const filename = req.file.originalname || 'upload.jpg';
+    const source = filename.toLowerCase() === 'camera.jpg' ? 'camera' : 'upload';
+    const prediction = await emotionService.predictEmotionFromImage(req.file.buffer, filename, source);
     // Normalize to internal labels for UI; show Uncertain only when flagged
     const isUncertain = String(prediction.emotion || '').toLowerCase() === 'uncertain';
     const normalized = normalizeEmotion(prediction.emotion);
 
-    // Build harmonized predictions using dataset labels for charts
-    const datasetLabels = ['Natural','anger','fear','joy','sadness','surprise'];
-    const harmonizedPreds = {};
+    // Build harmonized predictions.
+    // Camera mode excludes "Natural" in UI, but we still inspect raw Natural score
+    // for camera-only rescue rules.
+    const rawDatasetLabels = ['Natural','anger','fear','joy','sadness','surprise'];
+    const rawPreds = {};
     if (prediction.allPredictions) {
-      for (const key of datasetLabels) {
+      for (const key of rawDatasetLabels) {
         const found = Object.prototype.hasOwnProperty.call(prediction.allPredictions, key)
           ? prediction.allPredictions[key]
           : 0;
-        harmonizedPreds[key] = found;
+        rawPreds[key] = Number(found || 0);
       }
     }
 
+    // Camera breakdown excludes Natural and is normalized so bars are meaningful.
+    const harmonizedPreds = source === 'camera'
+      ? {
+          anger: Number(rawPreds.anger || 0),
+          fear: Number(rawPreds.fear || 0),
+          joy: Number(rawPreds.joy || 0),
+          sadness: Number(rawPreds.sadness || 0),
+          surprise: Number(rawPreds.surprise || 0)
+        }
+      : {
+          Natural: Number(rawPreds.Natural || 0),
+          anger: Number(rawPreds.anger || 0),
+          fear: Number(rawPreds.fear || 0),
+          joy: Number(rawPreds.joy || 0),
+          sadness: Number(rawPreds.sadness || 0),
+          surprise: Number(rawPreds.surprise || 0)
+        };
+
+    if (source === 'camera') {
+      const sum = Object.values(harmonizedPreds).reduce((acc, v) => acc + Number(v || 0), 0);
+      if (sum > 0) {
+        for (const k of Object.keys(harmonizedPreds)) {
+          harmonizedPreds[k] = Number(harmonizedPreds[k]) / sum;
+        }
+      }
+    }
+
+    // Camera-only decision logic with surprise rescue.
+    function decideCameraEmotionFromBreakdown(preds, naturalRaw) {
+      const labels = ['anger', 'fear', 'joy', 'sadness', 'surprise'];
+      const scored = labels
+        .map(label => [label, Number(preds[label] || 0)])
+        .sort((a, b) => b[1] - a[1]);
+
+      let topLabel = scored[0]?.[0] || 'Uncertain';
+      let topConf = Number(scored[0]?.[1] || 0);
+      const secondConf = Number(scored[1]?.[1] || 0);
+      let margin = topConf - secondConf;
+
+      const CAMERA_MIN_MARGIN = Number(process.env.CAMERA_MIN_MARGIN || 0.05);
+      const CAMERA_MIN_CONF_EMOTION = Number(process.env.CAMERA_MIN_CONF_EMOTION || 0.20);
+
+      // Surprise rescue:
+      // If Natural dominates in raw model output and, after removing Natural,
+      // fear dominates with very low explicit surprise, treat as surprise.
+      const fear = Number(preds.fear || 0);
+      const joy = Number(preds.joy || 0);
+      const surprise = Number(preds.surprise || 0);
+      if (
+        topLabel === 'fear' &&
+        Number(naturalRaw || 0) >= 0.60 &&
+        fear >= 0.55 &&
+        surprise <= 0.12 &&
+        joy >= 0.05
+      ) {
+        return { emotion: 'surprise', confidence: Math.max(fear, surprise), rescuedFromFear: true };
+      }
+
+      if (topConf <= 0 || topConf < CAMERA_MIN_CONF_EMOTION || margin < CAMERA_MIN_MARGIN) {
+        return { emotion: 'Uncertain', confidence: topConf };
+      }
+      return { emotion: topLabel, confidence: topConf };
+    }
+
+    const cameraDecision = source === 'camera'
+      ? decideCameraEmotionFromBreakdown(harmonizedPreds, rawPreds.Natural)
+      : null;
+    let responsePredictions = harmonizedPreds;
+    if (source === 'camera' && cameraDecision?.rescuedFromFear) {
+      // The model often encodes surprised faces under fear after removing Natural.
+      // Keep UI breakdown consistent with the rescued headline label.
+      responsePredictions = { ...harmonizedPreds };
+      const rescuedSurprise = Number(harmonizedPreds.fear || 0);
+      const priorSurprise = Number(harmonizedPreds.surprise || 0);
+      responsePredictions.surprise = rescuedSurprise;
+      responsePredictions.fear = priorSurprise;
+    }
+    const finalEmotion = source === 'camera'
+      ? cameraDecision.emotion
+      : (isUncertain ? 'Uncertain' : normalized);
+    const finalConfidence = source === 'camera'
+      ? cameraDecision.confidence
+      : prediction.confidence;
+
     return res.json({
       success: true,
-      emotion: isUncertain ? 'Uncertain' : normalized,
+      emotion: finalEmotion,
       original_emotion: prediction.emotion,
-      confidence: prediction.confidence,
-      all_predictions: harmonizedPreds
+      confidence: finalConfidence,
+      all_predictions: responsePredictions
     });
   } catch (error) {
     console.error('Error in /api/predict-emotion:', error.message || error);

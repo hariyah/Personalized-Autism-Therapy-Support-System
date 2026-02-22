@@ -1,0 +1,10 @@
+{
+  "angry": "anger",
+  "disgust": "uncertain",
+  "unknown": "uncertain",
+  "fear": "fear",
+  "happy": "joy",
+  "sad": "sadness",
+  "surprise": "surprise",
+  "neutral": "Natural"
+}
