@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const axios = require('axios');
 const emotionService = require('./emotionService');
+const ollamaService = require('./ollamaService');
 const app = express();
 const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 
@@ -397,6 +397,31 @@ const activities = [
   }
 ];
 
+const SENSORY_KEYWORD_RE =
+  /\bsensory\b|\bsensory[- ]?(break|activity|activities|tool|tools|tray|input|processing|exploration|regulation)\b/i;
+
+function activityTextForFilter(activity) {
+  const parts = [
+    activity?.title,
+    activity?.description,
+    activity?.recommendedReason,
+    ...(Array.isArray(activity?.materials) ? activity.materials : []),
+    ...(Array.isArray(activity?.benefits) ? activity.benefits : []),
+    ...(Array.isArray(activity?.interestTags) ? activity.interestTags : [])
+  ];
+  return parts.join(' ').toLowerCase();
+}
+
+function isSensoryActivity(activity) {
+  if (!activity || typeof activity !== 'object') return false;
+  return SENSORY_KEYWORD_RE.test(activityTextForFilter(activity));
+}
+
+function filterNonSensoryActivities(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter((activity) => !isSensoryActivity(activity));
+}
+
 // Emotion label harmonization
 // Internal canonical labels used in recommendation engine: happy, sad, anxious, calm, excited, frustrated, neutral
 // Dataset model labels: Natural, anger, fear, joy, sadness, surprise
@@ -509,9 +534,11 @@ function getRecommendations(childId, limit = 6) {
   if (!child) return [];
 
   const currentEmotion = child.currentEmotion || "neutral";
+  const candidateActivities = filterNonSensoryActivities(activities);
+  if (!candidateActivities.length) return [];
 
   // Score activities based on all 5 factors
-  const scoredActivities = activities.map(activity => {
+  const scoredActivities = candidateActivities.map(activity => {
     let score = 0;
     
     // FACTOR 1: Emotion-based scoring (Weight: 15 points)
@@ -592,6 +619,705 @@ function getRecommendations(childId, limit = 6) {
     .map(({ score, ...activity }) => activity);
 }
 
+function normalizeTokens(values) {
+  if (!Array.isArray(values)) return [];
+  return values
+    .map(v => String(v || '').trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function mapBudgetLevel(financialStatus) {
+  const v = String(financialStatus || '').trim().toLowerCase();
+  if (v === 'free') return 0;
+  if (v === 'low') return 1;
+  if (v === 'medium' || v === 'moderate') return 2;
+  if (v === 'high') return 3;
+  return 2;
+}
+
+function mapCostLevel(costLevel) {
+  const v = String(costLevel || '').trim().toLowerCase();
+  if (v === 'free') return 0;
+  if (v === 'low') return 1;
+  if (v === 'medium') return 2;
+  if (v === 'high') return 3;
+  return 1;
+}
+
+function mapSocialContextLevel(socialStatus) {
+  const v = String(socialStatus || '').trim().toLowerCase();
+  if (['alone', 'none'].includes(v)) return 0;
+  if (['with-parent', 'with parent', 'with-family', 'with family', 'family', 'caregiver', 'low'].includes(v)) return 1;
+  if (['medium'].includes(v)) return 2;
+  if (['group', 'community', 'high'].includes(v)) return 3;
+  return 1;
+}
+
+function mapSocialRequirementLevel(socialRequirement) {
+  const v = String(socialRequirement || '').trim().toLowerCase();
+  if (v === 'none') return 0;
+  if (v === 'low') return 1;
+  if (v === 'medium') return 2;
+  if (v === 'high') return 3;
+  return 1;
+}
+
+function toInternalEmotion(emotion) {
+  const raw = String(emotion || '').trim();
+  if (!raw) return 'neutral';
+  if (datasetToInternalMap[raw]) return datasetToInternalMap[raw];
+  const lower = raw.toLowerCase();
+  if (['happy', 'sad', 'anxious', 'calm', 'excited', 'frustrated', 'neutral'].includes(lower)) {
+    return lower;
+  }
+  return 'neutral';
+}
+
+function preferredCategoryFromEmotion(emotion) {
+  const e = toInternalEmotion(emotion);
+  if (['happy', 'excited'].includes(e)) return 'social';
+  if (['sad', 'anxious', 'calm'].includes(e)) return 'emotional';
+  if (['frustrated'].includes(e)) return 'behavioral';
+  return 'behavioral';
+}
+
+function matchesAgeRange(activityAgeRange, childAge) {
+  const age = Number(childAge);
+  if (!Number.isFinite(age)) return true;
+  const text = String(activityAgeRange || '');
+  const match = text.match(/(\d+)\s*-\s*(\d+)/);
+  if (!match) return true;
+  const min = Number(match[1]);
+  const max = Number(match[2]);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return true;
+  return age >= min && age <= max;
+}
+
+const INTEREST_KEYWORD_MAP = {
+  train: ['train', 'vehicle', 'rail'],
+  cartoon: ['cartoon', 'animation', 'character'],
+  music: ['music', 'rhythm', 'song', 'instrument', 'dance'],
+  dance: ['dance', 'movement', 'rhythm', 'music'],
+  art: ['art', 'draw', 'paint', 'creative', 'craft'],
+  sports: ['sport', 'movement', 'physical', 'ball'],
+  puzzles: ['puzzle', 'jigsaw', 'maze', 'riddle', 'logic'],
+  outdoors: ['outdoor', 'nature', 'park', 'garden', 'trail', 'bird'],
+  reading: ['reading', 'book', 'story', 'journal'],
+  visual: ['visual', 'picture', 'card', 'schedule'],
+  structured: ['structured', 'routine', 'schedule', 'first-then'],
+  quiet: ['quiet', 'calm', 'mindful', 'breathing'],
+  'play-based': ['play', 'role-play', 'pretend', 'interactive'],
+  movement: ['movement', 'dance', 'physical', 'active'],
+  'hands-on': ['hands-on', 'craft', 'build'],
+  sensory: ['calm', 'focus', 'structured'],
+  artistic: ['art', 'draw', 'paint', 'creative'],
+  creative: ['creative', 'art', 'craft', 'expression'],
+  writing: ['writing', 'journal', 'story', 'book'],
+  'trains, cars, and vehicles': ['train', 'car', 'vehicle', 'movement'],
+  dinosaurs: ['dinosaur', 'fossil', 'prehistoric', 'dino'],
+  'weather and space': ['weather', 'space', 'star', 'planet', 'outdoor'],
+  pets: ['pet', 'animal', 'care'],
+  'birdwatching or insects': ['bird', 'insect', 'nature', 'outdoor'],
+  'marine life': ['marine', 'ocean', 'fish', 'water', 'nature'],
+  'drawing, painting, and art creation': ['draw', 'paint', 'art', 'creative'],
+  crafting: ['craft', 'hands-on', 'create', 'build'],
+  'cultural traditions': ['culture', 'family', 'story', 'social'],
+  'books and stories': ['book', 'story', 'reading']
+};
+
+const INTEREST_NORMALIZATION_MAP = {
+  dinosaur: 'dinosaurs',
+  dinasour: 'dinosaurs',
+  dinasours: 'dinosaurs',
+  puzzle: 'puzzles',
+  outside: 'outdoors',
+  outdoor: 'outdoors',
+  'out door': 'outdoors',
+  'play based': 'play-based',
+  'with parent': 'with-parent',
+  'with family': 'with-family'
+};
+
+function getInterestKeywords(interest) {
+  const raw = String(interest || '').trim().toLowerCase();
+  if (!raw) return [];
+  const canonical = INTEREST_NORMALIZATION_MAP[raw] || raw;
+  if (INTEREST_KEYWORD_MAP[canonical]) return INTEREST_KEYWORD_MAP[canonical];
+  const parts = raw.split(/[^a-z0-9]+/).filter(token => token.length >= 3);
+  return parts.length ? parts : [raw];
+}
+
+function normalizeSelectedInterests(values) {
+  return normalizeTokens(values).map((interest) => INTEREST_NORMALIZATION_MAP[interest] || interest);
+}
+
+function activitySearchText(activity) {
+  const content = [
+    activity?.title,
+    activity?.description,
+    ...(Array.isArray(activity?.benefits) ? activity.benefits : []),
+    ...(Array.isArray(activity?.materials) ? activity.materials : []),
+    ...(Array.isArray(activity?.interestTags) ? activity.interestTags : [])
+  ]
+    .map(v => String(v || '').toLowerCase())
+    .join(' ');
+  return content;
+}
+
+function toWordSet(text) {
+  return new Set(
+    String(text || '')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+  );
+}
+
+function keywordMatchesWordSet(keyword, wordSet) {
+  const parts = String(keyword || '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  if (!parts.length) return false;
+  return parts.every((part) => wordSet.has(part));
+}
+
+function getMatchedInterests(activity, selectedInterests) {
+  const interests = normalizeSelectedInterests(selectedInterests);
+  if (!interests.length) return [];
+  const textWords = toWordSet(activitySearchText(activity));
+  const tags = normalizeTokens(activity.interestTags || []);
+  const tagWords = toWordSet(tags.join(' '));
+  const matched = [];
+
+  for (const interest of interests) {
+    const keywords = getInterestKeywords(interest);
+    const hasMatch = keywords.some((keyword) =>
+      keywordMatchesWordSet(keyword, textWords) || keywordMatchesWordSet(keyword, tagWords)
+    );
+    if (hasMatch) matched.push(interest);
+  }
+  return matched;
+}
+
+function getMatchedInterestsFromCoreText(activity, selectedInterests) {
+  const interests = normalizeSelectedInterests(selectedInterests);
+  if (!interests.length) return [];
+  const coreText = [
+    activity?.title,
+    activity?.description,
+    ...(Array.isArray(activity?.benefits) ? activity.benefits : []),
+    ...(Array.isArray(activity?.materials) ? activity.materials : [])
+  ]
+    .map(v => String(v || ''))
+    .join(' ');
+  const textWords = toWordSet(coreText);
+  const matched = [];
+
+  for (const interest of interests) {
+    const keywords = getInterestKeywords(interest);
+    const hasMatch = keywords.some((keyword) => keywordMatchesWordSet(keyword, textWords));
+    if (hasMatch) matched.push(interest);
+  }
+  return matched;
+}
+
+function fitsBudget(activity, financialStatus) {
+  return mapCostLevel(activity?.costLevel) <= mapBudgetLevel(financialStatus);
+}
+
+function fitsSocialContext(activity, socialStatus) {
+  return mapSocialRequirementLevel(activity?.socialRequirement) <= mapSocialContextLevel(socialStatus);
+}
+
+function computeAgeRangeForChild(age) {
+  const n = Number(age);
+  if (!Number.isFinite(n) || n <= 0) return '4-12 years';
+  const min = Math.max(3, Math.floor(n - 2));
+  const max = Math.max(min + 1, Math.ceil(n + 3));
+  return `${min}-${max} years`;
+}
+
+function chooseDifficultyBySeverity(severity) {
+  const s = Number(severity);
+  if (!Number.isFinite(s)) return 'easy';
+  if (s >= 4) return 'easy';
+  if (s >= 3) return 'easy';
+  return 'medium';
+}
+
+function chooseCostByBudget(financialStatus) {
+  const level = mapBudgetLevel(financialStatus);
+  if (level <= 0) return 'free';
+  if (level === 1) return 'low';
+  if (level === 2) return 'medium';
+  return 'high';
+}
+
+function chooseSocialRequirementByContext(socialStatus) {
+  const level = mapSocialContextLevel(socialStatus);
+  if (level <= 0) return 'none';
+  if (level === 1) return 'low';
+  if (level === 2) return 'medium';
+  return 'high';
+}
+
+function buildEmotionMappingForContext(emotion) {
+  const mapping = {
+    happy: 0.55,
+    sad: 0.55,
+    anxious: 0.55,
+    calm: 0.55,
+    excited: 0.55,
+    frustrated: 0.55,
+    neutral: 0.55
+  };
+  const internal = toInternalEmotion(emotion);
+  mapping[internal] = 0.95;
+  return mapping;
+}
+
+const INTEREST_ACTIVITY_TEMPLATES = {
+  puzzles: {
+    title: 'Puzzle Treasure Hunt',
+    category: 'behavioral',
+    description:
+      'Create a short puzzle hunt with picture clues and logic steps, then complete a final jigsaw or maze challenge.',
+    duration: '20-30 minutes',
+    materials: ['Printable puzzle clues', 'Simple jigsaw or maze sheets', 'Reward sticker'],
+    benefits: ['Problem solving', 'Attention', 'Task completion'],
+    tags: ['puzzles', 'logic', 'structured'],
+    icon: 'puzzle'
+  },
+  outdoors: {
+    title: 'Nature Scavenger Walk',
+    category: 'social',
+    description:
+      'Take a guided outdoor walk to find items from a visual checklist and talk through each discovery.',
+    duration: '20-35 minutes',
+    materials: ['Visual scavenger checklist', 'Small collection bag', 'Water bottle'],
+    benefits: ['Outdoor exploration', 'Communication', 'Flexible thinking'],
+    tags: ['outdoors', 'nature', 'movement'],
+    icon: 'outdoor'
+  },
+  dinosaurs: {
+    title: 'Dinosaur Fossil Discovery',
+    category: 'emotional',
+    description:
+      'Set up a dinosaur themed fossil dig using clue cards and discuss each find through simple story prompts.',
+    duration: '25-35 minutes',
+    materials: ['Toy dinosaurs or fossil cards', 'Dinosaur clue cards', 'Dinosaur picture guide'],
+    benefits: ['Imaginative play', 'Structured exploration', 'Language growth'],
+    tags: ['dinosaurs', 'play-based', 'structured'],
+    icon: 'dinosaur'
+  }
+};
+
+function toTitleCase(text) {
+  return String(text || '')
+    .split(/[\s\-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function getInterestIconKey(interest) {
+  const key = String(interest || '').toLowerCase();
+  if (/(music|song|rhythm|melody)/.test(key)) return 'music';
+  if (/(reading|book|story|journal|writing)/.test(key)) return 'reading';
+  if (/(puzzle|logic|maze)/.test(key)) return 'puzzle';
+  if (/(outdoor|nature|walk|trail)/.test(key)) return 'outdoor';
+  if (/(dinosaur|fossil)/.test(key)) return 'dinosaur';
+  if (/(art|draw|paint|craft|creative)/.test(key)) return 'art';
+  return 'activity';
+}
+
+function buildInterestAnchorActivities(context, limit = 6) {
+  const safeLimit = Math.min(Math.max(Number(limit) || 6, 1), 10);
+  const selectedInterests = [...new Set(normalizeSelectedInterests(context.interests))]
+    .filter((interest) => interest !== 'sensory')
+    .slice(0, safeLimit);
+  if (!selectedInterests.length) return [];
+
+  const baseCost = chooseCostByBudget(context.financialStatus);
+  const baseSocial = chooseSocialRequirementByContext(context.socialStatus);
+  const baseDifficulty = chooseDifficultyBySeverity(context.autismProfile?.severity);
+  const emotionMapping = buildEmotionMappingForContext(context.emotion);
+  const ageRange = computeAgeRangeForChild(context.childAge);
+  const anchors = [];
+  const usedTitles = new Set();
+
+  function addAnchor(template, primaryInterest, extraInterests = []) {
+    if (anchors.length >= safeLimit) return;
+    const title = String(template?.title || '').trim();
+    if (!title) return;
+    const key = title.toLowerCase();
+    if (usedTitles.has(key)) return;
+    usedTitles.add(key);
+
+    const selectedMention = [...new Set([primaryInterest, ...extraInterests])]
+      .filter((interest) => selectedInterests.includes(interest));
+    anchors.push({
+      id: 800000 + anchors.length,
+      title,
+      category: template.category || preferredCategoryFromEmotion(context.emotion),
+      description: template.description || `Use a structured activity centered on ${primaryInterest}.`,
+      duration: template.duration || '15-25 minutes',
+      difficulty: baseDifficulty,
+      materials: template.materials || ['Simple themed materials', 'Visual instruction cards'],
+      benefits: template.benefits || ['Interest-based engagement', 'Communication', 'Emotional regulation'],
+      ageRange,
+      icon: template.icon || getInterestIconKey(primaryInterest),
+      costLevel: baseCost,
+      socialRequirement: baseSocial,
+      emotionMapping,
+      interestTags: [...new Set([primaryInterest, ...(extraInterests || []), ...(template.tags || [])])],
+      recommendedReason:
+        `Designed around selected interests (${selectedMention.join(', ')}) while considering ` +
+        `${toInternalEmotion(context.emotion)} emotion, ${context.financialStatus} budget, and ${context.socialStatus} social setting.`
+    });
+  }
+
+  for (const interest of selectedInterests) {
+    const template = INTEREST_ACTIVITY_TEMPLATES[interest] || {
+      title: `${toTitleCase(interest)} Focus Session`,
+      category: preferredCategoryFromEmotion(context.emotion),
+      description: `Use a structured activity centered on ${interest} with visual supports and short guided steps.`,
+      duration: '15-25 minutes',
+      materials: ['Simple themed materials', 'Visual instruction cards'],
+      benefits: ['Interest-based engagement', 'Communication', 'Emotional regulation'],
+      tags: [interest],
+      icon: getInterestIconKey(interest)
+    };
+    addAnchor(template, interest);
+  }
+
+  const has = (interest) => selectedInterests.includes(interest);
+  if (has('puzzles') && has('outdoors')) {
+    addAnchor(
+      {
+        title: 'Outdoor Puzzle Trail',
+        category: 'social',
+        description: 'Set up puzzle clues around an outdoor space and solve each step to complete a final trail challenge.',
+        duration: '25-35 minutes',
+        materials: ['Puzzle clue cards', 'Outdoor checklist', 'Pencil or marker'],
+        benefits: ['Problem solving', 'Outdoor engagement', 'Flexible thinking'],
+        tags: ['puzzles', 'outdoors', 'nature'],
+        icon: 'puzzle'
+      },
+      'puzzles',
+      ['outdoors']
+    );
+  }
+  if (has('outdoors') && has('dinosaurs')) {
+    addAnchor(
+      {
+        title: 'Outdoor Dinosaur Fossil Hunt',
+        category: 'social',
+        description: 'Create an outdoor dinosaur fossil hunt with hidden clues and a simple discovery story at each stop.',
+        duration: '25-40 minutes',
+        materials: ['Dinosaur clue cards', 'Small toy fossils', 'Collection bag'],
+        benefits: ['Interest engagement', 'Communication', 'Outdoor exploration'],
+        tags: ['outdoors', 'dinosaurs', 'nature'],
+        icon: 'dinosaur'
+      },
+      'outdoors',
+      ['dinosaurs']
+    );
+  }
+  if (has('puzzles') && has('dinosaurs')) {
+    addAnchor(
+      {
+        title: 'Dinosaur Puzzle Expedition',
+        category: 'behavioral',
+        description: 'Solve dinosaur themed puzzles and sequence cards to complete a mini expedition mission.',
+        duration: '20-30 minutes',
+        materials: ['Dinosaur puzzle sheets', 'Sequence cards', 'Sticker rewards'],
+        benefits: ['Planning skills', 'Attention', 'Interest-based motivation'],
+        tags: ['puzzles', 'dinosaurs', 'logic'],
+        icon: 'puzzle'
+      },
+      'puzzles',
+      ['dinosaurs']
+    );
+  }
+
+  let variant = 1;
+  while (anchors.length < safeLimit) {
+    const interest = selectedInterests[anchors.length % selectedInterests.length];
+    addAnchor(
+      {
+        title: `${toTitleCase(interest)} Adventure ${variant}`,
+        category: preferredCategoryFromEmotion(context.emotion),
+        description: `Run a short guided ${interest} activity with clear steps, visuals, and structured turn-taking.`,
+        duration: '15-25 minutes',
+        materials: ['Themed activity cards', 'Simple props', 'Progress chart'],
+        benefits: ['Interest engagement', 'Self-regulation', 'Communication'],
+        tags: [interest],
+        icon: getInterestIconKey(interest)
+      },
+      interest
+    );
+    variant += 1;
+  }
+
+  return anchors;
+}
+
+function getCandidatePoolForContext(context, desiredCount) {
+  const safeActivities = filterNonSensoryActivities(activities);
+  const minNeeded = Math.max(3, Math.min(Number(desiredCount) || 6, safeActivities.length));
+  const interests = normalizeSelectedInterests(context.interests);
+  const strict = safeActivities.filter(
+    (activity) => fitsBudget(activity, context.financialStatus) && fitsSocialContext(activity, context.socialStatus)
+  );
+  const strictInterestMatches = interests.length
+    ? strict.filter((activity) => getMatchedInterests(activity, interests).length > 0).length
+    : strict.length;
+  if (strict.length >= minNeeded && (!interests.length || strictInterestMatches > 0)) return strict;
+
+  const budgetRelaxedMax = Math.min(3, mapBudgetLevel(context.financialStatus) + 1);
+  const socialRelaxedMax = Math.min(3, mapSocialContextLevel(context.socialStatus) + 1);
+  const relaxed = safeActivities.filter(
+    (activity) =>
+      mapCostLevel(activity?.costLevel) <= budgetRelaxedMax &&
+      mapSocialRequirementLevel(activity?.socialRequirement) <= socialRelaxedMax
+  );
+
+  if (interests.length) {
+    const relaxedInterestMatches = relaxed.filter(
+      (activity) => getMatchedInterests(activity, interests).length > 0
+    ).length;
+    if (relaxedInterestMatches > strictInterestMatches) return relaxed;
+  }
+  if (relaxed.length >= minNeeded) return relaxed;
+  return strict.length > 0 ? strict : safeActivities;
+}
+
+function scoreActivityByFormContext(activity, context) {
+  const interestTokens = normalizeSelectedInterests(context.interests);
+  const matchedInterests = getMatchedInterests(activity, interestTokens);
+  const activityText = activitySearchText(activity);
+  const specificNeeds = normalizeTokens(context.autismProfile?.specificNeeds || []);
+
+  let score = 0;
+  const budgetFits = fitsBudget(activity, context.financialStatus);
+  const socialFits = fitsSocialContext(activity, context.socialStatus);
+  const internalEmotion = toInternalEmotion(context.emotion);
+  const emotionScore = Number(activity.emotionMapping?.[internalEmotion] || 0);
+  const preferredCategory = preferredCategoryFromEmotion(context.emotion);
+
+  const matches = {
+    interests: matchedInterests,
+    needs: specificNeeds.filter(need => activityText.includes(need))
+  };
+  score += emotionScore * 35;
+  if (activity.category === preferredCategory) score += 12;
+
+  if (interestTokens.length > 0) {
+    score += matches.interests.length * 16;
+    if (matches.interests.length === 0) score -= 12;
+  }
+
+  if (budgetFits) score += 18;
+  else score -= (mapCostLevel(activity.costLevel) - mapBudgetLevel(context.financialStatus)) * 30;
+  if (socialFits) score += 16;
+  else score -= (mapSocialRequirementLevel(activity.socialRequirement) - mapSocialContextLevel(context.socialStatus)) * 24;
+
+  const severity = Number(context.autismProfile?.severity);
+  const difficulty = String(activity.difficulty || '').toLowerCase();
+  if (Number.isFinite(severity)) {
+    if (severity >= 4 && difficulty === 'easy') score += 8;
+    else if (severity <= 2 && (difficulty === 'medium' || difficulty === 'hard')) score += 4;
+    else if (severity >= 3 && difficulty !== 'hard') score += 4;
+  }
+
+  if (matches.needs.length > 0) score += Math.min(10, matches.needs.length * 5);
+  if (matchesAgeRange(activity.ageRange, context.childAge)) score += 4;
+
+  return {
+    score,
+    matches,
+    fit: {
+      budgetFits,
+      socialFits,
+      emotionScore
+    }
+  };
+}
+
+function buildReasonFromMatches(activity, context, matches, fit) {
+  const reasons = [];
+  if (matches.interests.length > 0) {
+    reasons.push(`matches interests (${matches.interests.slice(0, 2).join(', ')})`);
+  }
+  if (matches.needs.length > 0) {
+    reasons.push(`supports needs (${matches.needs.slice(0, 2).join(', ')})`);
+  }
+  if (fit?.budgetFits) {
+    reasons.push(`fits the ${context.financialStatus} budget`);
+  }
+  if (fit?.socialFits) {
+    reasons.push(`fits the ${context.socialStatus} social setting`);
+  }
+  if (!fit?.budgetFits && matches.interests.length > 0) {
+    reasons.push(`is slightly above the ${context.financialStatus} budget but keeps interest alignment`);
+  }
+  if (!fit?.socialFits && matches.interests.length > 0) {
+    reasons.push(`may need extra support for the ${context.socialStatus} social setting`);
+  }
+  const emotion = toInternalEmotion(context.emotion);
+  if (Number(fit?.emotionScore || 0) >= 0.55) {
+    reasons.push(`aligns with current emotion (${emotion})`);
+  }
+  if (reasons.length === 0) {
+    return 'Matches submitted factors across emotion, interests, budget, and social setting.';
+  }
+  return `Recommended because it ${reasons.slice(0, 4).join(', ')}.`;
+}
+
+function selectFormAwareRecommendations(scored, context, limit) {
+  const safeLimit = Math.min(Math.max(Number(limit) || 6, 1), 10);
+  if (!scored.length) return [];
+  const sorted = [...scored].sort((a, b) => b.score - a.score);
+  const selected = [];
+  const usedIds = new Set();
+
+  const interestsProvided = normalizeSelectedInterests(context.interests).length > 0;
+  if (interestsProvided) {
+    const withInterestsAndConstraints = sorted.filter(
+      item => item.matches.interests.length > 0 && item.fit.budgetFits && item.fit.socialFits
+    );
+    const minInterestCoverage = Math.min(
+      withInterestsAndConstraints.length,
+      Math.max(2, Math.ceil(safeLimit * 0.6))
+    );
+    for (const item of withInterestsAndConstraints) {
+      if (selected.length >= minInterestCoverage) break;
+      selected.push(item);
+      usedIds.add(item.activity.id);
+    }
+  }
+
+  for (const item of sorted) {
+    if (selected.length >= safeLimit) break;
+    if (usedIds.has(item.activity.id)) continue;
+    selected.push(item);
+    usedIds.add(item.activity.id);
+  }
+
+  // If strict constraints remove all interest-aligned options, include one best tradeoff item.
+  if (interestsProvided) {
+    const selectedInterestCount = selected.filter(item => item.matches.interests.length > 0).length;
+    if (selectedInterestCount === 0) {
+      const interestTradeoff = sorted.find(item => item.matches.interests.length > 0 && !usedIds.has(item.activity.id));
+      if (interestTradeoff) {
+        if (selected.length >= safeLimit) {
+          const removed = selected.pop();
+          if (removed) usedIds.delete(removed.activity.id);
+        }
+        selected.push(interestTradeoff);
+        usedIds.add(interestTradeoff.activity.id);
+      }
+    }
+  }
+
+  return selected.slice(0, safeLimit);
+}
+
+function getFormAwareFallbackRecommendations(context, limit = 6) {
+  const safeLimit = Math.min(Math.max(Number(limit) || 6, 1), 10);
+  const interestAnchors = filterNonSensoryActivities(buildInterestAnchorActivities(context, safeLimit));
+  const basePool = getCandidatePoolForContext(context, safeLimit);
+  const candidatePool = filterNonSensoryActivities([...interestAnchors, ...basePool]).filter((activity, index, arr) => {
+    const key = String(activity?.title || '').trim().toLowerCase();
+    if (!key) return false;
+    return arr.findIndex((item) => String(item?.title || '').trim().toLowerCase() === key) === index;
+  });
+  const scored = candidatePool
+    .map(activity => {
+      const { score, matches, fit } = scoreActivityByFormContext(activity, context);
+      return { activity, score, matches, fit };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const selected = selectFormAwareRecommendations(scored, context, safeLimit);
+  return selected
+    .map(({ activity, matches, fit }) => ({
+      ...activity,
+      recommendedReason: buildReasonFromMatches(activity, context, matches, fit)
+    }));
+}
+
+function isBrokenRecommendationTitle(title) {
+  const t = String(title || '').trim().toLowerCase();
+  if (!t || t.length < 3) return true;
+  if (/[{}\[\]]/.test(t)) return true;
+  if (t.includes('":"') || t.includes('",') || t.includes('":')) return true;
+  if (/^(social|behavioral|emotional)\s+activity(?:\s+\d+)?$/.test(t)) return true;
+  if (/^activity(?:\s+\d+)?$/.test(t)) return true;
+  if (/^(category|difficulty|duration|name|quantity|materials?|benefits?|social(requirement)?|cost(level)?|interest(tags)?)\s*["']?\s*:/.test(t)) {
+    return true;
+  }
+  return false;
+}
+
+function shouldUseFormFallback(generated, context = null, expectedCount = null) {
+  if (!Array.isArray(generated) || generated.length === 0) return true;
+  if (generated.some((item) => isSensoryActivity(item))) return true;
+  if (Number.isFinite(Number(expectedCount))) {
+    const minAcceptable = Math.max(3, Math.ceil(Number(expectedCount) * 0.8));
+    if (generated.length < minAcceptable) return true;
+  }
+  const brokenTitleCount = generated.filter(item => isBrokenRecommendationTitle(item?.title)).length;
+  if (brokenTitleCount >= Math.ceil(generated.length / 3)) return true;
+
+  if (!context) return false;
+  const interestsProvided = normalizeSelectedInterests(context.interests).length > 0;
+  const interestMatchedCount = generated.filter(
+    (item) => getMatchedInterestsFromCoreText(item, context.interests).length > 0
+  ).length;
+  const budgetMismatchCount = generated.filter((item) => !fitsBudget(item, context.financialStatus)).length;
+  const socialMismatchCount = generated.filter((item) => !fitsSocialContext(item, context.socialStatus)).length;
+
+  if (interestsProvided) {
+    const minInterestCoverage = Math.max(2, Math.ceil(generated.length * 0.6));
+    if (interestMatchedCount < minInterestCoverage) return true;
+  }
+  if (budgetMismatchCount > Math.floor(generated.length / 2)) return true;
+  if (socialMismatchCount > Math.floor(generated.length / 2)) return true;
+  return false;
+}
+
+function normalizeChildFinancialStatus(financialStatus) {
+  const level = mapBudgetLevel(financialStatus);
+  if (level <= 1) return 'low';
+  if (level === 2) return 'medium';
+  return 'high';
+}
+
+function normalizeChildSocialStatus(socialStatus) {
+  const level = mapSocialContextLevel(socialStatus);
+  if (level <= 1) return 'low';
+  if (level === 2) return 'medium';
+  return 'high';
+}
+
+function deriveNeedsFromSeverity(severity) {
+  const s = Number(severity);
+  if (!Number.isFinite(s)) {
+    return { social: 'medium', behavioral: 'medium', emotional: 'medium' };
+  }
+  if (s >= 4) return { social: 'high', behavioral: 'high', emotional: 'high' };
+  if (s >= 3) return { social: 'medium', behavioral: 'high', emotional: 'medium' };
+  return { social: 'medium', behavioral: 'medium', emotional: 'medium' };
+}
+
+function sanitizeStringArray(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map((v) => String(v || '').trim()).filter(Boolean))];
+}
+
 // API Routes
 app.get('/api/activities', (req, res) => {
   const { category } = req.query;
@@ -612,6 +1338,52 @@ app.get('/api/activities/:id', (req, res) => {
 
 app.get('/api/children', (req, res) => {
   res.json(childProfiles);
+});
+
+app.post('/api/children', (req, res) => {
+  const name = String(req.body?.name || '').trim();
+  const age = Number(req.body?.age);
+
+  if (!name) {
+    return res.status(400).json({ error: 'Name is required.' });
+  }
+  if (!Number.isFinite(age) || age < 1 || age > 18) {
+    return res.status(400).json({ error: 'Age must be between 1 and 18.' });
+  }
+
+  const severityRaw = req.body?.autismDetails?.severity ?? req.body?.autismSeverity ?? 3;
+  const severity = Math.max(1, Math.min(5, Number.isFinite(Number(severityRaw)) ? Number(severityRaw) : 3));
+  const autismType = String(req.body?.autismDetails?.type || req.body?.autismType || 'ASD-2').trim() || 'ASD-2';
+  const specificNeeds = sanitizeStringArray(req.body?.autismDetails?.specificNeeds || []);
+
+  const interests = normalizeSelectedInterests(req.body?.interests || []);
+  const preferences = interests.length > 0 ? interests.slice(0, 8) : ['visual', 'structured'];
+  const socialStatus = normalizeChildSocialStatus(req.body?.socialStatus);
+  const financialStatus = normalizeChildFinancialStatus(req.body?.financialStatus);
+
+  const nextId = childProfiles.reduce((max, child) => Math.max(max, Number(child.id) || 0), 0) + 1;
+  const newChild = {
+    id: nextId,
+    name,
+    age: Math.round(age),
+    needs: deriveNeedsFromSeverity(severity),
+    preferences,
+    strengths: sanitizeStringArray(req.body?.strengths || []),
+    challenges: sanitizeStringArray(req.body?.challenges || []),
+    socialStatus,
+    financialStatus,
+    autismDetails: {
+      severity,
+      type: autismType,
+      specificNeeds
+    },
+    interests,
+    currentEmotion: 'neutral',
+    emotionHistory: []
+  };
+
+  childProfiles.push(newChild);
+  return res.status(201).json(newChild);
 });
 
 app.get('/api/children/:id', (req, res) => {
@@ -933,7 +1705,7 @@ app.get('/api/emotion/:childId/history', (req, res) => {
   res.json(child.emotionHistory);
 });
 
-// POST endpoint for ML-based recommendations
+// POST endpoint for fully dynamic LLM-generated recommendations (Ollama)
 app.post('/api/recommendations/:childId', async (req, res) => {
   const childId = parseInt(req.params.childId);
   const child = childProfiles.find(c => c.id === childId);
@@ -944,44 +1716,59 @@ app.post('/api/recommendations/:childId', async (req, res) => {
   
   // Extract factors from request body or use child profile defaults
   const emotion = req.body.emotion || child.currentEmotion || 'Natural';
-  const interests = req.body.interests || child.interests || [];
+  const interests = Array.isArray(req.body.interests) ? req.body.interests : (child.interests || []);
   const financialStatus = req.body.financialStatus || child.financialStatus || 'medium';
   const socialStatus = req.body.socialStatus || child.socialStatus || 'alone';
-  const autismSeverity = req.body.autismProfile?.severity || child.autismDetails?.severity || 3;
+  const autismSeverityRaw = req.body.autismProfile?.severity ?? child.autismDetails?.severity ?? 3;
+  const autismSeverity = Number.isFinite(Number(autismSeverityRaw)) ? Number(autismSeverityRaw) : 3;
   const autismType = req.body.autismProfile?.type || child.autismDetails?.type || 'ASD-2';
-  
-  // Try ML service first
-  try {
-    const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://127.0.0.1:5000';
-    const response = await axios.post(`${mlServiceUrl}/recommend`, {
-      emotion: emotion,
-      interests: interests,
-      financial_status: financialStatus,
-      social_status: socialStatus,
-      autism_severity: autismSeverity,
-      autism_type: autismType,
-      top_k: 6
-    }, { timeout: 10000 });
-    
-    if (response.data.success && response.data.recommendations) {
-      // Map activity IDs to actual activity objects
-      const recommendedActivities = response.data.recommendations
-        .map(rec => {
-          const activity = activities.find(a => a.id === rec.activity_id);
-          return activity ? { ...activity, ml_score: rec.score } : null;
-        })
-        .filter(a => a !== null);
-      
-      return res.json(recommendedActivities);
+  const autismSpecificNeeds = Array.isArray(req.body.autismProfile?.specificNeeds)
+    ? req.body.autismProfile.specificNeeds
+    : (Array.isArray(child.autismDetails?.specificNeeds) ? child.autismDetails.specificNeeds : []);
+
+  const recommendationContext = {
+    childName: child.name,
+    childAge: child.age,
+    emotion,
+    interests,
+    financialStatus,
+    socialStatus,
+    autismProfile: {
+      severity: autismSeverity,
+      type: autismType,
+      specificNeeds: autismSpecificNeeds
     }
+  };
+
+  const topKRaw = req.body.top_k ?? req.body.topK ?? 6;
+  const topK = Math.min(Math.max(Number(topKRaw) || 6, 1), 10);
+
+  // Generate with Ollama first, then quality-gate and fall back to deterministic form-aware scoring when needed.
+  try {
+    const generated = filterNonSensoryActivities(
+      await ollamaService.generateRecommendations(recommendationContext, topK)
+    );
+    if (shouldUseFormFallback(generated, recommendationContext, topK)) {
+      const fallbackRecommendations = filterNonSensoryActivities(
+        getFormAwareFallbackRecommendations(recommendationContext, topK)
+      );
+      return res.json(fallbackRecommendations);
+    }
+    return res.json(generated.slice(0, topK));
   } catch (error) {
-    console.warn('ML recommendation service unavailable, falling back to rule-based:', error.message);
-    // Fall through to rule-based recommendations
+    console.warn('Ollama recommendation failed:', error.message || error);
+    const fallbackRecommendations = filterNonSensoryActivities(
+      getFormAwareFallbackRecommendations(recommendationContext, topK)
+    );
+    if (fallbackRecommendations.length > 0) {
+      return res.json(fallbackRecommendations);
+    }
+    return res.status(503).json({
+      error: 'Failed to generate recommendations with Ollama.',
+      detail: error.message || 'Unknown Ollama error',
+      hint: 'Start Ollama and install a model (for example: ollama pull llama3.1:8b).'
+    });
   }
-  
-  // Fallback to rule-based recommendations
-  const recommendations = getRecommendations(childId, 6);
-  res.json(recommendations);
 });
 
 app.get('/api/recommendations/:childId', (req, res) => {
@@ -997,8 +1784,8 @@ app.get('/api/categories', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Backend server running at http://localhost:${port}`);
-  console.log(`📊 ${activities.length} activities loaded`);
-  console.log(`👶 ${childProfiles.length} child profiles available`);
-  console.log(`✨ Multi-factor recommendation system active`);
+  console.log(`Backend server running at http://localhost:${port}`);
+  console.log(`${activities.length} activities loaded`);
+  console.log(`${childProfiles.length} child profiles available`);
+  console.log(`Multi-factor recommendation system active`);
 });
