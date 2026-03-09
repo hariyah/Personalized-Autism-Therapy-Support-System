@@ -1,0 +1,15 @@
+{
+  "aggression": 0,
+  "anxiety_meltdown": 1,
+  "daily_progress": 2,
+  "feeding_issue": 3,
+  "health_concern": 4,
+  "regression_social": 5,
+  "regression_speech": 6,
+  "repetitive_behavior": 7,
+  "routine_change": 8,
+  "school_concern": 9,
+  "self_injury": 10,
+  "sensory_overload": 11,
+  "sleep_issue": 12
+}

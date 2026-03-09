@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Integrated Autism Therapy and Support System - ACAS + PATSS",
   "scripts": {
-    "install:all": "npm install --prefix client && npm install --prefix server && cd ai-service && .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt",
-    "seed": "npm run seed --prefix server",
-    "seed:activities": "npm run seed:activities --prefix server",
+    "install:all": "npm install --prefix Frontend && npm install --prefix backend && cd ai-service && .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt",
+    "seed": "npm run seed --prefix backend",
+    "seed:activities": "npm run seed:activities --prefix backend",
+    "seed:all": "npm run seed:all --prefix backend",
     "start": "START_ALL.bat",
-    "start:client": "npm start --prefix client",
-    "start:server": "npm run dev --prefix server",
+    "start:client": "npm start --prefix Frontend",
+    "start:server": "npm run dev --prefix backend",
     "start:ai": "cd ai-service && .\\.venv\\Scripts\\python.exe -m uvicorn main:app --port 8000"
   },
   "keywords": [

@@ -1,5 +1,7 @@
 node_modules/
 .env
+.env.local
+.env.*.local
 .DS_Store
 dist/
 build/
@@ -9,22 +11,70 @@ yarn-debug.log*
 yarn-error.log*
 .idea/
 .vscode/
-*.txt
 *.seed
-seed/
 uploads/
 ai-service/.venv/
 
-# ML model files (large binary files - use Git LFS or keep local only)
-models/
-*.safetensors
-*.pth
-*.pt
+# ========== LARGE FILES (Keep locally, don't push) ==========
+# ML model files (large binary files - DO NOT PUSH but keep locally)
+models/**/*.keras
+models/**/*.h5
+models/**/*.pb
+models/**/*.pt
+models/**/*.pth
+models/**/*.onnx
+models/**/*.bin
+models/**/*.safetensors
+*.keras
 *.h5
+*.pb
+*.pt
+*.pth
 *.onnx
+*.bin
+*.safetensors
+
+# Python cache and virtual environments
+ai-service/.venv/
 ai-service/__pycache__/
-ai-service/*.pyc
-server/trace.txt
-server/seed.js
-server/reproduce_login.js
-server/create-users.js
+ai-service/**/__pycache__/
+ai-service/**/*.pyc
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+env/
+
+# Node modules (large directory)
+node_modules/
+Frontend/node_modules/
+backend/node_modules/
+
+# AI Service uploads and temporary files
+ai-service/uploads/**
+ai-service/emotion_engine/uploads/**
+ai-service/emotion_engine/__pycache__/
+
+# MongoDB data
+C:/data/db/
+data/db/
+
+# Cache and temporary directories
+.cache/
+.pytest_cache/
+.nyc_output/
+coverage/
+tmp/
+temp/
+*.tmp
+
+# Testing and debugging
+trace.txt
+debug.log
+test-results/
+
+# Legacy backups (keep locally, don't push)
+legacy/**/*.zip
+legacy/**/*.tar.gz
+legacy/**/*.7z

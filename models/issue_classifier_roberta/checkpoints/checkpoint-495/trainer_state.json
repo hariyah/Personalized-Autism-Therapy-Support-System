@@ -1,0 +1,74 @@
+{
+  "best_global_step": 495,
+  "best_metric": 1.0,
+  "best_model_checkpoint": "/content/drive/MyDrive/Autism_Therapist_Collaboration_AI/03_models/issue_classifier_roberta/checkpoints/checkpoint-495",
+  "epoch": 1.0,
+  "eval_steps": 500,
+  "global_step": 495,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "epoch": 0.20202020202020202,
+      "grad_norm": 5.094348907470703,
+      "learning_rate": 1.866666666666667e-05,
+      "loss": 1.6635,
+      "step": 100
+    },
+    {
+      "epoch": 0.40404040404040403,
+      "grad_norm": 0.13878248631954193,
+      "learning_rate": 1.731986531986532e-05,
+      "loss": 0.0692,
+      "step": 200
+    },
+    {
+      "epoch": 0.6060606060606061,
+      "grad_norm": 0.07644027471542358,
+      "learning_rate": 1.5973063973063972e-05,
+      "loss": 0.0116,
+      "step": 300
+    },
+    {
+      "epoch": 0.8080808080808081,
+      "grad_norm": 0.05884436145424843,
+      "learning_rate": 1.4626262626262629e-05,
+      "loss": 0.0069,
+      "step": 400
+    },
+    {
+      "epoch": 1.0,
+      "eval_accuracy": 1.0,
+      "eval_f1_weighted": 1.0,
+      "eval_loss": 0.0025803863536566496,
+      "eval_precision_weighted": 1.0,
+      "eval_recall_weighted": 1.0,
+      "eval_runtime": 5.5076,
+      "eval_samples_per_second": 179.569,
+      "eval_steps_per_second": 5.629,
+      "step": 495
+    }
+  ],
+  "logging_steps": 100,
+  "max_steps": 1485,
+  "num_input_tokens_seen": 0,
+  "num_train_epochs": 3,
+  "save_steps": 500,
+  "stateful_callbacks": {
+    "TrainerControl": {
+      "args": {
+        "should_epoch_stop": false,
+        "should_evaluate": false,
+        "should_log": false,
+        "should_save": true,
+        "should_training_stop": false
+      },
+      "attributes": {}
+    }
+  },
+  "total_flos": 520353499384320.0,
+  "train_batch_size": 16,
+  "trial_name": null,
+  "trial_params": null
+}
