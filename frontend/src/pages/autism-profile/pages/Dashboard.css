@@ -1,0 +1,105 @@
+/* src/pages/Dashboard.css */
+.dashboard { }
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.dashboard-greeting {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.dashboard-title {
+  font-size: 2rem;
+  color: var(--teal-900);
+  margin-bottom: 6px;
+}
+.dashboard-sub {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(203,213,225,0.5);
+}
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  color: var(--teal-900);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-header h2 { font-size: 1.3rem; color: var(--teal-900); }
+.patients-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--slate-100);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.patients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  gap: 12px;
+  color: var(--text-muted);
+}
+.empty-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--teal-50);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal-400);
+  margin-bottom: 8px;
+}
+.empty-state h3 { font-size: 1.2rem; color: var(--text-primary); }
+.empty-state p { font-size: 0.9rem; max-width: 300px; line-height: 1.6; }
+
+@media (max-width: 640px) {
+  .stats-row { grid-template-columns: 1fr; }
+}

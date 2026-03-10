@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "status_code": 200,
+  "json": {
+    "healthy": true,
+    "modelLoaded": true,
+    "port": 5000,
+    "tfAvailable": true
+  }
+}
