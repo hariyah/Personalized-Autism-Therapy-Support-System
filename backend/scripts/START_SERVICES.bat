@@ -25,45 +25,61 @@ echo.
 REM 1. Autism Profile Builder (Flask)
 if exist "%SERVICES%\autism-profile-builder" (
   if not exist "%SERVICES%\autism-profile-builder\.venv\Scripts\python.exe" (
-    echo   Creating venv and installing dependencies in autism-profile-builder...
+    echo   Creating venv in autism-profile-builder...
     cd /d "%SERVICES%\autism-profile-builder"
     python -m venv .venv
-    call .venv\Scripts\pip.exe install -q -r requirements.txt
     cd /d "%SCRIPT_DIR%"
   )
+  echo   Installing/updating Python requirements in autism-profile-builder...
+  if exist "%SERVICES%\autism-profile-builder\.venv\Scripts\pip.exe" (
+    "%SERVICES%\autism-profile-builder\.venv\Scripts\pip.exe" install -r "%SERVICES%\autism-profile-builder\requirements.txt"
+  ) else (
+    cd /d "%SERVICES%\autism-profile-builder"
+    pip install -r requirements.txt
+    cd /d "%SCRIPT_DIR%"
+  )
+  if errorlevel 1 echo   WARNING: pip install failed for autism-profile-builder
   echo Starting autism-profile-builder...
-  start "autism-profile-builder (5002)" cmd /k "cd /d "%SERVICES%\autism-profile-builder" && set FLASK_APP=app.py && set FLASK_RUN_PORT=5002 && (if exist .venv\Scripts\python.exe (.venv\Scripts\python.exe app.py) else (python app.py))"
+  if exist "%SERVICES%\autism-profile-builder\.venv\Scripts\python.exe" (
+    start "autism-profile-builder (5002)" cmd /k "cd /d "%SERVICES%\autism-profile-builder" && set FLASK_APP=app.py && set FLASK_RUN_PORT=5002 && "%SERVICES%\autism-profile-builder\.venv\Scripts\python.exe" app.py"
+  ) else (
+    start "autism-profile-builder (5002)" cmd /k "cd /d "%SERVICES%\autism-profile-builder" && set FLASK_APP=app.py && set FLASK_RUN_PORT=5002 && python app.py"
+  )
   timeout /t 3 /nobreak >nul
 )
 
 REM 2. Cognitive Activity Recommender (FastAPI)
 if exist "%SERVICES%\cognitive-activity-recommender" (
   if not exist "%SERVICES%\cognitive-activity-recommender\.venv\Scripts\python.exe" (
-    echo   Creating venv and installing dependencies in cognitive-activity-recommender...
+    echo   Creating venv in cognitive-activity-recommender...
     cd /d "%SERVICES%\cognitive-activity-recommender"
     python -m venv .venv
-    call .venv\Scripts\pip.exe install -q -r requirements.txt
     cd /d "%SCRIPT_DIR%"
   )
-  echo Starting cognitive-activity-recommender...
-  cd /d "%SERVICES%\cognitive-activity-recommender"
-  if exist .venv\Scripts\python.exe (
-    start "cognitive-activity-recommender (7002)" cmd /k .venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 7002
+  echo   Installing/updating Python requirements in cognitive-activity-recommender...
+  if exist "%SERVICES%\cognitive-activity-recommender\.venv\Scripts\pip.exe" (
+    "%SERVICES%\cognitive-activity-recommender\.venv\Scripts\pip.exe" install -r "%SERVICES%\cognitive-activity-recommender\requirements.txt"
   ) else (
-    start "cognitive-activity-recommender (7002)" cmd /k python -m uvicorn app.main:app --host 0.0.0.0 --port 7002
+    cd /d "%SERVICES%\cognitive-activity-recommender"
+    pip install -r requirements.txt
+    cd /d "%SCRIPT_DIR%"
   )
-  cd /d "%SCRIPT_DIR%"
+  if errorlevel 1 echo   WARNING: pip install failed for cognitive-activity-recommender
+  echo Starting cognitive-activity-recommender...
+  if exist "%SERVICES%\cognitive-activity-recommender\.venv\Scripts\python.exe" (
+    start "cognitive-activity-recommender (7002)" cmd /k "cd /d "%SERVICES%\cognitive-activity-recommender" && "%SERVICES%\cognitive-activity-recommender\.venv\Scripts\python.exe" -m uvicorn app.main:app --host 0.0.0.0 --port 7002"
+  ) else (
+    start "cognitive-activity-recommender (7002)" cmd /k "cd /d "%SERVICES%\cognitive-activity-recommender" && python -m uvicorn app.main:app --host 0.0.0.0 --port 7002"
+  )
   timeout /t 3 /nobreak >nul
 )
 
 REM 3. Emotional Activity Recommender (Node)
 if exist "%SERVICES%\emotional-activity-recommender" (
-  if not exist "%SERVICES%\emotional-activity-recommender\node_modules" (
-    echo   Installing npm dependencies in emotional-activity-recommender...
-    cd /d "%SERVICES%\emotional-activity-recommender"
-    call npm install
-    cd /d "%SCRIPT_DIR%"
-  )
+  echo   Installing/updating npm dependencies in emotional-activity-recommender...
+  cd /d "%SERVICES%\emotional-activity-recommender"
+  call npm install
+  cd /d "%SCRIPT_DIR%"
   echo Starting emotional-activity-recommender...
   start "emotional-activity-recommender (3001)" cmd /k "cd /d "%SERVICES%\emotional-activity-recommender" && npm start"
   timeout /t 3 /nobreak >nul
@@ -72,32 +88,36 @@ if exist "%SERVICES%\emotional-activity-recommender" (
 REM 4. Emotional Activity Recommender ML (FastAPI)
 if exist "%SERVICES%\emotional-activity-recommender-ml" (
   if not exist "%SERVICES%\emotional-activity-recommender-ml\.venv\Scripts\python.exe" (
-    echo   Creating venv and installing dependencies in emotional-activity-recommender-ml...
+    echo   Creating venv in emotional-activity-recommender-ml...
     cd /d "%SERVICES%\emotional-activity-recommender-ml"
     python -m venv .venv
-    call .venv\Scripts\pip.exe install -q -r requirements.txt
     cd /d "%SCRIPT_DIR%"
   )
-  echo Starting emotional-activity-recommender-ml...
-  cd /d "%SERVICES%\emotional-activity-recommender-ml"
-  if exist .venv\Scripts\python.exe (
-    start "emotional-activity-recommender-ml (5000)" cmd /k .venv\Scripts\python.exe app.py
+  echo   Installing/updating Python requirements in emotional-activity-recommender-ml...
+  if exist "%SERVICES%\emotional-activity-recommender-ml\.venv\Scripts\pip.exe" (
+    "%SERVICES%\emotional-activity-recommender-ml\.venv\Scripts\pip.exe" install -r "%SERVICES%\emotional-activity-recommender-ml\requirements.txt"
   ) else (
-    start "emotional-activity-recommender-ml (5000)" cmd /k python app.py
+    cd /d "%SERVICES%\emotional-activity-recommender-ml"
+    pip install -r requirements.txt
+    cd /d "%SCRIPT_DIR%"
   )
-  cd /d "%SCRIPT_DIR%"
+  if errorlevel 1 echo   WARNING: pip install failed for emotional-activity-recommender-ml
+  echo Starting emotional-activity-recommender-ml...
+  if exist "%SERVICES%\emotional-activity-recommender-ml\.venv\Scripts\python.exe" (
+    start "emotional-activity-recommender-ml (5000)" cmd /k "cd /d "%SERVICES%\emotional-activity-recommender-ml" && "%SERVICES%\emotional-activity-recommender-ml\.venv\Scripts\python.exe" app.py"
+  ) else (
+    start "emotional-activity-recommender-ml (5000)" cmd /k "cd /d "%SERVICES%\emotional-activity-recommender-ml" && python app.py"
+  )
 )
 
 REM 5. Gateway (Express, port 7777)
 if exist "%GATEWAY%" (
-  if not exist "%GATEWAY%\node_modules" (
-    echo   Installing npm dependencies in gateway...
-    cd /d "%GATEWAY%"
-    call npm install
-    cd /d "%SCRIPT_DIR%"
-  )
+  echo   Installing/updating npm dependencies in gateway...
+  cd /d "%GATEWAY%"
+  call npm install
+  cd /d "%SCRIPT_DIR%"
   echo Starting gateway...
-  start "gateway (7000)" cmd /k "cd /d "%GATEWAY%" && npm start"
+  start "gateway (7777)" cmd /k "cd /d "%GATEWAY%" && npm start"
 )
 
 echo.

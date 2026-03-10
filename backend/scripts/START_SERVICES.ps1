@@ -23,31 +23,38 @@ Write-Host "    4. emotional-activity-recommender-ml (FastAPI, port 5000)"
 Write-Host "    5. gateway                     (Express, port 7777)"
 Write-Host ""
 
-# Ensure Python venv and install deps if missing
+# Create Python venv if needed, then install/update requirements (uses venv's pip so deps go into venv)
 function Setup-PythonVenv {
     param([string]$Dir)
     if (-not (Test-Path $Dir) -or -not (Test-Path (Join-Path $Dir "requirements.txt"))) { return }
     $venvPy = Join-Path $Dir ".venv\Scripts\python.exe"
+    $venvPip = Join-Path $Dir ".venv\Scripts\pip.exe"
     if (-not (Test-Path $venvPy)) {
-        Write-Host "  Creating venv and installing dependencies in $(Split-Path $Dir -Leaf)..."
+        Write-Host "  Creating venv in $(Split-Path $Dir -Leaf)..."
         Push-Location $Dir
         python -m venv .venv
-        & ".venv\Scripts\pip.exe" install -q -r requirements.txt
+        Pop-Location
+    }
+    Write-Host "  Installing/updating Python requirements in $(Split-Path $Dir -Leaf)..."
+    $reqTxt = Join-Path $Dir "requirements.txt"
+    if (Test-Path $venvPip) {
+        & $venvPip install -r $reqTxt
+        if ($LASTEXITCODE -ne 0) { Write-Warning "  pip install failed for $(Split-Path $Dir -Leaf)" }
+    } else {
+        Push-Location $Dir
+        pip install -r requirements.txt
         Pop-Location
     }
 }
 
-# Ensure Node deps installed
+# npm install then run (Node): install/update deps before start
 function Setup-NodeDeps {
     param([string]$Dir)
     if (-not (Test-Path $Dir) -or -not (Test-Path (Join-Path $Dir "package.json"))) { return }
-    $nodeModules = Join-Path $Dir "node_modules"
-    if (-not (Test-Path $nodeModules)) {
-        Write-Host "  Installing npm dependencies in $(Split-Path $Dir -Leaf)..."
-        Push-Location $Dir
-        npm install
-        Pop-Location
-    }
+    Write-Host "  Installing/updating npm dependencies in $(Split-Path $Dir -Leaf)..."
+    Push-Location $Dir
+    npm install
+    Pop-Location
 }
 
 # 1. Autism Profile Builder (Flask)
@@ -55,12 +62,9 @@ $profileBuilder = Join-Path $Services "autism-profile-builder"
 if (Test-Path $profileBuilder) {
     Setup-PythonVenv $profileBuilder
     Write-Host "Starting autism-profile-builder..."
-    $env:FLASK_APP = "app.py"
-    $env:FLASK_RUN_PORT = "5002"
-    $pyCmd = if (Test-Path (Join-Path $profileBuilder ".venv\Scripts\python.exe")) {
-        ".venv\Scripts\python.exe app.py"
-    } else { "python app.py" }
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$profileBuilder`" && $pyCmd"
+    $pyExe = Join-Path $profileBuilder ".venv\Scripts\python.exe"
+    $pyCmd = if (Test-Path $pyExe) { "`"$pyExe`" app.py" } else { "python app.py" }
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$profileBuilder`" && set FLASK_APP=app.py && set FLASK_RUN_PORT=5002 && $pyCmd"
     Start-Sleep -Seconds 2
 }
 
@@ -69,9 +73,8 @@ $cognitive = Join-Path $Services "cognitive-activity-recommender"
 if (Test-Path $cognitive) {
     Setup-PythonVenv $cognitive
     Write-Host "Starting cognitive-activity-recommender..."
-    $uvicorn = if (Test-Path (Join-Path $cognitive ".venv\Scripts\python.exe")) {
-        ".venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 7002"
-    } else { "python -m uvicorn app.main:app --host 0.0.0.0 --port 7002" }
+    $pyExe = Join-Path $cognitive ".venv\Scripts\python.exe"
+    $uvicorn = if (Test-Path $pyExe) { "`"$pyExe`" -m uvicorn app.main:app --host 0.0.0.0 --port 7002" } else { "python -m uvicorn app.main:app --host 0.0.0.0 --port 7002" }
     Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$cognitive`" && $uvicorn"
     Start-Sleep -Seconds 2
 }
@@ -90,9 +93,8 @@ $emotionalMl = Join-Path $Services "emotional-activity-recommender-ml"
 if (Test-Path $emotionalMl) {
     Setup-PythonVenv $emotionalMl
     Write-Host "Starting emotional-activity-recommender-ml..."
-    $pyMl = if (Test-Path (Join-Path $emotionalMl ".venv\Scripts\python.exe")) {
-        ".venv\Scripts\python.exe app.py"
-    } else { "python app.py" }
+    $pyExe = Join-Path $emotionalMl ".venv\Scripts\python.exe"
+    $pyMl = if (Test-Path $pyExe) { "`"$pyExe`" app.py" } else { "python app.py" }
     Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$emotionalMl`" && $pyMl"
 }
 

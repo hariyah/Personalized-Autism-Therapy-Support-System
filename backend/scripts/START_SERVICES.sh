@@ -24,24 +24,24 @@ echo "    4. emotional-activity-recommender-ml (FastAPI, port 5000)"
 echo "    5. gateway                     (Express, port 7777)"
 echo ""
 
-# Ensure Python venv and install deps if missing
+# Create Python venv if needed, then install/update requirements
 setup_python_venv() {
   local dir="$1"
   if [ ! -d "$dir" ] || [ ! -f "$dir/requirements.txt" ]; then return 1; fi
   if [ ! -x "$dir/.venv/bin/python" ]; then
-    echo "  Creating venv and installing dependencies in $(basename "$dir")..."
-    (cd "$dir" && python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt)
+    echo "  Creating venv in $(basename "$dir")..."
+    (cd "$dir" && python3 -m venv .venv)
   fi
+  echo "  Installing/updating Python requirements in $(basename "$dir")..."
+  (cd "$dir" && if [ -x .venv/bin/pip ]; then .venv/bin/pip install -q -r requirements.txt; else pip3 install -q -r requirements.txt; fi)
 }
 
-# Ensure Node deps installed
+# npm install then run: install/update deps before start
 setup_node_deps() {
   local dir="$1"
   if [ ! -d "$dir" ] || [ ! -f "$dir/package.json" ]; then return 1; fi
-  if [ ! -d "$dir/node_modules" ]; then
-    echo "  Installing npm dependencies in $(basename "$dir")..."
-    (cd "$dir" && npm install)
-  fi
+  echo "  Installing/updating npm dependencies in $(basename "$dir")..."
+  (cd "$dir" && npm install)
 }
 
 pids=()
