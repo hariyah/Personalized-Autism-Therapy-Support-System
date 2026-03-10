@@ -1,0 +1,75 @@
+/* src/components/Modal.css */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 46, 53, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(10,46,53,0.25);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 0;
+}
+.modal-header h3 {
+  font-size: 1.25rem;
+  color: var(--teal-900);
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: var(--slate-100); color: var(--text-primary); }
+
+.modal-body {
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input-icon-wrap { position: relative; }
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.form-input.with-icon { padding-left: 36px; }

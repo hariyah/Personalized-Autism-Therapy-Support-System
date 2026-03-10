@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+.therapy-collab-app {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #f1f5f9;
+  overflow-x: hidden;
+}
+
+.therapy-collab-app ::selection {
+  background: rgba(139, 92, 246, 0.3);
+  color: #ddd6fe;
+}
+
+.therapy-collab-app .bg-app        { background-color: #0a0e1a; }
+.therapy-collab-app .bg-surface    { background-color: #111827; }
+.therapy-collab-app .bg-card       { background-color: #161d2d; }
+.therapy-collab-app .bg-card-hover { background-color: #1c2540; }
+.therapy-collab-app .border-subtle { border-color: rgba(255,255,255,0.07); }
+
+.therapy-collab-app .gradient-primary {
+  background: linear-gradient(to bottom right, #7c3aed, #4f46e5, #14b8a6);
+}
+.therapy-collab-app .gradient-accent {
+  background: linear-gradient(to bottom right, #2dd4bf, #06b6d4);
+}
+.therapy-collab-app .gradient-warm {
+  background: linear-gradient(to bottom right, #f43f5e, #f97316);
+}
+.therapy-collab-app .gradient-text {
+  background: linear-gradient(to right, #a78bfa, #818cf8, #2dd4bf);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.therapy-collab-app .gradient-glow {
+  background: linear-gradient(to right, rgba(139,92,246,0.2), rgba(99,102,241,0.2), rgba(20,184,166,0.2));
+}
+
+.therapy-collab-app .card {
+  background-color: #161d2d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 1rem;
+}
+.therapy-collab-app .card-sm {
+  background-color: #161d2d;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 0.75rem;
+}
+.therapy-collab-app .card-glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 1rem;
+}
+.therapy-collab-app .card-glow {
+  transition: all 500ms;
+}
+.therapy-collab-app .card-glow:hover {
+  border-color: rgba(139,92,246,0.3);
+  box-shadow: 0 0 40px -10px rgba(139,92,246,0.3);
+}
+
+.therapy-collab-app .btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to bottom right, #7c3aed, #4f46e5, #14b8a6);
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: white;
+  font-size: 0.875rem;
+  box-shadow: 0 10px 15px -3px rgba(139,92,246,0.25);
+  transition: all 200ms;
+}
+.therapy-collab-app .btn-primary:hover {
+  box-shadow: 0 10px 15px -3px rgba(139,92,246,0.4);
+  transform: scale(1.02);
+}
+.therapy-collab-app .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  transition: all 200ms;
+}
+.therapy-collab-app .btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+}
+.therapy-collab-app .btn-danger {
+  padding: 0.75rem 1.5rem;
+  background: rgba(244,63,94,0.1);
+  border: 1px solid rgba(244,63,94,0.2);
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #fb7185;
+  font-size: 0.875rem;
+  transition: all 200ms;
+}
+
+.therapy-collab-app .sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 200ms;
+}
+.therapy-collab-app .sidebar-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+}
+.therapy-collab-app .sidebar-item-active {
+  background: linear-gradient(to right, rgba(124,58,237,0.2), rgba(79,70,229,0.1));
+  color: #c4b5fd;
+  border: 1px solid rgba(139,92,246,0.2);
+}
+
+.therapy-collab-app .input-dark {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 200ms;
+}
+.therapy-collab-app .input-dark:focus {
+  border-color: rgba(139,92,246,0.6);
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.2);
+}
+.therapy-collab-app .input-dark::placeholder {
+  color: #475569;
+}
+.therapy-collab-app .label-dark {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.therapy-collab-app .badge-high {
+  background: rgba(244,63,94,0.15);
+  color: #fb7185;
+  border: 1px solid rgba(244,63,94,0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.therapy-collab-app .badge-medium {
+  background: rgba(245,158,11,0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.therapy-collab-app .badge-low {
+  background: rgba(16,185,129,0.15);
+  color: #34d399;
+  border: 1px solid rgba(16,185,129,0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.therapy-collab-app .badge-neutral {
+  background: rgba(100,116,139,0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(100,116,139,0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.therapy-collab-app .glow-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #34d399;
+  box-shadow: 0 0 8px 2px rgba(52,211,153,0.5);
+}
+.therapy-collab-app .glow-dot-rose {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #fb7185;
+  box-shadow: 0 0 8px 2px rgba(251,113,133,0.5);
+}
+.therapy-collab-app .glow-dot-violet {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #a78bfa;
+  box-shadow: 0 0 8px 2px rgba(167,139,250,0.5);
+}
+
+.therapy-collab-app .page-enter {
+  animation: tc-pageEnter 0.4s ease forwards;
+}
+.therapy-collab-app .animate-shake {
+  animation: tc-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes tc-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@keyframes tc-pageEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.therapy-collab-app .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+.therapy-collab-app .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 9999px; }
+
+.therapy-collab-app .animate-pulse-glow {
+  animation: tc-pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes tc-pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(139,92,246,0.3); }
+  50%       { box-shadow: 0 0 18px 4px rgba(139,92,246,0.6); }
+}

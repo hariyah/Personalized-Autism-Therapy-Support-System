@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+// Cross-platform entry: delegates to run-services.js
+require("./run-services.js");

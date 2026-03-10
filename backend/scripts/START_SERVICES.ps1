@@ -1,0 +1,153 @@
+# Run all backend services (backend/services/*)
+# Script lives at backend/scripts/ -> repo root is ../..
+# Usage: .\START_SERVICES.ps1
+
+$ErrorActionPreference = "Stop"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..")).Path
+$Services = Join-Path $RepoRoot "backend\services"
+$Gateway = Join-Path $RepoRoot "backend\gateway"
+
+Write-Host ""
+Write-Host "================================================"
+Write-Host "  BACKEND SERVICES STARTUP"
+Write-Host "================================================"
+Write-Host "  Repo root: $RepoRoot"
+Write-Host "  Services:  $Services"
+Write-Host ""
+Write-Host "  Starting:"
+Write-Host "    1. autism-profile-builder      (Flask, port 7001)"
+Write-Host "    2. cognitive-activity-recommender (FastAPI, port 7002)"
+Write-Host "    3. emotional-activity-recommender (Node, port 7003)"
+Write-Host "    4. emotional-activity-recommender-ml (FastAPI, port 7004)"
+Write-Host "    5. therapy-collab-ai          (FastAPI, port 7005)"
+Write-Host "    6. therapy-collab             (Node, port 7006)"
+Write-Host "    5. gateway                     (Express, port 7777)"
+Write-Host ""
+
+# Ensure Python venv and install deps if missing
+function Setup-PythonVenv {
+    param([string]$Dir)
+    if (-not (Test-Path $Dir) -or -not (Test-Path (Join-Path $Dir "requirements.txt"))) { return }
+    $venvPy = $null
+    if (Test-Path (Join-Path $Dir ".venv\Scripts\python.exe")) {
+        $venvPy = Join-Path $Dir ".venv\Scripts\python.exe"
+    } elseif (Test-Path (Join-Path $Dir "venv\Scripts\python.exe")) {
+        $venvPy = Join-Path $Dir "venv\Scripts\python.exe"
+    }
+    if (-not (Test-Path $venvPy)) {
+        Write-Host "  Creating venv and installing dependencies in $(Split-Path $Dir -Leaf)..."
+        Push-Location $Dir
+        python -m venv .venv
+        & ".venv\Scripts\pip.exe" install -q -r requirements.txt
+        Pop-Location
+    }
+}
+
+# Ensure Node deps installed
+function Setup-NodeDeps {
+    param([string]$Dir)
+    if (-not (Test-Path $Dir) -or -not (Test-Path (Join-Path $Dir "package.json"))) { return }
+    $nodeModules = Join-Path $Dir "node_modules"
+    if (-not (Test-Path $nodeModules)) {
+        Write-Host "  Installing npm dependencies in $(Split-Path $Dir -Leaf)..."
+        Push-Location $Dir
+        npm install
+        Pop-Location
+    }
+}
+
+# 1. Autism Profile Builder (Flask)
+$profileBuilder = Join-Path $Services "autism-profile-builder"
+if (Test-Path $profileBuilder) {
+    Setup-PythonVenv $profileBuilder
+    Write-Host "Starting autism-profile-builder..."
+    $env:FLASK_APP = "app.py"
+    $env:FLASK_RUN_PORT = "7001"
+    $pyCmd = if (Test-Path (Join-Path $profileBuilder ".venv\Scripts\python.exe")) {
+        ".venv\Scripts\python.exe app.py"
+    } elseif (Test-Path (Join-Path $profileBuilder "venv\Scripts\python.exe")) {
+        "venv\Scripts\python.exe app.py"
+    } else { "python app.py" }
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$profileBuilder`" && $pyCmd"
+    Start-Sleep -Seconds 2
+}
+
+# 2. Cognitive Activity Recommender (FastAPI)
+$cognitive = Join-Path $Services "cognitive-activity-recommender"
+if (Test-Path $cognitive) {
+    Setup-PythonVenv $cognitive
+    Write-Host "Starting cognitive-activity-recommender..."
+    $uvicorn = if (Test-Path (Join-Path $cognitive ".venv\Scripts\python.exe")) {
+        ".venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 7002"
+    } elseif (Test-Path (Join-Path $cognitive "venv\Scripts\python.exe")) {
+        "venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 7002"
+    } else { "python -m uvicorn app.main:app --host 0.0.0.0 --port 7002" }
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$cognitive`" && $uvicorn"
+    Start-Sleep -Seconds 2
+}
+
+# 3. Emotional Activity Recommender (Node)
+$emotional = Join-Path $Services "emotional-activity-recommender"
+if (Test-Path $emotional) {
+    Setup-NodeDeps $emotional
+    Write-Host "Starting emotional-activity-recommender..."
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$emotional`" && npm start"
+    Start-Sleep -Seconds 2
+}
+
+# 4. Emotional Activity Recommender ML (FastAPI)
+$emotionalMl = Join-Path $Services "emotional-activity-recommender-ml"
+if (Test-Path $emotionalMl) {
+    Setup-PythonVenv $emotionalMl
+    Write-Host "Starting emotional-activity-recommender-ml..."
+    $pyMl = if (Test-Path (Join-Path $emotionalMl ".venv\Scripts\python.exe")) {
+        ".venv\Scripts\python.exe app.py"
+    } elseif (Test-Path (Join-Path $emotionalMl "venv\Scripts\python.exe")) {
+        "venv\Scripts\python.exe app.py"
+    } else { "python app.py" }
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$emotionalMl`" && $pyMl"
+}
+
+# 5. Therapy Collab AI (FastAPI)
+$therapyAi = Join-Path $Services "therapy-collab-ai"
+if (Test-Path $therapyAi) {
+    Setup-PythonVenv $therapyAi
+    Write-Host "Starting therapy-collab-ai..."
+    $pyTherapyAi = if (Test-Path (Join-Path $therapyAi ".venv\Scripts\python.exe")) {
+        ".venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 7005"
+    } elseif (Test-Path (Join-Path $therapyAi "venv\Scripts\python.exe")) {
+        "venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 7005"
+    } else { "python -m uvicorn main:app --host 0.0.0.0 --port 7005" }
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyAi`" && $pyTherapyAi"
+    Start-Sleep -Seconds 2
+}
+
+# 6. Therapy Collab (Node)
+$therapy = Join-Path $Services "therapy-collab"
+if (Test-Path $therapy) {
+    Setup-NodeDeps $therapy
+    Write-Host "Starting therapy-collab..."
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapy`" && npm start"
+    Start-Sleep -Seconds 2
+}
+
+# 7. Gateway (Express, port 7777)
+if (Test-Path $Gateway) {
+    Setup-NodeDeps $Gateway
+    Write-Host "Starting gateway..."
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$Gateway`" && npm start"
+}
+
+Write-Host ""
+Write-Host "================================================"
+Write-Host "  All services are starting in separate windows."
+Write-Host "  gateway:                   http://localhost:7777"
+Write-Host "  autism-profile-builder:    http://localhost:7001"
+Write-Host "  cognitive-activity-recommender: http://localhost:7002"
+Write-Host "  emotional-activity-recommender:  http://localhost:7003"
+Write-Host "  emotional-activity-recommender-ml: http://localhost:7004"
+Write-Host "  therapy-collab-ai:         http://localhost:7005"
+Write-Host "  therapy-collab:            http://localhost:7006"
+Write-Host "================================================"
+Write-Host ""
