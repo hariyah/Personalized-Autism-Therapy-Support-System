@@ -181,6 +181,9 @@ def register():
         return jsonify({"error": "Password must be at least 6 characters"}), 400
     if guardians_col.find_one({"email": email}):
         return jsonify({"error": "Email already registered"}), 400
+    role = (data.get("role") or "parent").lower()
+    if role not in ("parent", "doctor"):
+        role = "parent"
     password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     doc = {
         "email": email,
@@ -188,12 +191,13 @@ def register():
         "fullName": data.get("fullName", ""),
         "phone": data.get("phone", ""),
         "relationship": data.get("relationship", "Parent"),
+        "role": role,
         "createdAt": datetime.utcnow().isoformat(),
     }
     r = guardians_col.insert_one(doc)
     guardian_id = str(r.inserted_id)
     token = jwt.encode(
-        {"id": guardian_id, "email": email},
+        {"id": guardian_id, "email": email, "role": role},
         SECRET_KEY,
         algorithm="HS256",
     )
@@ -203,6 +207,7 @@ def register():
         "fullName": doc["fullName"],
         "phone": doc["phone"],
         "relationship": doc["relationship"],
+        "role": doc["role"],
     }
     return jsonify({"token": token, "user": user}), 201
 
@@ -218,8 +223,9 @@ def login():
     if not bcrypt.checkpw(data["password"].encode("utf-8"), doc["password_hash"].encode("utf-8")):
         return jsonify({"error": "Invalid email or password"}), 401
     guardian_id = str(doc["_id"])
+    role = doc.get("role", "parent")
     token = jwt.encode(
-        {"id": guardian_id, "email": email},
+        {"id": guardian_id, "email": email, "role": role},
         SECRET_KEY,
         algorithm="HS256",
     )
@@ -229,6 +235,7 @@ def login():
         "fullName": doc.get("fullName", ""),
         "phone": doc.get("phone", ""),
         "relationship": doc.get("relationship", "Parent"),
+        "role": role,
     }
     return jsonify({"token": token, "user": user})
 

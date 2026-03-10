@@ -6,7 +6,7 @@ librosa
 transformers<5
 numpy
 pillow
-tensorflow
+tensorflow>=2.15.0,<2.18
 opencv-python
 pydantic
 python-dotenv

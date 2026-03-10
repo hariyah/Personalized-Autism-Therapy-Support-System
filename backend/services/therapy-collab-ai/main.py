@@ -2,35 +2,44 @@ import os
 import json
 import shutil
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any, List
 
+import numpy as np
 import torch
 import librosa
+from PIL import Image
 from fastapi import FastAPI, UploadFile, File, Body
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import pipeline
+from transformers import (
+    pipeline,
+    AutoModelForSequenceClassification,
+    AutoModelForSeq2SeqLM,
+    AutoTokenizer,
+)
 from pydantic import BaseModel
 
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+_MODELS_DIR = os.path.join(_BASE_DIR, "models")
+
+UPLOAD_DIR = os.path.join(_BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-MODEL_ISSUE_DIR = os.getenv("MODEL_ISSUE_DIR", "../models/issue_classifier_roberta")
-MODEL_URGENCY_DIR = os.getenv("MODEL_URGENCY_DIR", "../models/urgency_classifier/checkpoints/checkpoint-876")
-MODEL_SUMM_DIR = os.getenv("MODEL_SUMM_DIR", "facebook/bart-large-cnn")
+MODEL_ISSUE_DIR = os.getenv("MODEL_ISSUE_DIR", os.path.join(_MODELS_DIR, "issue_classifier_roberta"))
+MODEL_URGENCY_DIR = os.getenv("MODEL_URGENCY_DIR", os.path.join(_MODELS_DIR, "urgency_classifier", "checkpoints", "checkpoint-876"))
+MODEL_SUMM_DIR = os.getenv("MODEL_SUMM_DIR", os.path.join(_MODELS_DIR, "summarization_t5", "checkpoints", "checkpoint-875"))
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "openai/whisper-small")
 
-# Emotion Recognition (from PATSS)
+# Emotion Recognition (from PATSS) - minimal import to avoid tensorflow.python issues
+TF_AVAILABLE = False
+TF_ERROR = None
 try:
-    import tensorflow as tf
-    from tensorflow.keras.applications.densenet import preprocess_input
-    import numpy as np
-    from PIL import Image
-    import cv2
+    import tensorflow as tf  # noqa: F401
     TF_AVAILABLE = True
-except Exception:
-    TF_AVAILABLE = False
+except Exception as e:
+    TF_ERROR = str(e)
 
-MODEL_EMOTION_PATH = os.path.join(os.path.dirname(__file__), "../models/emotion_recognition/densenet121.keras")
+MODEL_EMOTION_PATH = os.path.join(_MODELS_DIR, "emotion_recognition", "densenet121.keras")
 EMOTION_LABELS = ["Natural", "anger", "fear", "joy", "sadness", "surprise"]
 emotion_model = None
 
@@ -71,57 +80,104 @@ def load_models():
 
     try:
         print("Loading issue classifier...")
-        issue_clf = pipeline(
-            "text-classification",
-            model=MODEL_ISSUE_DIR,
-            tokenizer=MODEL_ISSUE_DIR,
-            top_k=None,
-            device=device,
-        )
-        print("[OK] Issue classifier loaded")
+        if os.path.isdir(MODEL_ISSUE_DIR):
+            _path = Path(MODEL_ISSUE_DIR).resolve()
+            _model = AutoModelForSequenceClassification.from_pretrained(str(_path), local_files_only=True)
+            _tok = AutoTokenizer.from_pretrained(str(_path), local_files_only=True)
+            issue_clf = pipeline(
+                "text-classification",
+                model=_model,
+                tokenizer=_tok,
+                top_k=None,
+                device=device,
+            )
+            print("[OK] Issue classifier loaded")
+        else:
+            print(f"Issue classifier path not found: {MODEL_ISSUE_DIR}")
+            issue_clf = None
     except Exception as e:
         print(f"Error loading issue classifier: {e}")
         issue_clf = None
 
     try:
         print("Loading urgency classifier...")
-        urgency_clf = pipeline(
-            "text-classification",
-            model=MODEL_URGENCY_DIR,
-            tokenizer=MODEL_URGENCY_DIR,
-            top_k=None,
-            device=device,
-        )
-        print("[OK] Urgency classifier loaded")
+        if os.path.isdir(MODEL_URGENCY_DIR):
+            _path = Path(MODEL_URGENCY_DIR).resolve()
+            _model = AutoModelForSequenceClassification.from_pretrained(str(_path), local_files_only=True)
+            _tok = AutoTokenizer.from_pretrained(str(_path), local_files_only=True)
+            urgency_clf = pipeline(
+                "text-classification",
+                model=_model,
+                tokenizer=_tok,
+                top_k=None,
+                device=device,
+            )
+            print("[OK] Urgency classifier loaded")
+        else:
+            print(f"Urgency classifier path not found: {MODEL_URGENCY_DIR}")
+            urgency_clf = None
     except Exception as e:
         print(f"Error loading urgency classifier: {e}")
         urgency_clf = None
 
     try:
         print("Loading summarizer...")
-        summarizer = pipeline(
-            "summarization",
-            model=MODEL_SUMM_DIR,
-            tokenizer=MODEL_SUMM_DIR,
-            framework="pt",
-            device=device,
-        )
-        print("[OK] Summarizer loaded")
+        _hub_model = "facebook/bart-large-cnn"
+        if os.path.isdir(MODEL_SUMM_DIR):
+            _path = Path(MODEL_SUMM_DIR).resolve()
+            try:
+                _model = AutoModelForSeq2SeqLM.from_pretrained(str(_path), local_files_only=True)
+                _tok = AutoTokenizer.from_pretrained(str(_path), local_files_only=True)
+                summarizer = pipeline(
+                    "summarization",
+                    model=_model,
+                    tokenizer=_tok,
+                    framework="pt",
+                    device=device,
+                )
+                print("[OK] Summarizer loaded (local)")
+            except Exception as local_e:
+                err_msg = str(local_e).lower()
+                if "no file named" in err_msg or "pytorch_model" in err_msg or "safetensors" in err_msg:
+                    print(f"Local summarizer missing weights in {MODEL_SUMM_DIR}. Add pytorch_model.bin or model.safetensors, falling back to hub.")
+                else:
+                    print(f"Local summarizer load failed: {local_e}; falling back to hub.")
+                summarizer = pipeline(
+                    "summarization",
+                    model=_hub_model,
+                    tokenizer=_hub_model,
+                    framework="pt",
+                    device=device,
+                )
+                print("[OK] Summarizer loaded (from hub)")
+        else:
+            print(f"Summarizer path not found: {MODEL_SUMM_DIR}, using hub: {_hub_model}")
+            summarizer = pipeline(
+                "summarization",
+                model=_hub_model,
+                tokenizer=_hub_model,
+                framework="pt",
+                device=device,
+            )
+            print("[OK] Summarizer loaded (from hub)")
     except Exception as e:
         print(f"Error loading summarizer: {e}")
         summarizer = None
 
     global emotion_model
-    if TF_AVAILABLE and os.path.exists(MODEL_EMOTION_PATH):
+    emotion_path_exists = os.path.isfile(MODEL_EMOTION_PATH)
+    if TF_AVAILABLE and emotion_path_exists:
         try:
             print(f"Loading emotion model from {MODEL_EMOTION_PATH}...")
             emotion_model = tf.keras.models.load_model(MODEL_EMOTION_PATH)
             print("[OK] Emotion model loaded")
         except Exception as e:
             print(f"Error loading emotion model: {e}")
-            emotion_model = None
     else:
-        print(f"Emotion model not found or TF not available. TF: {TF_AVAILABLE}")
+        if not emotion_path_exists:
+            print(f"Emotion model not found at: {MODEL_EMOTION_PATH}")
+        if not TF_AVAILABLE:
+            print(f"TensorFlow not available. TF: False. {('Error: ' + TF_ERROR) if TF_ERROR else 'Install tensorflow to enable emotion recognition.'}")
 
 @app.post("/analyze-voice")
 async def analyze_voice(file: UploadFile = File(...)):
@@ -273,10 +329,9 @@ async def predict(file: UploadFile = File(...)):
 
         # Inference logic from PATSS
         im = Image.open(save_path).convert("RGB")
-        
-        # Simple face detection fallback (can be improved later with CV2 logic)
         im = im.resize((224, 224))
         x = np.array(im).astype("float32")
+        from tensorflow.keras.applications.densenet import preprocess_input
         x = preprocess_input(x)
         x = np.expand_dims(x, 0)
         
@@ -300,4 +355,4 @@ async def predict(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 7005)), reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 7006)), reload=True)

@@ -17,11 +17,13 @@ echo "  Repo root: $REPO_ROOT"
 echo "  Services:  $SERVICES"
 echo ""
 echo "  Starting:"
-echo "    1. autism-profile-builder      (Flask, port 7001)"
-echo "    2. cognitive-activity-recommender (FastAPI, port 7002)"
-echo "    3. emotional-activity-recommender (Node, port 3001)"
-echo "    4. emotional-activity-recommender-ml (FastAPI, port 5000)"
-echo "    5. gateway                     (Express, port 7777)"
+echo "    1. gateway                     (Express, port 7777)"
+echo "    2. autism-profile-builder      (Flask, port 7001)"
+echo "    3. cognitive-activity-recommender (FastAPI, port 7002)"
+echo "    4. emotional-activity-recommender (Node, port 7003)"
+echo "    5. emotional-activity-recommender-ml (FastAPI, port 7004)"
+echo "    6. therapy-collab             (Node, port 7005)"
+echo "    7. therapy-collab-ai           (Python, port 7006)"
 echo ""
 
 # Create Python venv if needed, then install/update requirements
@@ -53,23 +55,33 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM
 
-# 1. Autism Profile Builder (Flask, port 7001)
+# 1. Gateway (Express, port 7777)
+if [ -d "$GATEWAY" ]; then
+  setup_node_deps "$GATEWAY" || true
+  echo "Starting gateway..."
+  (cd "$GATEWAY" && PORT=7777 npm start) &
+  pids+=($!)
+  sleep 2
+fi
+
+# 2. Autism Profile Builder (Flask, port 7001)
 if [ -d "$SERVICES/autism-profile-builder" ]; then
   setup_python_venv "$SERVICES/autism-profile-builder" || true
   echo "Starting autism-profile-builder..."
   (
     cd "$SERVICES/autism-profile-builder"
+    export FLASK_APP=app.py FLASK_RUN_PORT=7001
     if [ -x .venv/bin/python ]; then
-      PORT=7001 .venv/bin/python app.py
+      .venv/bin/python app.py
     else
-      PORT=7001 python3 app.py
+      python3 app.py
     fi
   ) &
   pids+=($!)
   sleep 2
 fi
 
-# 2. Cognitive Activity Recommender (FastAPI)
+# 3. Cognitive Activity Recommender (FastAPI, port 7002)
 if [ -d "$SERVICES/cognitive-activity-recommender" ]; then
   setup_python_venv "$SERVICES/cognitive-activity-recommender" || true
   echo "Starting cognitive-activity-recommender..."
@@ -85,16 +97,16 @@ if [ -d "$SERVICES/cognitive-activity-recommender" ]; then
   sleep 2
 fi
 
-# 3. Emotional Activity Recommender (Node)
+# 4. Emotional Activity Recommender (Node, port 7003)
 if [ -d "$SERVICES/emotional-activity-recommender" ]; then
   setup_node_deps "$SERVICES/emotional-activity-recommender" || true
   echo "Starting emotional-activity-recommender..."
-  (cd "$SERVICES/emotional-activity-recommender" && npm start) &
+  (cd "$SERVICES/emotional-activity-recommender" && PORT=7003 npm start) &
   pids+=($!)
   sleep 2
 fi
 
-# 4. Emotional Activity Recommender ML (FastAPI, port 5000)
+# 5. Emotional Activity Recommender ML (FastAPI, port 7004)
 if [ -d "$SERVICES/emotional-activity-recommender-ml" ]; then
   setup_python_venv "$SERVICES/emotional-activity-recommender-ml" || true
   echo "Starting emotional-activity-recommender-ml..."
@@ -110,11 +122,28 @@ if [ -d "$SERVICES/emotional-activity-recommender-ml" ]; then
   sleep 2
 fi
 
-# 5. Gateway (Express, port 7777)
-if [ -d "$GATEWAY" ]; then
-  setup_node_deps "$GATEWAY" || true
-  echo "Starting gateway..."
-  (cd "$GATEWAY" && npm start) &
+# 6. Therapy Collab (Node, port 7005)
+if [ -d "$SERVICES/therapy-collab" ]; then
+  setup_node_deps "$SERVICES/therapy-collab" || true
+  echo "Starting therapy-collab..."
+  (cd "$SERVICES/therapy-collab" && PORT=7005 AI_URL=http://localhost:7006/analyze-voice AI_TEXT_URL=http://localhost:7006/analyze-text npm start) &
+  pids+=($!)
+  sleep 2
+fi
+
+# 7. Therapy Collab AI (Python, port 7006)
+if [ -d "$SERVICES/therapy-collab-ai" ]; then
+  setup_python_venv "$SERVICES/therapy-collab-ai" || true
+  echo "Starting therapy-collab-ai..."
+  (
+    cd "$SERVICES/therapy-collab-ai"
+    export PORT=7006
+    if [ -x .venv/bin/python ]; then
+      .venv/bin/python main.py
+    else
+      python3 main.py
+    fi
+  ) &
   pids+=($!)
 fi
 
@@ -124,8 +153,10 @@ echo "  Services started. Press Ctrl+C to stop all."
 echo "  gateway:                   http://localhost:7777"
 echo "  autism-profile-builder:    http://localhost:7001"
 echo "  cognitive-activity-recommender: http://localhost:7002"
-echo "  emotional-activity-recommender:  http://localhost:3001"
-echo "  emotional-activity-recommender-ml: http://localhost:5000"
+echo "  emotional-activity-recommender:  http://localhost:7003"
+echo "  emotional-activity-recommender-ml: http://localhost:7004"
+echo "  therapy-collab:            http://localhost:7005"
+echo "  therapy-collab-ai:         http://localhost:7006"
 echo "================================================"
 echo ""
 

@@ -7,9 +7,9 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 
 const app = express();
-const PORT = process.env.PORT || 7006;
-const AI_URL = process.env.AI_URL || "http://localhost:7005/analyze-voice";
-const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7005/analyze-text";
+const PORT = process.env.PORT || 7005;
+const AI_URL = process.env.AI_URL || "http://localhost:7006/analyze-voice";
+const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7006/analyze-text";
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
 // Fail fast on DB queries when MongoDB is unavailable.

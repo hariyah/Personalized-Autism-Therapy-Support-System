@@ -5,8 +5,8 @@
  *   /cognitive        -> cognitive-activity-recommender (7002)
  *   /emotional        -> emotional-activity-recommender (7003)
  *   /emotion-ml       -> emotional-activity-recommender-ml (7004)
- *   /therapy-ai       -> therapy-collab-ai (7005)
- *   /therapy          -> therapy-collab (7006)
+ *   /therapy-ai       -> therapy-collab-ai (7006)
+ *   /therapy          -> therapy-collab (7005)
  */
 
 const express = require("express");
@@ -20,8 +20,8 @@ const SERVICES = {
   cognitive: process.env.COGNITIVE_URL || "http://localhost:7002",
   emotional: process.env.EMOTIONAL_URL || "http://localhost:7003",
   emotionMl: process.env.EMOTION_ML_URL || "http://localhost:7004",
-  therapyAi: process.env.THERAPY_AI_URL || "http://localhost:7005",
-  therapy: process.env.THERAPY_URL || "http://localhost:7006",
+  therapy: process.env.THERAPY_URL || "http://localhost:7005",
+  therapyAi: process.env.THERAPY_AI_URL || "http://localhost:7006",
 };
 
 const app = express();

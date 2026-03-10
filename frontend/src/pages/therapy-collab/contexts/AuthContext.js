@@ -10,6 +10,13 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const setAuth = (token, userData) => {
+        if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
+        if (userData) localStorage.setItem(AUTH_USER_KEY, JSON.stringify(userData));
+        setUser(userData || null);
+        syncTherapyToken();
+    };
+
     useEffect(() => {
         const bridgeAuth = async () => {
             const token = localStorage.getItem(AUTH_TOKEN_KEY);
@@ -38,6 +45,25 @@ export const AuthProvider = ({ children }) => {
         bridgeAuth();
     }, []);
 
+    const login = async (email, password) => {
+        const res = await therapyApi.post('/api/auth/login', { email, password });
+        const { token, user: userData } = res.data;
+        setAuth(token, userData);
+        return userData;
+    };
+
+    const register = async (formData) => {
+        const res = await therapyApi.post('/api/auth/register', {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            role: formData.role || 'parent',
+        });
+        const { token, user: userData } = res.data;
+        setAuth(token, userData);
+        return userData;
+    };
+
     const logout = () => {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_USER_KEY);
@@ -48,6 +74,8 @@ export const AuthProvider = ({ children }) => {
         <AuthContext.Provider value={{
             user,
             loading,
+            login,
+            register,
             logout,
             isAuthenticated: !!user,
             isParent: user?.role === 'parent',

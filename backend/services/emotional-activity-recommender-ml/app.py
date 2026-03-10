@@ -1,7 +1,13 @@
 import os
+import sys
 import json
 import io
 from typing import Dict
+
+# Ensure this service directory is on path so "main" (main.py) can be imported
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import JSONResponse
@@ -19,8 +25,6 @@ except Exception:
     TF_AVAILABLE = False
 
 app = FastAPI()
-
-BASE_DIR = os.path.dirname(__file__)
 
 DEFAULT_LABELS = ["Natural", "anger", "fear", "joy", "sadness", "surprise"]
 MODEL_PATHS = {
@@ -96,10 +100,7 @@ def load_model_if_available(source: str) -> bool:
 
 def infer_camera_with_main(image_bytes: bytes):
     try:
-        try:
-            from main import predict_camera_emotion_from_frame
-        except Exception:
-            from ml_service.main import predict_camera_emotion_from_frame
+        from main import predict_camera_emotion_from_frame
 
         try:
             import numpy as np
@@ -116,7 +117,9 @@ def infer_camera_with_main(image_bytes: bytes):
 
         return predict_camera_emotion_from_frame(frame)
     except Exception as e:
+        import traceback
         print(f"[ERROR] Camera inference (main.py) failed: {e}")
+        traceback.print_exc()
         return None
 
 
@@ -206,9 +209,10 @@ async def _predict_with_source(file: UploadFile, source: str):
         if res is not None:
             pred, probs_dict = res
     else:
+        # upload: try dedicated upload model first
         model_loaded = load_model_if_available(source)
         if not model_loaded:
-            print(f"[ERROR] Model could not be loaded for source '{source}'")
+            print(f"[INFO] Upload model not loaded for '{source}', falling back to camera pipeline for uploaded image.")
 
         model = MODELS.get(source)
         if model is not None:
@@ -219,6 +223,12 @@ async def _predict_with_source(file: UploadFile, source: str):
             except Exception as e:
                 print(f"[ERROR] Exception during inference: {e}")
                 pred, probs_dict = None, None
+
+        # Fallback: run uploaded image through camera model (same emotion classes)
+        if pred is None and probs_dict is None:
+            res = infer_camera_with_main(contents)
+            if res is not None:
+                pred, probs_dict = res
 
     allow_uncertain = os.environ.get("EMOTION_ALLOW_UNCERTAIN", "1") == "1"
     if pred and probs_dict:

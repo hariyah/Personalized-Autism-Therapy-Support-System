@@ -114,6 +114,7 @@ export const authApi = {
       email: userData.email,
       password: userData.password,
       fullName: userData.username,
+      role: userData.role ?? 'parent',
     });
     return response.data;
   },

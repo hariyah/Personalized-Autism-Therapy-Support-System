@@ -1,10 +1,25 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { BASE } from './routes';
 
+function DefaultRedirect() {
+    const { isAuthenticated, user, loading } = useAuth();
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-[#0d1220]">
+                <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+    if (!isAuthenticated) return <Navigate to={`${BASE}/login`} replace />;
+    return <Navigate to={user?.role === 'doctor' ? `${BASE}/doctor/dashboard` : `${BASE}/parent/dashboard`} replace />;
+}
+
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Notifications from './pages/Notifications';
 
 import ParentDashboard from './pages/parent/Dashboard';
@@ -24,6 +39,8 @@ export default function TherapyCollabApp() {
         <AuthProvider>
             <NotificationProvider>
                 <Routes>
+                    <Route path="login" element={<Login />} />
+                    <Route path="register" element={<Register />} />
                     <Route path="notifications" element={
                         <ProtectedRoute><Notifications /></ProtectedRoute>
                     } />
@@ -63,7 +80,7 @@ export default function TherapyCollabApp() {
                         <ProtectedRoute allowedRoles={['doctor']}><DoctorNewAnalysis /></ProtectedRoute>
                     } />
 
-                    <Route path="*" element={<Navigate to={`${BASE}/parent/dashboard`} replace />} />
+                    <Route path="*" element={<DefaultRedirect />} />
                 </Routes>
             </NotificationProvider>
         </AuthProvider>

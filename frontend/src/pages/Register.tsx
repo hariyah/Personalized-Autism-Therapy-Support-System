@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import type { UserCreate } from '../types';
+import type { UserCreate, UserRole } from '../types';
 import { FaHandsHoldingChild } from 'react-icons/fa6';
 
 export default function Register() {
@@ -9,6 +9,7 @@ export default function Register() {
     username: '',
     email: '',
     password: '',
+    role: 'parent',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,8 @@ export default function Register() {
 
     try {
       await register(formData);
-      navigate('/dashboard');
+      const target = formData.role === 'doctor' ? '/therapy-collab/doctor/dashboard' : '/dashboard';
+      navigate(target);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
@@ -66,6 +68,28 @@ export default function Register() {
                 {error}
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                I am a
+              </label>
+              <div className="mt-1 flex gap-2">
+                {(['parent', 'doctor'] as UserRole[]).map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role })}
+                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium border transition-colors ${
+                      formData.role === role
+                        ? 'border-pastel-green-600 bg-pastel-green-50 text-pastel-green-800'
+                        : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {role === 'parent' ? 'Parent' : 'Doctor'}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1.5">

@@ -194,12 +194,16 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  role?: UserRole;
 }
+
+export type UserRole = 'parent' | 'doctor';
 
 export interface UserCreate {
   username: string;
   email: string;
   password: string;
+  role?: UserRole;
 }
 
 export interface UserLogin {

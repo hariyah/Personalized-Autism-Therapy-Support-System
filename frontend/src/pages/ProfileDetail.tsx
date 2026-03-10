@@ -126,7 +126,7 @@ export default function ProfileDetail() {
   }
 
   return (
-    <div>
+    <div className='container mx-auto px-4 py-8'>
       <button
         onClick={() => navigate('/dashboard')}
         className="mb-6 text-pastel-green-600 hover:text-pastel-green-700 font-medium transition-colors flex items-center gap-2"

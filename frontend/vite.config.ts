@@ -48,7 +48,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/emotion-ml/, ''),
       },
       '/therapy': {
-        target: 'http://localhost:7006',
+        target: 'http://localhost:7005',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/therapy/, ''),
       },

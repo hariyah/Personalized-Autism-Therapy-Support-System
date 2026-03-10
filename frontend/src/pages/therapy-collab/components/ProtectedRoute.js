@@ -8,14 +8,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
     if (loading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50">
-                <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex min-h-screen items-center justify-center bg-[#0d1220]">
+                <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={`${BASE}/login`} replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {

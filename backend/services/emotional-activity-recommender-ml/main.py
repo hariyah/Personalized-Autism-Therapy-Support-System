@@ -208,8 +208,15 @@ def _extract_face_or_center_crop(frame):
         if face.size > 0:
             return face
 
-    # Returning None here is safer than center-cropping arbitrary background,
-    # which often causes incorrect emotion predictions.
+    # No face detected: use center crop so the model still runs (e.g. full-face or near-full-frame images).
+    h, w = frame.shape[:2]
+    if h > 0 and w > 0:
+        size = min(h, w)
+        y1 = (h - size) // 2
+        x1 = (w - size) // 2
+        crop = frame[y1 : y1 + size, x1 : x1 + size]
+        if crop.size > 0:
+            return crop
     return None
 
 
