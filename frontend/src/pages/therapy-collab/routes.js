@@ -1,0 +1,16 @@
+export const THERAPY_COLLAB_ROUTES = {
+  login: "/login",
+  register: "/register",
+  notifications: "/notifications",
+  parentDashboard: "/parent/dashboard",
+  parentChildren: "/parent/children",
+  parentChildProfile: "/parent/children/:id",
+  parentNewAnalysis: "/parent/new-analysis",
+  parentTherapyRedirect: "/parent/therapy/:id",
+  doctorDashboard: "/doctor/dashboard",
+  doctorPatients: "/doctor/patients",
+  doctorPatientProfile: "/doctor/patients/:id",
+  doctorAnalytics: "/doctor/analytics",
+  doctorNewAnalysis: "/doctor/new-analysis",
+  doctorNewAnalysisWithPatient: "/doctor/new-analysis/:patientId",
+};

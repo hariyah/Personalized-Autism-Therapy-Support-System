@@ -1,0 +1,25 @@
+{
+  "name": "personalized-autism-therapy-support-system",
+  "version": "1.0.0",
+  "description": "Personalized Autism Therapy Support System",
+  "scripts": {
+    "install:all": "npm install --prefix frontend && npm install --prefix backend/gateway && npm install --prefix backend/services/therapy-collab && cd backend/services/therapy-collab-ai && .\\.venv\\Scripts\\python.exe -m pip install -r requirements.txt",
+    "seed": "npm run seed --prefix backend/services/therapy-collab",
+    "seed:demo": "npm run seed:demo --prefix backend/services/therapy-collab",
+    "start": "node backend/scripts/run-services.js",
+    "start:frontend": "npm start --prefix frontend",
+    "start:gateway": "npm run dev --prefix backend/gateway",
+    "start:backend": "npm run dev --prefix backend/services/therapy-collab",
+    "start:ai": "cd backend/services/therapy-collab-ai && .\\.venv\\Scripts\\python.exe -m uvicorn main:app --port 8000"
+  },
+  "keywords": [
+    "autism",
+    "therapy",
+    "ai",
+    "react",
+    "express",
+    "fastapi"
+  ],
+  "author": "Antigravity AI",
+  "license": "ISC"
+}
