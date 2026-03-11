@@ -5,6 +5,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
 
+# Keep Hugging Face on the PyTorch code path; TensorFlow is only used
+# separately for the local emotion model below.
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+os.environ.setdefault("USE_FLAX", "0")
+
 import numpy as np
 import torch
 import librosa
@@ -59,6 +65,10 @@ asr = None
 issue_clf = None
 urgency_clf = None
 summarizer = None
+zsc = None
+
+ISSUE_LABELS = []
+URGENCY_LABELS = ["low", "medium", "high"]
 
 def top_k(scores: List[Dict[str, Any]], k=3):
     scores_sorted = sorted(scores, key=lambda x: x["score"], reverse=True)
@@ -67,9 +77,42 @@ def top_k(scores: List[Dict[str, Any]], k=3):
 def clean_text(text: str) -> str:
     return " ".join(str(text).strip().split())
 
+# Mongoose Analysis schema expects urgencyLabel in ['low', 'medium', 'high']
+VALID_URGENCY = frozenset({"low", "medium", "high"})
+
+def normalize_urgency(label: str) -> str:
+    if label and label.lower() in VALID_URGENCY:
+        return label.lower()
+    return "medium"
+
+def load_audio_for_librosa(path: str, target_sr: int = 16000):
+    """Load audio with librosa; convert WebM/unsupported formats to WAV via pydub first."""
+    path_lower = path.lower()
+    need_convert = path_lower.endswith(".webm") or path_lower.endswith(".weba") or "webm" in path_lower
+    wav_path = None
+    if need_convert:
+        try:
+            from pydub import AudioSegment
+            wav_path = path + ".wav"
+            seg = AudioSegment.from_file(path, format="webm")
+            seg.export(wav_path, format="wav")
+            path = wav_path
+        except Exception as e:
+            print(f"pydub conversion failed: {e}")
+            raise
+    try:
+        audio_data, sr = librosa.load(path, sr=target_sr)
+        return audio_data, sr
+    finally:
+        if wav_path and os.path.isfile(wav_path):
+            try:
+                os.remove(wav_path)
+            except Exception:
+                pass
+
 @app.on_event("startup")
 def load_models():
-    global asr, issue_clf, urgency_clf, summarizer
+    global asr, issue_clf, urgency_clf, summarizer, zsc, ISSUE_LABELS
     try:
         print("Loading ASR model...")
         asr = pipeline("automatic-speech-recognition", model=WHISPER_MODEL, device=device)
@@ -77,6 +120,23 @@ def load_models():
     except Exception as e:
         print(f"Error loading ASR: {e}")
         asr = None
+
+    # Read issue labels from local config (used for zero-shot fallback)
+    try:
+        _cfg_path = os.path.join(MODEL_ISSUE_DIR, "config.json")
+        if os.path.isfile(_cfg_path):
+            with open(_cfg_path) as _f:
+                _cfg = json.load(_f)
+            ISSUE_LABELS = list(_cfg.get("id2label", {}).values())
+    except Exception:
+        pass
+    if not ISSUE_LABELS:
+        ISSUE_LABELS = [
+            "aggression", "anxiety_meltdown", "daily_progress", "feeding_issue",
+            "health_concern", "regression_social", "regression_speech",
+            "repetitive_behavior", "routine_change", "school_concern",
+            "self_injury", "sensory_overload", "sleep_issue",
+        ]
 
     try:
         print("Loading issue classifier...")
@@ -91,12 +151,12 @@ def load_models():
                 top_k=None,
                 device=device,
             )
-            print("[OK] Issue classifier loaded")
+            print("[OK] Issue classifier loaded (local)")
         else:
             print(f"Issue classifier path not found: {MODEL_ISSUE_DIR}")
             issue_clf = None
     except Exception as e:
-        print(f"Error loading issue classifier: {e}")
+        print(f"Issue classifier local weights missing, will use zero-shot fallback.")
         issue_clf = None
 
     try:
@@ -112,13 +172,24 @@ def load_models():
                 top_k=None,
                 device=device,
             )
-            print("[OK] Urgency classifier loaded")
+            print("[OK] Urgency classifier loaded (local)")
         else:
             print(f"Urgency classifier path not found: {MODEL_URGENCY_DIR}")
             urgency_clf = None
     except Exception as e:
-        print(f"Error loading urgency classifier: {e}")
+        print(f"Urgency classifier local weights missing, will use zero-shot fallback.")
         urgency_clf = None
+
+    # If either classifier failed, load a shared zero-shot model as fallback
+    if issue_clf is None or urgency_clf is None:
+        try:
+            _zsc_model = "facebook/bart-large-mnli"
+            print(f"Loading zero-shot classifier from hub ({_zsc_model})...")
+            zsc = pipeline("zero-shot-classification", model=_zsc_model, device=device)
+            print("[OK] Zero-shot classifier loaded (fallback for issue/urgency)")
+        except Exception as e:
+            print(f"Error loading zero-shot classifier: {e}")
+            zsc = None
 
     try:
         print("Loading summarizer...")
@@ -139,7 +210,7 @@ def load_models():
             except Exception as local_e:
                 err_msg = str(local_e).lower()
                 if "no file named" in err_msg or "pytorch_model" in err_msg or "safetensors" in err_msg:
-                    print(f"Local summarizer missing weights in {MODEL_SUMM_DIR}. Add pytorch_model.bin or model.safetensors, falling back to hub.")
+                    print(f"Local summarizer missing weights in {MODEL_SUMM_DIR}. Falling back to hub.")
                 else:
                     print(f"Local summarizer load failed: {local_e}; falling back to hub.")
                 summarizer = pipeline(
@@ -179,6 +250,14 @@ def load_models():
         if not TF_AVAILABLE:
             print(f"TensorFlow not available. TF: False. {('Error: ' + TF_ERROR) if TF_ERROR else 'Install tensorflow to enable emotion recognition.'}")
 
+    print("\n--- Startup Summary ---")
+    print(f"  ASR (Whisper):       {'OK' if asr else 'UNAVAILABLE'}")
+    print(f"  Issue classifier:    {'OK (local)' if issue_clf else ('OK (zero-shot)' if zsc else 'UNAVAILABLE')}")
+    print(f"  Urgency classifier:  {'OK (local)' if urgency_clf else ('OK (zero-shot)' if zsc else 'UNAVAILABLE')}")
+    print(f"  Summarizer:          {'OK' if summarizer else 'UNAVAILABLE'}")
+    print(f"  Emotion model:       {'OK' if emotion_model else 'UNAVAILABLE'}")
+    print("--- Ready ---\n")
+
 @app.post("/analyze-voice")
 async def analyze_voice(file: UploadFile = File(...)):
     try:
@@ -190,8 +269,8 @@ async def analyze_voice(file: UploadFile = File(...)):
         with open(audio_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
 
-        # Load audio using librosa (handles various formats)
-        audio_data, sr = librosa.load(audio_path, sr=16000)
+        # Load audio (convert WebM to WAV via pydub if needed; librosa doesn't support WebM)
+        audio_data, sr = load_audio_for_librosa(audio_path, target_sr=16000)
         print(f"Audio loaded: shape={audio_data.shape}, sr={sr}, duration={len(audio_data)/sr:.2f}s")
         
         # 1) ASR - Whisper expects numpy array directly when sr=16000
@@ -208,23 +287,32 @@ async def analyze_voice(file: UploadFile = File(...)):
 
         # 2) Issue classification
         issue_top3 = []
-        issue_label = "UNKNOWN"
+        issue_label = "general"
         try:
             if transcript and issue_clf:
                 issue_scores = issue_clf(transcript)[0]
                 issue_top3 = top_k(issue_scores, k=3)
-                issue_label = issue_top3[0]["label"] if issue_top3 else "UNKNOWN"
+                issue_label = issue_top3[0]["label"] if issue_top3 else "general"
+            elif transcript and zsc and ISSUE_LABELS:
+                r = zsc(transcript, ISSUE_LABELS)
+                issue_top3 = [{"label": l, "score": float(s)} for l, s in zip(r["labels"][:3], r["scores"][:3])]
+                issue_label = issue_top3[0]["label"] if issue_top3 else "general"
         except Exception as e:
             print(f"Issue classification error: {e}")
 
-        # 3) Urgency classification
+        # 3) Urgency classification (schema allows only 'low'|'medium'|'high')
         urgency_top3 = []
-        urgency_label = "UNKNOWN"
+        urgency_label = "medium"
         try:
             if transcript and urgency_clf:
                 urg_scores = urgency_clf(transcript)[0]
                 urgency_top3 = top_k(urg_scores, k=3)
-                urgency_label = urgency_top3[0]["label"] if urgency_top3 else "UNKNOWN"
+                raw = urgency_top3[0]["label"] if urgency_top3 else "medium"
+                urgency_label = normalize_urgency(raw)
+            elif transcript and zsc:
+                r = zsc(transcript, URGENCY_LABELS)
+                urgency_top3 = [{"label": l, "score": float(s)} for l, s in zip(r["labels"][:3], r["scores"][:3])]
+                urgency_label = normalize_urgency(urgency_top3[0]["label"] if urgency_top3 else "medium")
         except Exception as e:
             print(f"Urgency classification error: {e}")
 
@@ -239,17 +327,17 @@ async def analyze_voice(file: UploadFile = File(...)):
         # Cleanup temporary files
         try:
             os.remove(audio_path)
-        except:
+        except Exception:
             pass
 
         return {
             "audio_filename": filename,
-            "transcript": transcript,
+            "transcript": transcript or "",
             "issue_label": issue_label,
             "issue_top3": issue_top3,
             "urgency_label": urgency_label,
             "urgency_top3": urgency_top3,
-            "summary": summary,
+            "summary": summary or "No transcript available",
         }
     except Exception as e:
         print(f"Analyze voice error: {e}")
@@ -270,23 +358,32 @@ async def analyze_text(request: TextRequest):
         
         # 2) Issue classification
         issue_top3 = []
-        issue_label = "UNKNOWN"
+        issue_label = "general"
         try:
             if transcript and issue_clf:
                 issue_scores = issue_clf(transcript)[0]
                 issue_top3 = top_k(issue_scores, k=3)
-                issue_label = issue_top3[0]["label"] if issue_top3 else "UNKNOWN"
+                issue_label = issue_top3[0]["label"] if issue_top3 else "general"
+            elif transcript and zsc and ISSUE_LABELS:
+                r = zsc(transcript, ISSUE_LABELS)
+                issue_top3 = [{"label": l, "score": float(s)} for l, s in zip(r["labels"][:3], r["scores"][:3])]
+                issue_label = issue_top3[0]["label"] if issue_top3 else "general"
         except Exception as e:
             print(f"Issue classification error: {e}")
 
-        # 3) Urgency classification
+        # 3) Urgency classification (schema allows only 'low'|'medium'|'high')
         urgency_top3 = []
-        urgency_label = "UNKNOWN"
+        urgency_label = "medium"
         try:
             if transcript and urgency_clf:
                 urg_scores = urgency_clf(transcript)[0]
                 urgency_top3 = top_k(urg_scores, k=3)
-                urgency_label = urgency_top3[0]["label"] if urgency_top3 else "UNKNOWN"
+                raw = urgency_top3[0]["label"] if urgency_top3 else "medium"
+                urgency_label = normalize_urgency(raw)
+            elif transcript and zsc:
+                r = zsc(transcript, URGENCY_LABELS)
+                urgency_top3 = [{"label": l, "score": float(s)} for l, s in zip(r["labels"][:3], r["scores"][:3])]
+                urgency_label = normalize_urgency(urgency_top3[0]["label"] if urgency_top3 else "medium")
         except Exception as e:
             print(f"Urgency classification error: {e}")
 
@@ -299,12 +396,12 @@ async def analyze_text(request: TextRequest):
             print(f"Summarization error: {e}")
 
         return {
-            "transcript": transcript,
+            "transcript": transcript or "",
             "issue_label": issue_label,
             "issue_top3": issue_top3,
             "urgency_label": urgency_label,
             "urgency_top3": urgency_top3,
-            "summary": summary,
+            "summary": summary or "No transcript available",
         }
     except Exception as e:
         print(f"Analyze text error: {e}")

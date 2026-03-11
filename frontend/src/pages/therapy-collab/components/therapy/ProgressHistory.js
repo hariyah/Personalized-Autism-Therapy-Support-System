@@ -5,9 +5,9 @@ const ProgressHistory = ({ emissions, confidence }) => {
     // Primary emotions out of the 6 detected via webcam ML
     const primaryEmotions = [
         { key: 'happy', label: 'Happy', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/50' },
-        { key: 'sad', label: 'Sad', color: 'bg-indigo-500', shadow: 'shadow-indigo-500/50' },
+        { key: 'sad', label: 'Sad', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/50' },
         { key: 'angry', label: 'Angry', color: 'bg-rose-500', shadow: 'shadow-rose-500/50' },
-        { key: 'fearful', label: 'Fearful', color: 'bg-violet-500', shadow: 'shadow-violet-500/50' },
+        { key: 'fearful', label: 'Fearful', color: 'bg-emerald-600', shadow: 'shadow-emerald-600/50' },
         { key: 'disgusted', label: 'Disgusted', color: 'bg-lime-500', shadow: 'shadow-lime-500/50' },
         { key: 'surprised', label: 'Surprised', color: 'bg-amber-500', shadow: 'shadow-amber-500/50' },
         { key: 'neutral', label: 'Neutral', color: 'bg-slate-400', shadow: 'shadow-slate-400/50' },
@@ -27,7 +27,7 @@ const ProgressHistory = ({ emissions, confidence }) => {
     return (
         <div className="space-y-4 pt-1">
             <div className="flex items-center justify-between mb-3">
-                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-1.5"><FiActivity className="text-violet-400" /> Biometric Detail</p>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-1.5"><FiActivity className="text-emerald-500" /> Biometric Detail</p>
                 {confidence !== undefined && confidence !== null ? (
                     <p className="text-[9px] font-bold text-teal-400 uppercase tracking-widest flex items-center gap-1"><FiCheckCircle /> {(confidence * 100).toFixed(0)}% Confidence</p>
                 ) : (

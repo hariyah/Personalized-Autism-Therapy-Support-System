@@ -25,7 +25,7 @@
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(28,130,150,0.35) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(22,163,74,0.25) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -41,7 +41,8 @@
 }
 
 .auth-headline {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
   color: white;
   font-size: 2.4rem;
   margin-bottom: 16px;

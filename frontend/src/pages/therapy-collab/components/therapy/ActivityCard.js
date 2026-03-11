@@ -2,11 +2,11 @@ import React from 'react';
 import { FiClock, FiStar, FiCheck, FiPlayCircle, FiZap } from 'react-icons/fi';
 
 const categoryColors = {
-    'Focus & Attention': { bg: 'bg-indigo-500/15', text: 'text-indigo-400', border: 'border-indigo-500/30' },
+    'Focus & Attention': { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
     'Emotional Regulation': { bg: 'bg-rose-500/15', text: 'text-rose-400', border: 'border-rose-500/30' },
     'Social Skills': { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
     'Communication': { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
-    'default': { bg: 'bg-violet-500/15', text: 'text-violet-400', border: 'border-violet-500/30' }
+    'default': { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' }
 };
 
 const ActivityCard = ({ activity, onComplete }) => {
@@ -32,7 +32,7 @@ const ActivityCard = ({ activity, onComplete }) => {
                                 </span>
                             )}
                         </div>
-                        <h4 className={`text-lg font-bold mb-1.5 ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-200 group-hover:text-violet-300'} transition-colors leading-tight`}>
+                        <h4 className={`text-lg font-bold mb-1.5 ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-200 group-hover:text-emerald-400'} transition-colors leading-tight`}>
                             {activity.title}
                         </h4>
                         <p className={`text-sm leading-relaxed ${isCompleted ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -52,8 +52,8 @@ const ActivityCard = ({ activity, onComplete }) => {
 
                         {activity.instructions && !isCompleted && (
                             <div className="mt-5 p-4 bg-white/[0.02] border border-white/[0.05] rounded-xl text-xs text-slate-300 leading-relaxed font-medium">
-                                <p className="text-[9px] text-slate-500 uppercase tracking-[0.2em] font-black mb-2 flex items-center gap-1.5"><FiPlayCircle size={12} className="text-violet-400" /> Action Steps</p>
-                                <ul className="list-disc pl-4 space-y-1.5 marker:text-violet-500 marker:text-[10px]">
+                                <p className="text-[9px] text-slate-500 uppercase tracking-[0.2em] font-black mb-2 flex items-center gap-1.5"><FiPlayCircle size={12} className="text-emerald-500" /> Action Steps</p>
+                                <ul className="list-disc pl-4 space-y-1.5 marker:text-emerald-500 marker:text-[10px]">
                                     {activity.instructions.map((inst, idx) => (
                                         <li key={idx}>{inst}</li>
                                     ))}
@@ -70,7 +70,7 @@ const ActivityCard = ({ activity, onComplete }) => {
                         ) : (
                             <button
                                 onClick={onComplete}
-                                className="w-full sm:w-auto px-6 py-3 gradient-primary rounded-xl font-black uppercase tracking-[0.1em] text-white text-[10px] shadow-lg shadow-violet-500/25 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                className="w-full sm:w-auto px-6 py-3 gradient-primary rounded-xl font-black uppercase tracking-[0.1em] text-white text-[10px] shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
                             >
                                 <FiZap fill="currentColor" size={12} /> Mark Finished
                             </button>

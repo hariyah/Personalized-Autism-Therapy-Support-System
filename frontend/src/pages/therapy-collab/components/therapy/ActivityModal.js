@@ -6,7 +6,7 @@ const ActivityModal = ({ activity, onClose }) => {
 
     const getCategoryColor = (category) => {
         switch (category) {
-            case 'social': return 'from-blue-500 to-indigo-600';
+            case 'social': return 'from-emerald-500 to-teal-600';
             case 'behavioral': return 'from-purple-500 to-purple-700';
             case 'emotional': return 'from-pink-500 to-rose-600';
             default: return 'from-gray-500 to-gray-700';
@@ -44,7 +44,7 @@ const ActivityModal = ({ activity, onClose }) => {
                     {/* Grid Info */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         <div className="bg-gray-50 p-4 rounded-2xl flex flex-col items-center text-center">
-                            <FiClock className="text-indigo-500 mb-1" size={20} />
+                            <FiClock className="text-emerald-500 mb-1" size={20} />
                             <span className="text-xs text-gray-400 font-bold uppercase">Duration</span>
                             <span className="text-sm font-bold text-gray-700">{activity.duration}</span>
                         </div>
@@ -69,7 +69,7 @@ const ActivityModal = ({ activity, onClose }) => {
                         {/* Description */}
                         <section>
                             <h4 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
-                                <FiInfo className="text-indigo-500" /> Description
+                                <FiInfo className="text-emerald-500" /> Description
                             </h4>
                             <p className="text-gray-600 leading-relaxed text-lg">{activity.description}</p>
                         </section>
@@ -103,13 +103,13 @@ const ActivityModal = ({ activity, onClose }) => {
                         </div>
 
                         {/* Tags */}
-                        <section className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                            <h4 className="flex items-center gap-2 text-indigo-700 font-bold mb-4">
+                        <section className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                            <h4 className="flex items-center gap-2 text-emerald-700 font-bold mb-4">
                                 <FiTag /> Related Interests
                             </h4>
                             <div className="flex flex-wrap gap-2">
                                 {activity.interestTags?.map((tag, i) => (
-                                    <span key={i} className="bg-white text-indigo-600 px-4 py-1.5 rounded-xl text-sm font-bold shadow-sm border border-indigo-100">
+                                    <span key={i} className="bg-white text-emerald-600 px-4 py-1.5 rounded-xl text-sm font-bold shadow-sm border border-emerald-100">
                                         #{tag}
                                     </span>
                                 ))}

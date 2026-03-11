@@ -115,7 +115,7 @@ const ChatBox = ({ childId, receiverId, receiverName }) => {
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')]">
                 {loading ? (
                     <div className="h-full flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
+                        <div className="w-8 h-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
                     </div>
                 ) : messages.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-center px-4">
@@ -149,7 +149,7 @@ const ChatBox = ({ childId, receiverId, receiverName }) => {
                                             </button>
                                         )}
                                         {!isMe && user?.role === 'doctor' && msg.messageType !== 'voice' && (
-                                            <button onClick={() => handleForward(msg.content)} className="text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/20">
+                                            <button onClick={() => handleForward(msg.content)} className="text-emerald-500 hover:text-emerald-400 transition-colors flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                                                 <FiActivity size={10} /> Analyze Text
                                             </button>
                                         )}
@@ -169,7 +169,7 @@ const ChatBox = ({ childId, receiverId, receiverName }) => {
                     </button>
                     <div className="relative flex-1">
                         <input type="text" className="input-dark !rounded-full !pr-14 !py-3.5 focus:bg-white/[0.07] transition-all w-full" placeholder="Type a secure message..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-                        <button type="submit" disabled={!newMessage.trim()} className="absolute right-2 top-1.5 w-10 h-10 gradient-primary rounded-full flex items-center justify-center text-white shadow-md shadow-violet-500/20 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all outline-none">
+                        <button type="submit" disabled={!newMessage.trim()} className="absolute right-2 top-1.5 w-10 h-10 gradient-primary rounded-full flex items-center justify-center text-white shadow-md shadow-emerald-500/20 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all outline-none">
                             <FiSend size={15} className="-ml-0.5 mt-0.5" />
                         </button>
                     </div>

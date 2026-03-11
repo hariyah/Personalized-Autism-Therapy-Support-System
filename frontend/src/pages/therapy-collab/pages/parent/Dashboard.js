@@ -49,7 +49,7 @@ const ParentDashboard = () => {
             <Sidebar />
             <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
+                    <div className="w-12 h-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
                     <p className="text-slate-500 text-sm font-medium">Loading your dashboard...</p>
                 </div>
             </div>
@@ -59,14 +59,14 @@ const ParentDashboard = () => {
     if (loading) return <Loader />;
 
     const statCards = [
-        { label: 'Children', value: stats?.totalChildren || 0, icon: FiUsers, color: 'violet' },
+        { label: 'Children', value: stats?.totalChildren || 0, icon: FiUsers, color: 'emerald' },
         { label: 'Analyses', value: stats?.totalAnalyses || 0, icon: FiActivity, color: 'teal' },
         { label: 'This Week', value: stats?.recentAnalyses || 0, icon: FiTrendingUp, color: 'cyan' },
         { label: 'Alerts', value: stats?.urgencyCounts?.find(u => u._id === 'high')?.count || 0, icon: FiAlertCircle, color: 'rose' },
     ];
 
     const colorMap = {
-        violet: 'from-violet-500/20 to-violet-500/5 border-violet-500/20 text-violet-400',
+        emerald: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 text-emerald-500',
         teal: 'from-teal-500/20 to-teal-500/5 border-teal-500/20 text-teal-400',
         cyan: 'from-cyan-500/20 to-cyan-500/5 border-cyan-500/20 text-cyan-400',
         rose: 'from-rose-500/20 to-rose-500/5 border-rose-500/20 text-rose-400',
@@ -80,8 +80,8 @@ const ParentDashboard = () => {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-10">
                         <div>
-                            <p className="text-xs font-bold text-violet-400 uppercase tracking-[0.3em] mb-2">Family Care Console</p>
-                            <h1 className="text-4xl font-black text-slate-100 tracking-tight">
+                            <p className="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-2">Family Care Console</p>
+                            <h1 className="text-4xl font-black text-slate-900 tracking-tight">
                                 Hello, <span className="gradient-text">{stats?.parentName || 'Parent'}</span>
                             </h1>
                             <div className="flex items-center gap-2 mt-2">
@@ -100,7 +100,7 @@ const ParentDashboard = () => {
                                     <Icon size={18} className="opacity-70" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{label}</span>
                                 </div>
-                                <p className="text-3xl font-black text-slate-100">{value}</p>
+                                <p className="text-3xl font-black text-slate-900">{value}</p>
                             </div>
                         ))}
                     </div>
@@ -110,13 +110,13 @@ const ParentDashboard = () => {
                         {/* Consultations */}
                         <div className="lg:col-span-2 space-y-4">
                             <div className="flex items-center justify-between mb-2">
-                                <h2 className="text-lg font-black text-slate-200">Active Consultations</h2>
+                                <h2 className="text-lg font-black text-slate-800">Active Consultations</h2>
                                 <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Live Chat Support</span>
                             </div>
 
                             {children.length === 0 ? (
                                 <div className="card border-subtle p-16 text-center card-glow">
-                                    <div className="w-16 h-16 bg-white/[0.04] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                         <FiUsers className="text-slate-600" size={28} />
                                     </div>
                                     <h3 className="text-slate-300 font-bold mb-2">Add family members to begin</h3>
@@ -129,11 +129,11 @@ const ParentDashboard = () => {
                                     <div key={child._id} className="card border-subtle overflow-hidden card-glow">
                                         <div className="p-5 flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-violet-500/20">
+                                                <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/20">
                                                     {child.name[0]}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-slate-200">{child.name}</p>
+                                                    <p className="font-bold text-slate-800">{child.name}</p>
                                                     <div className="flex items-center gap-2 mt-0.5">
                                                         <div className={child.assignedDoctors?.length > 0 ? 'glow-dot' : 'glow-dot-rose'} />
                                                         <p className="text-xs text-slate-500 font-medium">
@@ -148,7 +148,7 @@ const ParentDashboard = () => {
                                                 <button
                                                     onClick={() => handleSelectChat(child, child.assignedDoctors[0])}
                                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all duration-200 ${openChatChild === child._id
-                                                        ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+                                                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                                                         : 'btn-secondary'
                                                         }`}
                                                 >
@@ -158,7 +158,7 @@ const ParentDashboard = () => {
                                             )}
                                         </div>
                                         {openChatChild === child._id && selectedChat && (
-                                            <div className="border-t border-white/[0.06] bg-white/[0.02]">
+                                            <div className="border-t border-slate-200 bg-slate-50">
                                                 <ChatBox childId={selectedChat.childId} receiverId={selectedChat.doctorId} receiverName={selectedChat.doctorName?.startsWith('Dr') ? selectedChat.doctorName : `Dr. ${selectedChat.doctorName}`} />
                                             </div>
                                         )}
@@ -169,19 +169,19 @@ const ParentDashboard = () => {
 
                         {/* Right Sidebar */}
                         <div className="space-y-4">
-                            <h2 className="text-lg font-black text-slate-200 mb-2">Care Path</h2>
+                            <h2 className="text-lg font-black text-slate-800 mb-2">Care Path</h2>
 
                             <div className="card border-subtle p-5 card-glow">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-9 h-9 bg-rose-500/15 border border-rose-500/25 rounded-xl flex items-center justify-center">
                                         <FiHeart className="text-rose-400" size={16} />
                                     </div>
-                                    <h3 className="font-bold text-slate-200 text-sm">My Children</h3>
+                                    <h3 className="font-bold text-slate-800 text-sm">My Children</h3>
                                 </div>
                                 <p className="text-slate-500 text-xs leading-relaxed mb-4">Manage health records and review specialist feedback.</p>
-                                <Link to={`${BASE}/parent/children`} className="flex items-center justify-between p-3 bg-white/[0.04] hover:bg-white/[0.07] rounded-xl transition-all border border-white/[0.06] group">
+                                <Link to={`${BASE}/parent/children`} className="flex items-center justify-between p-3 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all border border-slate-200 group">
                                     <span className="text-sm font-bold text-slate-300">Manage Profiles</span>
-                                    <FiChevronRight className="text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" size={14} />
+                                    <FiChevronRight className="text-slate-500 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" size={14} />
                                 </Link>
                             </div>
 

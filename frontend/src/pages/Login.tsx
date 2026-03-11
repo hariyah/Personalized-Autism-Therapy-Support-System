@@ -34,7 +34,7 @@ export default function Login() {
             <FaHandsHoldingChild className="text-6xl text-pastel-green-600" />
           </div>
           <h2 className="text-3xl font-semibold text-gray-900 mb-2">
-            Cognitive Activity Plan Generator
+            Autism Care
           </h2>
           <p className="text-gray-600">
             Sign in to your account

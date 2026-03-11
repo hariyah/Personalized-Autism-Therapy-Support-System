@@ -10,7 +10,7 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
             case 'high': return { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20', line: 'bg-rose-500' };
             case 'medium': return { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', line: 'bg-amber-500' };
             case 'low': return { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', line: 'bg-emerald-500' };
-            default: return { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20', line: 'bg-violet-500' };
+            default: return { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20', line: 'bg-emerald-500' };
         }
     };
 
@@ -31,11 +31,11 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
                                 <span className={`text-[9px] uppercase font-black px-2.5 py-1 rounded-md border ${config.bg} ${config.text} ${config.border} tracking-widest`}>
                                     {analysis.urgencyLabel} Priority
                                 </span>
-                                <span className="text-[9px] uppercase font-black px-2.5 py-1 rounded-md border bg-white/[0.04] text-slate-300 border-white/[0.1] tracking-widest">
+                                <span className="text-[9px] uppercase font-black px-2.5 py-1 rounded-md border bg-slate-100 text-slate-600 border-slate-200 tracking-widest">
                                     {analysis.issueLabel?.replace(/_/g, ' ')}
                                 </span>
                             </div>
-                            <h4 className="text-lg font-bold text-slate-200 leading-snug group-hover:text-violet-300 transition-colors">{analysis.summary}</h4>
+                            <h4 className="text-lg font-bold text-slate-800 leading-snug group-hover:text-emerald-600 transition-colors">{analysis.summary}</h4>
                         </div>
                     </div>
                     <div className="text-left sm:text-right shrink-0">
@@ -44,17 +44,17 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.05] pt-5">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-5">
                     <div className="flex flex-wrap gap-2">
                         {analysis.issueTop3?.slice(0, 2).map((issue, i) => (
-                            <span key={i} className="px-3 py-1 bg-white/[0.03] text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-white/[0.05]">
+                            <span key={i} className="px-3 py-1 bg-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-slate-200">
                                 {issue.label}
                             </span>
                         ))}
                     </div>
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className={`btn-secondary !py-2 !px-4 !rounded-lg text-[10px] uppercase tracking-widest flex items-center gap-2 w-full sm:w-auto justify-center ${isExpanded ? '!bg-white/[0.08] !text-white' : ''}`}
+                        className={`btn-secondary !py-2 !px-4 !rounded-lg text-[10px] uppercase tracking-widest flex items-center gap-2 w-full sm:w-auto justify-center ${isExpanded ? '!bg-slate-200 !text-slate-900' : ''}`}
                     >
                         {isExpanded ? 'Collapse' : 'Deep Analysis'}
                         <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}><FiChevronDown size={14} /></div>
@@ -63,14 +63,14 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
 
                 {/* Expanded State */}
                 {isExpanded && (
-                    <div className="mt-6 pt-6 border-t border-white/[0.05] space-y-6 animate-in slide-in-from-top-2 fade-in duration-300">
+                    <div className="mt-6 pt-6 border-t border-slate-200 space-y-6 animate-in slide-in-from-top-2 fade-in duration-300">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Transcript */}
                             <div className="space-y-3">
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <FiClipboard className="text-violet-400" /> AI Transcript Record
+                                    <FiClipboard className="text-emerald-500" /> AI Transcript Record
                                 </p>
-                                <div className="p-5 bg-white/[0.02] rounded-xl border border-white/[0.05] italic text-sm text-slate-400 leading-relaxed relative">
+                                <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 italic text-sm text-slate-400 leading-relaxed relative">
                                     <div className="absolute top-0 right-0 p-3 opacity-10"><FiActivity size={24} /></div>
                                     "{analysis.transcript}"
                                 </div>
@@ -86,7 +86,7 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
                                         {analysis.issueTop3?.map((issue, i) => (
                                             <div key={i} className="space-y-2">
                                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
-                                                    <span className="text-slate-300">{issue.label}</span>
+                                                    <span className="text-slate-600">{issue.label}</span>
                                                     <span className="text-teal-400">{(issue.confidence * 100).toFixed(0)}%</span>
                                                 </div>
                                                 <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden shadow-inner flex">
@@ -101,7 +101,7 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
 
                         {/* Doctor specific Action */}
                         {isDoctorView && (
-                            <button className="w-full mt-4 py-3 bg-violet-500/10 text-violet-300 border border-violet-500/20 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-violet-500/20 hover:text-violet-200 transition-all flex items-center justify-center gap-2">
+                            <button className="w-full mt-4 py-3 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-emerald-500/20 hover:text-emerald-200 transition-all flex items-center justify-center gap-2">
                                 <FiMessageSquare size={14} /> Open Secure Consultation Channel
                             </button>
                         )}

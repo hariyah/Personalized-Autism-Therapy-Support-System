@@ -257,6 +257,7 @@ html {
 /* Main Container */
 .main-container {
   flex: 1;
+  margin-left: 300px;
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
   position: relative;
@@ -268,7 +269,7 @@ html {
   content: '';
   position: fixed;
   top: 0;
-  left: 280px;
+  left: 300px;
   right: 0;
   bottom: 0;
   background-image: 

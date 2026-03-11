@@ -91,17 +91,23 @@ router.post('/children/:id/analyses', upload.single('audio'), async (req, res) =
             return res.status(500).json({ success: false, message: aiResult.error });
         }
 
-        // Create analysis with AI results
+        // Normalize for Analysis schema: transcript/summary/issueLabel required; urgencyLabel enum ['low','medium','high']
+        const validUrgency = ['low', 'medium', 'high'];
+        const transcript = (aiResult.transcript != null && aiResult.transcript !== '') ? aiResult.transcript : (textInput || '');
+        const summary = aiResult.summary || 'No transcript available';
+        const issueLabel = aiResult.issue_label || 'general';
+        const urgencyLabel = validUrgency.includes(aiResult.urgency_label) ? aiResult.urgency_label : 'medium';
+
         const analysis = await Analysis.create({
             child: req.params.id,
             performedBy: req.user._id,
             inputType: inputType,
-            transcript: aiResult.transcript || textInput,
-            issueLabel: aiResult.issue_label,
+            transcript,
+            issueLabel,
             issueTop3: aiResult.issue_top3?.map(i => ({ label: i.label, confidence: i.score })) || [],
-            urgencyLabel: aiResult.urgency_label,
+            urgencyLabel,
             urgencyTop3: aiResult.urgency_top3?.map(u => ({ label: u.label, confidence: u.score })) || [],
-            summary: aiResult.summary,
+            summary,
             audioFilename: aiResult.audio_filename
         });
 

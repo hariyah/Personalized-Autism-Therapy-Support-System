@@ -1,19 +1,26 @@
-/* src/index.css */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=DM+Sans:wght@300;400;500;600&display=swap');
+/* Autism Profile – theme aligned with Cognitive Activity Plan (pastel-green, Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Palette */
-  --teal-900: #0a2e35;
-  --teal-800: #0d3d47;
-  --teal-700: #115560;
-  --teal-600: #166878;
-  --teal-500: #1c8296;
-  --teal-400: #2aa3ba;
-  --teal-200: #a8dde7;
-  --teal-100: #d4eff4;
-  --teal-50:  #edf8fb;
+  /* Pastel green (Cognitive Activity Plan primary) */
+  --teal-900: #14532d;
+  --teal-800: #166534;
+  --teal-700: #15803d;
+  --teal-600: #16a34a;
+  --teal-500: #22c55e;
+  --teal-400: #4ade80;
+  --teal-200: #bbf7d0;
+  --teal-100: #dcfce7;
+  --teal-50:  #f0fdf4;
+
+  /* Soft green (Cognitive secondary) */
+  --soft-green-800: #345648;
+  --soft-green-600: #4a8269;
+  --soft-green-200: #d1eadb;
+  --soft-green-100: #e8f5ed;
+  --soft-green-50:  #f5faf7;
 
   --amber-500: #f59e0b;
   --amber-400: #fbbf24;
@@ -32,34 +39,33 @@
   --slate-100: #f1f5f9;
   --white:     #ffffff;
 
-  /* Semantic */
+  /* Semantic – aligned with Cognitive Activity Plan */
   --primary:       var(--teal-600);
   --primary-dark:  var(--teal-800);
   --primary-light: var(--teal-100);
   --accent:        var(--amber-500);
   --text-primary:  var(--slate-900);
   --text-muted:    var(--slate-500);
-  --bg:            #f7fafb;
+  --bg:            #fafafa;
   --bg-card:       var(--white);
   --border:        var(--slate-300);
 
-  /* Severity colors */
+  /* Severity colors (unchanged) */
   --level1-color: var(--green-500);
   --level2-color: var(--amber-500);
   --level3-color: var(--rose-500);
 
-  /* Spacing */
   --radius:    12px;
   --radius-lg: 20px;
-  --shadow:    0 2px 12px rgba(10,46,53,0.08);
-  --shadow-lg: 0 8px 32px rgba(10,46,53,0.14);
+  --shadow:    0 2px 12px rgba(22, 163, 74, 0.08);
+  --shadow-lg: 0 8px 32px rgba(22, 163, 74, 0.14);
 }
 
 /* Scoped when embedded in main frontend */
 .autism-profile-app,
 .rojith-app {
   font-size: 16px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text-primary);
   line-height: 1.6;
@@ -75,7 +81,8 @@
 .rojith-app h2,
 .rojith-app h3,
 .rojith-app h4 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -85,10 +92,10 @@
 .rojith-app input,
 .rojith-app textarea,
 .rojith-app select {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
-.rojith-app button { cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.rojith-app button { cursor: pointer; font-family: 'Inter', sans-serif; }
 
 .rojith-app a { color: inherit; text-decoration: none; }
 
@@ -110,7 +117,7 @@
 }
 @keyframes pulse {
   0%,100% { opacity:1; }
-  50%      { opacity:.5; }
+ 50%      { opacity:.5; }
 }
 
 .rojith-app .fade-up  { animation: fadeUp  0.5s ease both; }
@@ -147,6 +154,7 @@
   box-shadow: var(--shadow);
   border: 1px solid rgba(203,213,225,0.5);
 }
+.rojith-app .card:hover { border-color: var(--teal-200); }
 
 .rojith-app .form-group { display: flex; flex-direction: column; gap: 6px; }
 .rojith-app .form-group label { font-size: 0.875rem; font-weight: 500; color: var(--slate-700); }
@@ -160,7 +168,7 @@
   transition: border-color 0.2s;
   outline: none;
 }
-.rojith-app .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,104,120,0.12); }
+.rojith-app .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
 
 .rojith-app .badge {
   display: inline-flex;

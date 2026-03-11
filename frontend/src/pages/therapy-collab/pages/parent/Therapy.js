@@ -73,32 +73,32 @@ const Therapy = () => {
                         <div className="flex items-center gap-5 mb-8">
                             <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-teal-500/20">{child.name[0]}</div>
                             <div>
-                                <h1 className="text-4xl font-black text-slate-100 leading-tight tracking-tight">Therapy System</h1>
+                                <h1 className="text-4xl font-black text-slate-900 leading-tight tracking-tight">Therapy System</h1>
                                 <p className="text-slate-500 font-medium text-sm mt-1">Personalized session for {child.name}</p>
                             </div>
                         </div>
 
                         {/* Stats Row */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl flex items-center gap-4 card-glow">
+                            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4 card-glow">
                                 <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center border border-rose-500/20"><FiSmile className="text-rose-400" size={20} /></div>
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Current State</p>
-                                    <p className="font-black text-slate-200 capitalize">{emotionHistory[0]?.emotion || 'Unknown'}</p>
+                                    <p className="font-black text-slate-800 capitalize">{emotionHistory[0]?.emotion || 'Unknown'}</p>
                                 </div>
                             </div>
-                            <div className="p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl flex items-center gap-4 card-glow">
+                            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4 card-glow">
                                 <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20"><FiStar className="text-amber-400" size={20} /></div>
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Tasks Done</p>
-                                    <p className="font-black text-slate-200">12 Activities</p>
+                                    <p className="font-black text-slate-800">12 Activities</p>
                                 </div>
                             </div>
-                            <div className="p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl flex items-center gap-4 card-glow">
+                            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-4 card-glow">
                                 <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20"><FiZap className="text-emerald-400" size={20} /></div>
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Recommendation</p>
-                                    <p className="font-black text-slate-200">Active Learning</p>
+                                    <p className="font-black text-slate-800">Active Learning</p>
                                 </div>
                             </div>
                         </div>
@@ -116,12 +116,12 @@ const Therapy = () => {
                             )}
 
                             <div>
-                                <h3 className="text-xl font-bold text-slate-200 mb-6 flex items-center gap-2">
+                                <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                                     <FiActivity className="text-teal-400" /> Prescribed Activities Network
                                 </h3>
                                 <div className="space-y-4">
                                     {activities.length === 0 ? (
-                                        <div className="p-16 text-center border border-dashed border-white/[0.1] rounded-2xl bg-white/[0.01]">
+                                        <div className="p-16 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50">
                                             <FiStar className="text-slate-600 mx-auto mb-4" size={32} />
                                             <p className="text-slate-400 font-bold mb-1">No activities assigned</p>
                                             <p className="text-xs text-slate-500">Capture current emotion to generate ML recommendations.</p>
@@ -144,11 +144,11 @@ const Therapy = () => {
                                         <div className="text-center py-10 text-slate-600 text-xs font-bold uppercase tracking-widest">No state recorded</div>
                                     ) : (
                                         emotionHistory.map((hw, i) => (
-                                            <div key={i} className="flex flex-col p-4 bg-white/[0.03] rounded-xl border border-white/[0.05]">
-                                                <div className="flex items-center justify-between mb-3 border-b border-white/[0.05] pb-3">
+                                            <div key={i} className="flex flex-col p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                                <div className="flex items-center justify-between mb-3 border-b border-slate-200 pb-3">
                                                     <span className="text-3xl filter drop-shadow-md">{emojiMap[hw.emotion] || '❓'}</span>
                                                     <div className="text-right">
-                                                        <span className="text-slate-200 font-bold capitalize text-sm">{hw.emotion}</span>
+                                                        <span className="text-slate-800 font-bold capitalize text-sm">{hw.emotion}</span>
                                                         <div className="text-[9px] text-slate-500 mt-0.5 font-bold uppercase tracking-widest">
                                                             {hw.timestamp ? new Date(hw.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                                                         </div>

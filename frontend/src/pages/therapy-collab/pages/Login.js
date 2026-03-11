@@ -35,7 +35,7 @@ const Login = () => {
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48 blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-72 h-72 bg-teal-500/20 rounded-full -ml-36 -mb-36 blur-2xl" />
                 <div className="relative z-10 flex items-center gap-3">
-                    <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-violet-600 font-black text-xl shadow-lg">A</div>
+                    <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-emerald-600 font-black text-xl shadow-lg">A</div>
                     <span className="text-2xl font-black text-white tracking-tight">AutismCare</span>
                 </div>
                 <div className="relative z-10">
@@ -69,14 +69,14 @@ const Login = () => {
             </div>
 
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative bg-[#0d1220]">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/5 rounded-full -mr-32 -mt-32 blur-3xl" />
                 <div className="max-w-md w-full relative z-10">
                     <div className="lg:hidden flex items-center gap-3 mb-10">
                         <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-lg">A</div>
                         <span className="gradient-text text-xl font-black">AutismCare</span>
                     </div>
                     <div className="mb-10">
-                        <p className="text-[10px] font-bold text-violet-400 uppercase tracking-[0.3em] mb-3">Welcome Back</p>
+                        <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.3em] mb-3">Welcome Back</p>
                         <h1 className="text-3xl font-black text-slate-100 mb-2">Sign in to your account</h1>
                         <p className="text-slate-500 text-sm font-medium">Enter your credentials to continue</p>
                     </div>
@@ -97,14 +97,14 @@ const Login = () => {
                         <div>
                             <div className="flex justify-between items-center mb-2">
                                 <label className="label-dark" style={{ marginBottom: 0 }}>Password</label>
-                                <button type="button" className="text-[10px] font-bold text-violet-400 hover:text-violet-300 uppercase tracking-widest transition-colors">Forgot?</button>
+                                <button type="button" className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 uppercase tracking-widest transition-colors">Forgot?</button>
                             </div>
                             <div className="relative">
                                 <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                                 <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark !pl-11" placeholder="••••••••" />
                             </div>
                         </div>
-                        <button type="submit" disabled={loading} className="w-full py-3.5 gradient-primary rounded-xl font-bold text-white text-sm shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2">
+                        <button type="submit" disabled={loading} className="w-full py-3.5 gradient-primary rounded-xl font-bold text-white text-sm shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2">
                             {loading ? (
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
@@ -115,7 +115,7 @@ const Login = () => {
                     <div className="mt-8 pt-6 border-t border-white/[0.06] text-center">
                         <p className="text-sm text-slate-500">
                             Don't have an account?{' '}
-                            <Link to={`${BASE}/register`} className="font-bold text-violet-400 hover:text-violet-300 transition-colors">Create one</Link>
+                            <Link to={`${BASE}/register`} className="font-bold text-emerald-500 hover:text-emerald-400 transition-colors">Create one</Link>
                         </p>
                     </div>
                 </div>

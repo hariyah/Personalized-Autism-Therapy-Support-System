@@ -16,11 +16,11 @@ export default function AutismProfilePage() {
           position="top-right"
           toastOptions={{
             style: {
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               borderRadius: '12px',
               fontSize: '0.9rem',
             },
-            success: { iconTheme: { primary: '#1c8296', secondary: 'white' } },
+            success: { iconTheme: { primary: '#16a34a', secondary: 'white' } },
           }}
         />
       </AuthProvider>

@@ -29,7 +29,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to="/dashboard" className="text-xl font-semibold text-gray-900 hover:text-pastel-green-600 transition-colors flex items-center gap-4">
             <FaHandsHoldingChild className="text-pastel-green-600 text-4xl" />
-            <span>Cognitive Activity Plan Generator</span>
+            <span>Autism Care</span>
           </Link>
           <div className="flex items-center space-x-6">
             <Link
@@ -40,7 +40,7 @@ export default function Navbar() {
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              Dashboard
+              Cognitive Activity Plan
             </Link>
             <Link
               to="/autism-care"
@@ -50,7 +50,7 @@ export default function Navbar() {
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              Autism Care
+              Emotional Activity
             </Link>
             <Link
               to="/autism-profile"

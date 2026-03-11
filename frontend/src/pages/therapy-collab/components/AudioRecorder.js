@@ -77,7 +77,7 @@ function AudioRecorder({ onSubmit, isLoading }) {
 
         {/* Header */}
         <div>
-          <div className="w-16 h-16 bg-indigo-50 rounded-2xl mx-auto flex items-center justify-center mb-4 text-3xl">
+          <div className="w-16 h-16 bg-emerald-50 rounded-2xl mx-auto flex items-center justify-center mb-4 text-3xl">
             🎙️
           </div>
           <h2 className="text-2xl font-bold text-slate-900">Voice Input</h2>
@@ -93,14 +93,14 @@ function AudioRecorder({ onSubmit, isLoading }) {
                   <button
                     onClick={startRecording}
                     disabled={isLoading}
-                    className="group relative w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-indigo-200 rounded-3xl hover:border-indigo-500 hover:bg-indigo-50/50 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                    className="group relative w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-emerald-200 rounded-3xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-100"
                   >
-                    <div className="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform duration-300">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                       </svg>
                     </div>
-                    <span className="mt-4 text-lg font-semibold text-slate-700 group-hover:text-indigo-700">Tap to Record</span>
+                    <span className="mt-4 text-lg font-semibold text-slate-700 group-hover:text-emerald-700">Tap to Record</span>
                     <span className="text-sm text-slate-400 mt-1">We recommend using a clear environment</span>
                   </button>
 
@@ -151,9 +151,9 @@ function AudioRecorder({ onSubmit, isLoading }) {
               )}
             </div>
           ) : (
-            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 animate-fade-in-up">
+            <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 animate-fade-in-up">
               <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                   </svg>
@@ -179,7 +179,7 @@ function AudioRecorder({ onSubmit, isLoading }) {
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full py-4 bg-gradient-to-r from-emerald-600 to-purple-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <span>Analyze Audio Now</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

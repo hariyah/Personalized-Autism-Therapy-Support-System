@@ -157,24 +157,24 @@ const NewAnalysisDoctor = () => {
                 <div className="max-w-4xl mx-auto p-8 page-enter">
                     {/* Header */}
                     <div className="mb-10 text-center relative z-10">
-                        <div className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] px-4 py-2 rounded-full mb-6 relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-transparent rounded-full opacity-50 blur-sm" />
-                            <span className="relative z-10 text-[10px] font-bold text-violet-300 uppercase tracking-widest flex items-center gap-2">
+                        <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 px-4 py-2 rounded-full mb-6 relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-full opacity-50 blur-sm" />
+                            <span className="relative z-10 text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
                                 <span className={selectedPatient ? 'glow-dot' : 'glow-dot-rose'} />
-                                Patient Connection: <span className="text-white">{selectedPatient?.name || 'Select Patient'}</span>
+                                Patient Connection: <span className="text-slate-900">{selectedPatient?.name || 'Select Patient'}</span>
                             </span>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-100 mb-2 tracking-tight">Clinical Record Analysis</h1>
+                        <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Clinical Record Analysis</h1>
                         <p className="text-slate-400 font-medium">Capture voice notes or input text for ML-driven pattern recognition.</p>
                     </div>
 
                     <div className="card p-8 border-subtle card-glow relative overflow-hidden">
-                        <div className="absolute -top-32 -left-32 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl opacity-50" />
+                        <div className="absolute -top-32 -left-32 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl opacity-50" />
                         <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl opacity-50" />
 
                         {/* Patient Selector */}
                         <div className="mb-8 relative z-10">
-                            <label className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <FiUser /> Select Patient
                             </label>
                             <select
@@ -206,18 +206,18 @@ const NewAnalysisDoctor = () => {
 
                         <form onSubmit={handleSubmit} className="relative z-10">
                             {/* Input Type Selector */}
-                            <div className="flex bg-white/[0.03] border border-white/[0.06] p-1.5 rounded-2xl mb-8 w-fit mx-auto shadow-inner">
-                                <button type="button" onClick={() => setInputType('audio')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'audio' ? 'bg-gradient-to-r from-violet-500/30 to-violet-500/10 text-violet-300 shadow-sm border border-violet-500/30' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.05]'}`}>
+                            <div className="flex bg-slate-50 border border-slate-200 p-1.5 rounded-2xl mb-8 w-fit mx-auto shadow-inner">
+                                <button type="button" onClick={() => setInputType('audio')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'audio' ? 'bg-gradient-to-r from-emerald-500/30 to-emerald-500/10 text-emerald-600 shadow-sm border border-emerald-500/30' : 'text-slate-500 hover:text-slate-600 hover:bg-slate-100'}`}>
                                     <FiMic size={14} /> Audio Input
                                 </button>
-                                <button type="button" onClick={() => setInputType('text')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'text' ? 'bg-white/[0.1] text-slate-200 shadow-sm border border-white/[0.1]' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.05]'}`}>
+                                <button type="button" onClick={() => setInputType('text')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'text' ? 'bg-slate-100 text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-600 hover:bg-slate-100'}`}>
                                     <FiFileText size={14} /> Text Input
                                 </button>
                             </div>
 
                             {/* Audio Mode */}
                             {inputType === 'audio' && (
-                                <div className="text-center py-10 bg-white/[0.01] rounded-2xl border border-dashed border-white/[0.1] mb-8">
+                                <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mb-8">
                                     <input
                                         type="file"
                                         accept="audio/*"
@@ -227,12 +227,12 @@ const NewAnalysisDoctor = () => {
                                     />
                                     
                                     <div className="mb-8">
-                                        <div className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center transition-all duration-300 ${isRecording ? 'bg-rose-500/20 border-2 border-rose-500 shadow-[0_0_30px_rgba(244,63,94,0.3)] animate-pulse' : audioBlob ? 'bg-emerald-500/20 border-2 border-emerald-500' : 'bg-white/[0.03] border-2 border-white/[0.08]'}`}>
+                                        <div className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center transition-all duration-300 ${isRecording ? 'bg-rose-500/20 border-2 border-rose-500 shadow-[0_0_30px_rgba(244,63,94,0.3)] animate-pulse' : audioBlob ? 'bg-emerald-500/20 border-2 border-emerald-500' : 'bg-slate-100 border-2 border-slate-200'}`}>
                                             <FiMic size={40} className={isRecording ? 'text-rose-400' : audioBlob ? 'text-emerald-400' : 'text-slate-600'} />
                                         </div>
                                     </div>
 
-                                    <div className="text-4xl font-black text-slate-200 mb-8 font-mono tracking-wider tabular-nums">
+                                    <div className="text-4xl font-black text-slate-800 mb-8 font-mono tracking-wider tabular-nums">
                                         {formatTime(recordingTime)}
                                     </div>
 
@@ -270,7 +270,7 @@ const NewAnalysisDoctor = () => {
                             {/* Text Mode */}
                             {inputType === 'text' && (
                                 <div className="mb-8 relative">
-                                    <label className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                         <FiFileText /> Clinical Notes & Behavioral Observations
                                     </label>
                                     <textarea
@@ -290,7 +290,7 @@ const NewAnalysisDoctor = () => {
                             <button
                                 type="submit"
                                 disabled={loading || (inputType === 'audio' && !audioBlob) || (inputType === 'text' && !textInput.trim())}
-                                className="w-full py-4 gradient-primary rounded-xl font-bold text-white text-sm shadow-xl shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 relative overflow-hidden"
+                                className="w-full py-4 gradient-primary rounded-xl font-bold text-white text-sm shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 relative overflow-hidden"
                             >
                                 {loading ? (
                                     <>

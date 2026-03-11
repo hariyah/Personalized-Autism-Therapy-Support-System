@@ -29,8 +29,8 @@ const Register = () => {
     return (
         <div className="min-h-screen bg-app flex overflow-hidden">
             <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-16 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-500 via-cyan-600 to-violet-700 opacity-90" />
-                <div className="absolute top-0 left-0 w-96 h-96 bg-violet-500/10 rounded-full -ml-48 -mt-48 blur-3xl" />
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-500 via-cyan-600 to-emerald-700 opacity-90" />
+                <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full -ml-48 -mt-48 blur-3xl" />
                 <div className="absolute bottom-0 right-0 w-72 h-72 bg-teal-400/20 rounded-full -mr-36 -mb-36 blur-2xl" />
                 <div className="relative z-10 flex items-center gap-3">
                     <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-teal-600 font-black text-xl shadow-lg">A</div>
@@ -86,7 +86,7 @@ const Register = () => {
                                 {['parent', 'doctor'].map(role => (
                                     <button key={role} type="button" onClick={() => setFormData({ ...formData, role })}
                                         className={`py-3 rounded-xl text-xs font-bold capitalize transition-all border ${formData.role === role
-                                            ? 'gradient-primary border-transparent text-white shadow-lg shadow-violet-500/25'
+                                            ? 'gradient-primary border-transparent text-white shadow-lg shadow-emerald-500/25'
                                             : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:bg-white/[0.07]'
                                             }`}
                                     >
@@ -116,7 +116,7 @@ const Register = () => {
                                 <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="input-dark !pl-11" placeholder="Minimum 8 characters" />
                             </div>
                         </div>
-                        <button type="submit" disabled={loading} className="w-full py-3.5 gradient-primary rounded-xl font-bold text-white text-sm shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2">
+                        <button type="submit" disabled={loading} className="w-full py-3.5 gradient-primary rounded-xl font-bold text-white text-sm shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2">
                             {loading ? (
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
@@ -127,7 +127,7 @@ const Register = () => {
                     <div className="mt-8 pt-6 border-t border-white/[0.06] text-center">
                         <p className="text-sm text-slate-500">
                             Already have an account?{' '}
-                            <Link to={`${BASE}/login`} className="font-bold text-violet-400 hover:text-violet-300 transition-colors">Sign in</Link>
+                            <Link to={`${BASE}/login`} className="font-bold text-emerald-500 hover:text-emerald-400 transition-colors">Sign in</Link>
                         </p>
                     </div>
                 </div>

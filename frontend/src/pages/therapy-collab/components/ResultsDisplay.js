@@ -88,7 +88,7 @@ function ResultsDisplay({ results }) {
 
         {/* AI Summary Card */}
         {summary && summary !== 'No transcript available' && (
-          <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-6 shadow-sm border border-indigo-50">
+          <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-6 shadow-sm border border-emerald-50">
             <h3 className="flex items-center space-x-2 text-lg font-bold text-slate-800 mb-4">
               <span>✨</span>
               <span>AI Insights</span>

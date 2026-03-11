@@ -41,6 +41,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("MONGODB_DB", "autism_profile")
 
+# Configure Tesseract for Windows. Allow env override, otherwise use the local install path.
+pytesseract.pytesseract.tesseract_cmd = os.environ.get(
+    "TESSERACT_CMD",
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+)
+
 client = MongoClient(MONGODB_URI)
 db = client[DB_NAME]
 guardians_col = db["guardians"]

@@ -26,10 +26,10 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className={`relative h-screen bg-[#0d1220] border-r border-white/[0.06] flex flex-col sticky top-0 z-40 transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}>
+        <div className={`relative h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0 z-40 transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}>
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-3 top-8 w-6 h-6 bg-[#1c2540] border border-white/10 rounded-full flex items-center justify-center text-slate-400 hover:text-violet-400 hover:border-violet-500/40 transition-all z-50 shadow-lg"
+                className="absolute -right-3 top-8 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:border-emerald-500 transition-all z-50 shadow-md"
             >
                 {collapsed ? <FiChevronRight size={12} /> : <FiChevronLeft size={12} />}
             </button>
@@ -38,22 +38,22 @@ const Sidebar = () => {
                 className={`${collapsed ? 'p-4 justify-center' : 'px-6 py-6'} flex items-center gap-3 cursor-pointer`}
                 onClick={() => navigate(isParent ? `${BASE}/parent/dashboard` : `${BASE}/doctor/dashboard`)}
             >
-                <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-base shadow-lg shadow-violet-500/30 shrink-0">
+                <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-base shadow-lg shadow-emerald-500/30 shrink-0">
                     A
                 </div>
                 {!collapsed && (
                     <div>
                         <span className="gradient-text text-lg font-black block leading-tight tracking-tight">AutismCare</span>
-                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">AI Support v4</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">AI Support v4</span>
                     </div>
                 )}
             </div>
 
-            <div className="mx-4 h-px bg-white/[0.05] mb-4" />
+            <div className="mx-4 h-px bg-slate-200 mb-4" />
 
             <div className={`flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1`}>
                 {!collapsed && (
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.25em] px-3 mb-3">Navigation</p>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.25em] px-3 mb-3">Navigation</p>
                 )}
                 {navItems.map((item) => (
                     <NavLink
@@ -66,10 +66,10 @@ const Sidebar = () => {
                     >
                         {({ isActive }) => (
                             <>
-                                <item.icon className={`shrink-0 ${isActive ? 'text-violet-400' : ''} ${collapsed ? '' : 'w-4 h-4'}`} size={16} />
+                                <item.icon className={`shrink-0 ${isActive ? 'text-emerald-600' : ''} ${collapsed ? '' : 'w-4 h-4'}`} size={16} />
                                 {!collapsed && <span>{item.name}</span>}
                                 {isActive && !collapsed && (
-                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-400" />
+                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                 )}
                             </>
                         )}
@@ -77,10 +77,10 @@ const Sidebar = () => {
                 ))}
 
                 {!collapsed && (
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.25em] px-3 mt-6 mb-3">Support</p>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.25em] px-3 mt-6 mb-3">Support</p>
                 )}
 
-                {collapsed && <div className="h-px bg-white/[0.04] my-3 mx-1" />}
+                {collapsed && <div className="h-px bg-slate-200 my-3 mx-1" />}
 
                 <button
                     className={`sidebar-item w-full ${collapsed ? 'justify-center px-0' : ''}`}
@@ -98,29 +98,29 @@ const Sidebar = () => {
                 </button>
             </div>
 
-            <div className="p-3 border-t border-white/[0.06]">
+            <div className="p-3 border-t border-slate-200">
                 {collapsed ? (
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-center p-3 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all"
+                        className="w-full flex items-center justify-center p-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-all"
                         title="Sign Out"
                     >
                         <FiLogOut size={16} />
                     </button>
                 ) : (
-                    <div className="bg-white/[0.04] rounded-xl p-3 border border-white/[0.06]">
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-base shrink-0 shadow-md shadow-violet-500/20">
+                            <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white font-black text-base shrink-0 shadow-md shadow-emerald-500/20">
                                 {user?.name?.[0]?.toUpperCase()}
                             </div>
                             <div className="overflow-hidden">
-                                <p className="text-sm font-bold text-slate-200 truncate leading-tight">{user?.name}</p>
+                                <p className="text-sm font-bold text-slate-800 truncate leading-tight">{user?.name}</p>
                                 <p className="text-[10px] font-semibold text-slate-500 capitalize">{user?.role}</p>
                             </div>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center justify-center gap-2 py-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-all text-xs font-bold border border-rose-500/10"
+                            className="w-full flex items-center justify-center gap-2 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition-all text-xs font-bold border border-rose-200"
                         >
                             <FiLogOut size={13} /> Sign Out
                         </button>

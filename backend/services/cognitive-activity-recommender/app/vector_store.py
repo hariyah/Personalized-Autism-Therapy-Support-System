@@ -2,6 +2,7 @@
 import os
 import pickle
 import logging
+import re
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -13,11 +14,17 @@ logger = logging.getLogger(__name__)
 
 class ActivityVectorStore:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2", index_path: str = "activity_index.faiss", metadata_path: str = "activity_metadata.pkl"):
+        self.model = None
+        self.lexical_only = False
         try:
             self.model = SentenceTransformer(model_name)
         except Exception as e:
+            # On low-memory Windows machines, SentenceTransformer can fail with
+            # "paging file is too small". Fall back to lexical ranking so the
+            # recommender still works instead of returning HTTP 500.
             logger.error(f"Error loading SentenceTransformer model: {str(e)}")
-            raise
+            logger.warning("Falling back to lexical search mode (lower quality but low-memory).")
+            self.lexical_only = True
         
         # Use absolute paths relative to backend directory
         backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,11 +111,14 @@ class ActivityVectorStore:
     
     def search(self, query: str, k: int = 10, filters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Search for similar activities using semantic search."""
-        if self.index is None or len(self.metadata) == 0:
+        if len(self.metadata) == 0:
             logger.warning("Vector store is empty or not loaded")
             return []
         
         try:
+            if self.lexical_only or self.model is None or self.index is None:
+                return self._lexical_search(query, k=k, filters=filters)
+
             # Create query embedding
             query_embedding = self.model.encode([query])
             faiss.normalize_L2(query_embedding)
@@ -141,6 +151,39 @@ class ActivityVectorStore:
             import traceback
             logger.error(traceback.format_exc())
             raise
+
+    def _lexical_search(self, query: str, k: int = 10, filters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Low-memory fallback when the embedding model cannot be loaded."""
+        query_tokens = self._tokenize(query)
+        if not query_tokens:
+            query_tokens = set()
+
+        scored = []
+        for activity in self.metadata:
+            if filters and not self._matches_filters(activity, filters):
+                continue
+
+            text = self._create_text_representation(activity)
+            text_tokens = self._tokenize(text)
+            overlap = len(query_tokens & text_tokens)
+            if not query_tokens:
+                score = 0.0
+            else:
+                score = overlap / max(len(query_tokens), 1)
+
+            scored_activity = activity.copy()
+            scored_activity["similarity_score"] = float(score)
+            scored.append(scored_activity)
+
+        scored.sort(key=lambda item: item.get("similarity_score", 0.0), reverse=True)
+        return scored[:k]
+
+    def _tokenize(self, text: str) -> set[str]:
+        return {
+            token
+            for token in re.findall(r"[a-z0-9_]+", str(text).lower())
+            if len(token) > 1
+        }
     
     def _matches_filters(self, activity: Dict[str, Any], filters: Dict[str, Any]) -> bool:
         """Check if activity matches the provided filters."""

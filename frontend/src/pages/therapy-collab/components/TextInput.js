@@ -23,7 +23,7 @@ function TextInput({ onSubmit, isLoading }) {
 
                 {/* Header */}
                 <div>
-                    <div className="w-16 h-16 bg-indigo-50 rounded-2xl mx-auto flex items-center justify-center mb-4 text-3xl">
+                    <div className="w-16 h-16 bg-emerald-50 rounded-2xl mx-auto flex items-center justify-center mb-4 text-3xl">
                         ✍️
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900">Text Input</h2>
@@ -40,7 +40,7 @@ function TextInput({ onSubmit, isLoading }) {
                                 onKeyDown={handleKeyDown}
                                 disabled={isLoading}
                                 placeholder="Type here... (e.g., 'I feel overwhelmed when there are loud noises')"
-                                className="w-full h-48 p-4 bg-white border border-slate-200 rounded-3xl outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-300 text-slate-700 placeholder:text-slate-400 resize-none transition-all shadow-sm text-lg"
+                                className="w-full h-48 p-4 bg-white border border-slate-200 rounded-3xl outline-none focus:ring-4 focus:ring-emerald-50 focus:border-emerald-300 text-slate-700 placeholder:text-slate-400 resize-none transition-all shadow-sm text-lg"
                             />
                             <div className="absolute bottom-4 right-4 text-xs text-slate-400 font-medium">
                                 {text.length} chars
@@ -52,7 +52,7 @@ function TextInput({ onSubmit, isLoading }) {
                             disabled={isLoading || !text.trim()}
                             className={`w-full py-4 text-white rounded-xl font-bold shadow-lg transform transition-all duration-200 flex items-center justify-center space-x-2
                 ${text.trim() && !isLoading
-                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5'
+                                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-600 shadow-emerald-200 hover:shadow-emerald-300 hover:-translate-y-0.5'
                                     : 'bg-slate-300 cursor-not-allowed'
                                 }`}
                         >

@@ -5,7 +5,7 @@ import {
 } from "recharts";
 
 const DOMAIN_COLORS = {
-  "Social Communication": "#1c8296",
+  "Social Communication": "#16a34a",
   "Restricted & Repetitive Behavior": "#f59e0b",
   "Restricted & Repetitive Behavior (Sensory)": "#f59e0b"
 };
@@ -16,15 +16,15 @@ function CustomTooltip({ active, payload }) {
   return (
     <div style={{
       background: "white",
-      border: "1px solid #e2e8f0",
+      border: "1px solid var(--border)",
       borderRadius: 10,
       padding: "10px 14px",
       fontSize: "0.8rem",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 16px rgba(22,163,74,0.08)",
       maxWidth: 220
     }}>
-      <div style={{ fontWeight: 700, color: "#0a2e35", marginBottom: 4 }}>{d.indicator}</div>
-      <div style={{ color: "#64748b", lineHeight: 1.5, marginBottom: 6 }}>{d.label}</div>
+      <div style={{ fontWeight: 700, color: "var(--teal-900)", marginBottom: 4 }}>{d.indicator}</div>
+      <div style={{ color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 6 }}>{d.label}</div>
       <div style={{ fontWeight: 600, color: d.value ? "#f43f5e" : "#22c55e" }}>
         {d.value ? "Present (1)" : "Absent (0)"}
       </div>
@@ -46,24 +46,24 @@ export default function RadarChartPanel({ radarData }) {
     <div style={{ width: "100%", height: 320 }}>
       <ResponsiveContainer>
         <RadarChart data={data} outerRadius="75%">
-          <PolarGrid stroke="#e2e8f0" />
+          <PolarGrid stroke="var(--border)" />
           <PolarAngleAxis
             dataKey="subject"
-            tick={{ fill: "#334155", fontSize: 13, fontWeight: 600 }}
+            tick={{ fill: "var(--text-primary)", fontSize: 13, fontWeight: 600 }}
           />
           <PolarRadiusAxis
             domain={[0, 1]}
             tickCount={2}
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
+            tick={{ fill: "var(--text-muted)", fontSize: 10 }}
           />
           <Radar
             name="Score"
             dataKey="value"
-            stroke="#1c8296"
-            fill="#1c8296"
+            stroke="var(--primary)"
+            fill="var(--primary)"
             fillOpacity={0.25}
             strokeWidth={2}
-            dot={{ r: 4, fill: "#1c8296" }}
+            dot={{ r: 4, fill: "var(--primary)" }}
           />
           <Tooltip content={<CustomTooltip />} />
         </RadarChart>

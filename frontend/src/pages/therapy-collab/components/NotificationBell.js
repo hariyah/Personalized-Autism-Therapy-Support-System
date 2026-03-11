@@ -29,7 +29,7 @@ const NotificationBell = () => {
         switch (severity) {
             case 'high': return <FiAlertCircle className="text-rose-400" size={16} />;
             case 'medium': return <FiInfo className="text-amber-400" size={16} />;
-            default: return <FiInfo className="text-violet-400" size={16} />;
+            default: return <FiInfo className="text-emerald-500" size={16} />;
         }
     };
 
@@ -37,7 +37,7 @@ const NotificationBell = () => {
         switch (severity) {
             case 'high': return 'bg-rose-500/15 border-rose-500/30';
             case 'medium': return 'bg-amber-500/15 border-amber-500/30';
-            default: return 'bg-violet-500/15 border-violet-500/30';
+            default: return 'bg-emerald-500/15 border-emerald-500/30';
         }
     };
 
@@ -46,7 +46,7 @@ const NotificationBell = () => {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`relative p-2.5 rounded-xl transition-all duration-200 border ${isOpen
-                        ? 'bg-violet-500/20 border-violet-500/40 text-violet-300'
+                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
                         : 'bg-white/[0.05] border-white/[0.08] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200'
                     }`}
             >
@@ -70,7 +70,7 @@ const NotificationBell = () => {
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-[10px] font-bold text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
+                                    className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors"
                                 >
                                     <FiCheckCircle size={11} /> All read
                                 </button>
@@ -95,10 +95,10 @@ const NotificationBell = () => {
                                 <div
                                     key={n._id}
                                     onClick={() => handleClick(n)}
-                                    className={`flex gap-3 px-4 py-3 cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors relative ${!n.isRead ? 'bg-violet-500/[0.04]' : ''}`}
+                                    className={`flex gap-3 px-4 py-3 cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors relative ${!n.isRead ? 'bg-emerald-500/[0.04]' : ''}`}
                                 >
                                     {!n.isRead && (
-                                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-violet-500 rounded-r-full" />
+                                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-emerald-500 rounded-r-full" />
                                     )}
                                     <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border ${getBadge(n.severity)}`}>
                                         {getIcon(n.severity)}
