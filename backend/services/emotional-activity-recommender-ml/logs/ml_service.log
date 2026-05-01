@@ -1,0 +1,13 @@
+[service] Starting at Fri 05/01/2026 17:56:35.49 
+[service] Thresholds: EMOTION_MIN_CONF=0.2 EMOTION_MIN_MARGIN=0.05 CAMERA_MIN_CONF=0.2 CAMERA_MIN_MARGIN=0.05 CAMERA_MIN_CONF_NATURAL=0.40 CAMERA_MIN_CONF_EMOTION=0.20 CAMERA_NEUTRAL_OVERRIDE_MARGIN=0.20 CAMERA_NEUTRAL_MIN_EMOTION_CONF=0.20 CAMERA_NEUTRAL_MAX_CONF=0.75 CAMERA_NEUTRAL_NEGATIVE_MASS_MIN=0.33 
+[service] Invoking: "python" -u app.py 
+2026-05-01 17:56:36.858965: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-05-01 17:56:40.903071: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-05-01 17:56:45.944508: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+INFO:     Started server process [20464]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:7004 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50439 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50439 - "POST /predict HTTP/1.1" 200 OK
