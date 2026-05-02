@@ -1,0 +1,9 @@
+/* src/components/Layout.css – no sidebar */
+.layout {
+  min-height: 100vh;
+}
+
+.main-content {
+  min-width: 0;
+  overflow-x: hidden;
+}

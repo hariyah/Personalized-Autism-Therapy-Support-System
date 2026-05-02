@@ -1,0 +1,14 @@
+flask
+flask-cors
+bcrypt
+pyjwt
+pymongo
+joblib
+pandas
+numpy
+pytesseract
+opencv-python-headless
+pillow
+python-dotenv
+scikit-learn
+scipy
