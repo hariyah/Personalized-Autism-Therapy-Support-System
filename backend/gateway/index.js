@@ -1,6 +1,6 @@
 /**
  * API Gateway - single entry point for backend services.
- * Runs on port 7777. Proxies by path prefix to:
+ * Runs on port 7000. Proxies by path prefix to:
  *   /profile-builder  -> autism-profile-builder (7001)
  *   /cognitive        -> cognitive-activity-recommender (7002)
  *   /emotional        -> emotional-activity-recommender (7003)
@@ -9,11 +9,13 @@
  *   /therapy          -> therapy-collab (7005)
  */
 
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
 
-const PORT = Number(process.env.PORT) || 7777;
+const PORT = Number(process.env.PORT) || 7000;
 
 const SERVICES = {
   profileBuilder: process.env.PROFILE_BUILDER_URL || "http://localhost:7001",
@@ -26,7 +28,6 @@ const SERVICES = {
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
 // Health check
 app.get("/health", (req, res) => {

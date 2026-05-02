@@ -13,7 +13,7 @@ const ProgressHistory = ({ emissions, confidence }) => {
         { key: 'neutral', label: 'Neutral', color: 'bg-slate-400', shadow: 'shadow-slate-400/50' },
         { key: 'calm', label: 'Calm', color: 'bg-teal-400', shadow: 'shadow-teal-400/50' },
         { key: 'frustrated', label: 'Frustrated', color: 'bg-red-500', shadow: 'shadow-red-500/50' },
-        { key: 'anxious', label: 'Anxious', color: 'bg-purple-500', shadow: 'shadow-purple-500/50' },
+        { key: 'anxious', label: 'Anxious', color: 'bg-sky-500', shadow: 'shadow-sky-500/50' },
         { key: 'excited', label: 'Excited', color: 'bg-yellow-400', shadow: 'shadow-yellow-400/50' }
     ];
 

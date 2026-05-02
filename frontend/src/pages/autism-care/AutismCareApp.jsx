@@ -13,7 +13,7 @@ import {
 import { FaPuzzlePiece, FaPaw } from 'react-icons/fa';
 import { GiDinosaurRex } from 'react-icons/gi';
 
-const API_BASE_URL = (import.meta.env?.VITE_EMOTIONAL_API_URL) || 'http://localhost:7777/emotional/api';
+const API_BASE_URL = (import.meta.env?.VITE_EMOTIONAL_API_URL) || 'http://localhost:7000/emotional/api';
 
 export default function AutismCareApp() {
   const [children, setChildren] = useState([]);

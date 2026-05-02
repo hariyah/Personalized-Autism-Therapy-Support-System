@@ -14,6 +14,7 @@ pydantic
 python-dotenv
 pydub
 scikit-learn
+joblib
 protobuf>=4.25,<5
 tensorflow==2.17.1
 tensorflow-intel==2.17.1

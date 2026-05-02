@@ -7,7 +7,7 @@ const ActivityModal = ({ activity, onClose }) => {
     const getCategoryColor = (category) => {
         switch (category) {
             case 'social': return 'from-emerald-500 to-teal-600';
-            case 'behavioral': return 'from-purple-500 to-purple-700';
+            case 'behavioral': return 'from-sky-500 to-cyan-600';
             case 'emotional': return 'from-pink-500 to-rose-600';
             default: return 'from-gray-500 to-gray-700';
         }

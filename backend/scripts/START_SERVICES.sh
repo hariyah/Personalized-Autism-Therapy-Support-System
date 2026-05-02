@@ -17,7 +17,7 @@ echo "  Repo root: $REPO_ROOT"
 echo "  Services:  $SERVICES"
 echo ""
 echo "  Starting:"
-echo "    1. gateway                     (Express, port 7777)"
+echo "    1. gateway                     (Express, port 7000)"
 echo "    2. autism-profile-builder      (Flask, port 7001)"
 echo "    3. cognitive-activity-recommender (FastAPI, port 7002)"
 echo "    4. emotional-activity-recommender (Node, port 7003)"
@@ -55,11 +55,11 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM
 
-# 1. Gateway (Express, port 7777)
+# 1. Gateway (Express, port 7000)
 if [ -d "$GATEWAY" ]; then
   setup_node_deps "$GATEWAY" || true
   echo "Starting gateway..."
-  (cd "$GATEWAY" && PORT=7777 npm start) &
+  (cd "$GATEWAY" && PORT=7000 npm start) &
   pids+=($!)
   sleep 2
 fi
@@ -150,7 +150,7 @@ fi
 echo ""
 echo "================================================"
 echo "  Services started. Press Ctrl+C to stop all."
-echo "  gateway:                   http://localhost:7777"
+echo "  gateway:                   http://localhost:7000"
 echo "  autism-profile-builder:    http://localhost:7001"
 echo "  cognitive-activity-recommender: http://localhost:7002"
 echo "  emotional-activity-recommender:  http://localhost:7003"

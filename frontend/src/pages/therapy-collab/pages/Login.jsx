@@ -29,7 +29,7 @@ const Login = () => {
 
     return (
         <div className="min-h-screen bg-app flex overflow-hidden">
-            <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-16 overflow-hidden">
+            <div className="tc-dark-panel hidden lg:flex lg:w-1/2 relative flex-col justify-between p-16 overflow-hidden">
                 <div className="absolute inset-0 gradient-primary opacity-90" />
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0zMHY2aDZ2LTZoLTZ6TTYgNHY2aDZWNEg2em0wIDMwdjZoNnYtNkg2em0xNS0xNXY2aDZ2LTZoLTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-100" />
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48 blur-3xl" />
@@ -68,7 +68,7 @@ const Login = () => {
                 </div>
             </div>
 
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative bg-[#0d1220]">
+            <div className="tc-dark-panel w-full lg:w-1/2 flex items-center justify-center p-8 relative bg-[#0d1220]">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/5 rounded-full -mr-32 -mt-32 blur-3xl" />
                 <div className="max-w-md w-full relative z-10">
                     <div className="lg:hidden flex items-center gap-3 mb-10">

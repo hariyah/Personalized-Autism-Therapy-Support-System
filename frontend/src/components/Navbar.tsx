@@ -19,6 +19,9 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const userRole = user?.role?.toLowerCase();
+  const dashboardPath = userRole === 'doctor' ? '/therapy-collab/doctor/dashboard' : '/dashboard';
+
   if (!showNav) {
     return null;
   }
@@ -27,20 +30,20 @@ export default function Navbar() {
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/dashboard" className="text-xl font-semibold text-gray-900 hover:text-pastel-green-600 transition-colors flex items-center gap-4">
+          <Link to={dashboardPath} className="text-xl font-semibold text-gray-900 hover:text-pastel-green-600 transition-colors flex items-center gap-4">
             <FaHandsHoldingChild className="text-pastel-green-600 text-4xl" />
             <span>Autism Care</span>
           </Link>
           <div className="flex items-center space-x-6">
             <Link
-              to="/dashboard"
+              to={dashboardPath}
               className={`px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
-                isActive('/dashboard') 
+                isActive(dashboardPath) 
                   ? 'text-pastel-green-600 bg-pastel-green-50' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              Cognitive Activity Plan
+              {userRole === 'doctor' ? 'Doctor Dashboard' : 'Cognitive Activity Plan'}
             </Link>
             <Link
               to="/autism-care"

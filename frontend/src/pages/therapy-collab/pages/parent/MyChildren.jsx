@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Sidebar from '../../components/Sidebar';
 import therapyApi from '../../utils/therapyApi';
 import { BASE } from '../../routes';
-import Sidebar from '../../components/Sidebar';
 import { FiPlus, FiUser, FiCalendar, FiActivity, FiX, FiCheckCircle, FiChevronRight } from 'react-icons/fi';
 
 const MyChildren = () => {
@@ -43,7 +43,7 @@ const MyChildren = () => {
     if (loading) return (
         <div className="flex min-h-screen bg-app"><Sidebar />
             <div className="flex-1 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
+                <div className="w-10 h-10 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
             </div>
         </div>
     );
@@ -58,8 +58,8 @@ const MyChildren = () => {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-10">
                         <div>
-                            <p className="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-2">Family Records</p>
-                            <h1 className="text-4xl font-black text-slate-900 tracking-tight">My <span className="gradient-text">Children</span></h1>
+                            <p className="text-xs font-bold text-violet-400 uppercase tracking-[0.3em] mb-2">Family Records</p>
+                            <h1 className="text-4xl font-black text-slate-100 tracking-tight">My <span className="gradient-text">Children</span></h1>
                             <p className="text-slate-500 text-sm font-medium mt-2">{children.length} registered profile{children.length !== 1 ? 's' : ''}</p>
                         </div>
                         <button
@@ -74,10 +74,10 @@ const MyChildren = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                         {children.length === 0 ? (
                             <div className="col-span-full card border-subtle p-20 text-center card-glow">
-                                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                                <div className="w-16 h-16 bg-white/[0.04] rounded-2xl flex items-center justify-center mx-auto mb-5">
                                     <FiUser className="text-slate-600" size={28} />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-600 mb-2">Your Family Dashboard is Ready</h3>
+                                <h3 className="text-xl font-bold text-slate-300 mb-2">Your Family Dashboard is Ready</h3>
                                 <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6">Add your first child profile to begin AI-powered assessments.</p>
                                 <button onClick={() => setIsModalOpen(true)} className="btn-primary inline-flex items-center gap-2">
                                     <FiPlus size={14} /> Add Child Profile
@@ -86,25 +86,25 @@ const MyChildren = () => {
                         ) : (
                             children.map(child => (
                                 <Link to={`${BASE}/parent/children/${child._id}`} key={child._id}
-                                    className="card border-subtle p-5 block hover:border-emerald-500/25 hover:bg-slate-50 transition-all duration-300 group card-glow">
+                                    className="card border-subtle p-5 block hover:border-violet-500/25 hover:bg-white/[0.02] transition-all duration-300 group card-glow">
                                     {/* Avatar + Name */}
                                     <div className="flex items-center gap-4 mb-5">
-                                        <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                                        <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform">
                                             {child.name[0]}
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">{child.name}</h3>
+                                            <h3 className="font-bold text-slate-200 group-hover:text-violet-300 transition-colors">{child.name}</h3>
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <div className="glow-dot w-1.5 h-1.5" />
                                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                                    Active • {child.age} Years Old
+                                                    Active | {child.age} Years Old
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Details */}
-                                    <div className="space-y-2 border-t border-slate-200 pt-4">
+                                    <div className="space-y-2 border-t border-white/[0.05] pt-4">
                                         <div className="flex items-center gap-2 text-xs text-slate-500">
                                             <FiCalendar size={13} className="text-slate-600" />
                                             <span>Born {new Date(child.dateOfBirth).toLocaleDateString()}</span>
@@ -116,7 +116,7 @@ const MyChildren = () => {
                                     </div>
 
                                     {/* Footer */}
-                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.05]">
                                         <span className={severityColor[child.diagnosisDetails?.severity] || 'badge-neutral'}>
                                             {child.diagnosisDetails?.severity || 'mild'}
                                         </span>
@@ -132,7 +132,7 @@ const MyChildren = () => {
                                             ) : (
                                                 <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Awaiting specialist</span>
                                             )}
-                                            <FiChevronRight className="text-slate-700 group-hover:text-emerald-500 transition-colors" size={14} />
+                                            <FiChevronRight className="text-slate-700 group-hover:text-violet-400 transition-colors" size={14} />
                                         </div>
                                     </div>
                                 </Link>
@@ -145,14 +145,14 @@ const MyChildren = () => {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-                    <div className="bg-[#111827] border border-white/[0.08] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl shadow-black/60 animate-in zoom-in-95 duration-200">
+                    <div className="card border-subtle rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl shadow-slate-900/20 animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                        <div className="p-6 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.02]">
                             <div>
-                                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.3em] mb-1">Registration Portal</p>
-                                <h2 className="text-2xl font-black text-slate-900">Add Family Member</h2>
+                                <p className="text-[10px] font-bold text-violet-400 uppercase tracking-[0.3em] mb-1">Registration Portal</p>
+                                <h2 className="text-2xl font-black text-slate-100">Add Family Member</h2>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">
+                            <button onClick={() => setIsModalOpen(false)} className="w-8 h-8 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-slate-400 hover:text-violet-500 transition-all">
                                 <FiX size={16} />
                             </button>
                         </div>
@@ -162,7 +162,7 @@ const MyChildren = () => {
                                 <div className="w-16 h-16 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <FiCheckCircle className="text-emerald-400" size={28} />
                                 </div>
-                                <h3 className="text-xl font-black text-slate-800 mb-1">{successMsg}</h3>
+                                <h3 className="text-xl font-black text-slate-200 mb-1">{successMsg}</h3>
                                 <p className="text-slate-500 text-sm">Updating family dashboard...</p>
                             </div>
                         ) : (
@@ -198,9 +198,9 @@ const MyChildren = () => {
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
+                                <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 space-y-4">
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                        <FiActivity size={12} className="text-emerald-500" /> Diagnosis Profile
+                                        <FiActivity size={12} className="text-violet-400" /> Diagnosis Profile
                                     </p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
@@ -244,3 +244,4 @@ const MyChildren = () => {
 };
 
 export default MyChildren;
+

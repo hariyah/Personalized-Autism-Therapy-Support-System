@@ -5,16 +5,24 @@ import ProfileCard from '../components/ProfileCard';
 import ProfileModal from '../components/ProfileModal';
 import { FaChildReaching } from 'react-icons/fa6';
 import { FaExclamationTriangle } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [profiles, setProfiles] = useState<ChildProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
+    if (user?.role?.toLowerCase() === 'doctor') {
+      navigate('/therapy-collab/doctor/dashboard');
+      return;
+    }
     loadProfiles();
-  }, []);
+  }, [user, navigate]);
 
   const loadProfiles = async () => {
     try {

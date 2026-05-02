@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserLogin } from '../types';
 import { FaHandsHoldingChild } from 'react-icons/fa6';
@@ -17,10 +18,14 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      await login(formData);
-      navigate('/dashboard');
+      const user = await login(formData);
+      console.log('Login successful. Identified role:', user.role);
+      const userRole = user.role?.toLowerCase();
+      const target = userRole === 'doctor' ? '/therapy-collab/doctor/dashboard' : '/dashboard';
+      navigate(target);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
+      const apiError = axios.isAxiosError(err) ? err.response?.data?.error || err.response?.data?.message : null;
+      setError(apiError || (err instanceof Error ? err.message : 'Login failed. Please check your credentials.'));
     } finally {
       setIsSubmitting(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useNotifications } from '../contexts/NotificationContext';
 import { FiBell, FiCheckCircle, FiAlertCircle, FiInfo, FiTrash2 } from 'react-icons/fi';
+import { BASE } from '../routes';
 
 const NotificationsPage = () => {
     const { notifications, markAsRead, markAllAsRead, clearAll } = useNotifications();
@@ -10,7 +11,10 @@ const NotificationsPage = () => {
 
     const handleClick = (n) => {
         markAsRead(n._id);
-        if (n.action_url) navigate(n.action_url);
+        if (n.action_url) {
+            const target = n.action_url.startsWith('/') ? `${BASE}${n.action_url}` : n.action_url;
+            navigate(target);
+        }
     };
 
     const getIcon = (severity) => {

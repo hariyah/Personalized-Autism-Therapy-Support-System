@@ -179,7 +179,7 @@ function AudioRecorder({ onSubmit, isLoading }) {
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="w-full py-4 bg-gradient-to-r from-emerald-600 to-purple-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full py-4 bg-gradient-to-r from-emerald-600 to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <span>Analyze Audio Now</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
