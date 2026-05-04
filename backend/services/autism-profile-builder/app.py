@@ -13,8 +13,12 @@ from datetime import datetime
 from functools import wraps
 import jwt
 import bcrypt
+from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
+from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
+
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 app = Flask(__name__)
 
@@ -40,6 +44,7 @@ def add_cors_headers(response):
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("MONGODB_DB", "autism_profile")
+THERAPY_DB_NAME = os.environ.get("THERAPY_MONGODB_DB", "autism_support")
 
 # Configure Tesseract for Windows. Allow env override, otherwise use the local install path.
 pytesseract.pytesseract.tesseract_cmd = os.environ.get(
@@ -49,9 +54,11 @@ pytesseract.pytesseract.tesseract_cmd = os.environ.get(
 
 client = MongoClient(MONGODB_URI)
 db = client[DB_NAME]
+therapy_db = client[THERAPY_DB_NAME]
 guardians_col = db["guardians"]
 patients_col = db["patients"]
 assessments_col = db["assessments"]
+therapy_users_col = therapy_db["users"]
 
 # Ensure unique index on guardian email
 guardians_col.create_index("email", unique=True)
@@ -131,6 +138,74 @@ def serialize_doc(d):
     if "_id" in d:
         d["id"] = str(d.pop("_id"))
     return d
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    if not password_hash:
+        return False
+    try:
+        return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
+
+
+def normalize_role(value) -> str:
+    role = str(value or "parent").lower()
+    return role if role in ("parent", "doctor") else "parent"
+
+
+def build_auth_payload(doc: dict) -> dict:
+    guardian_id = str(doc["_id"])
+    role = normalize_role(doc.get("role"))
+    token = jwt.encode(
+        {"id": guardian_id, "email": doc["email"], "role": role},
+        SECRET_KEY,
+        algorithm="HS256",
+    )
+    user = {
+        "id": guardian_id,
+        "email": doc["email"],
+        "fullName": doc.get("fullName", ""),
+        "phone": doc.get("phone", ""),
+        "relationship": doc.get("relationship", "Parent"),
+        "role": role,
+    }
+    return {"token": token, "user": user}
+
+
+def sync_guardian_from_therapy_user(email: str):
+    therapy_user = therapy_users_col.find_one({"email": email})
+    if not therapy_user:
+        return None
+
+    role = normalize_role(therapy_user.get("role"))
+    created_at = therapy_user.get("createdAt")
+    if isinstance(created_at, datetime):
+        created_at = created_at.isoformat()
+    elif not created_at:
+        created_at = datetime.utcnow().isoformat()
+
+    guardian_doc = {
+        "email": email,
+        "password_hash": therapy_user.get("password", ""),
+        "fullName": therapy_user.get("name", ""),
+        "phone": therapy_user.get("phone", ""),
+        "relationship": therapy_user.get("relationship") or ("Doctor" if role == "doctor" else "Parent"),
+        "role": role,
+        "createdAt": created_at,
+        "source": "therapy-collab",
+    }
+
+    if not guardian_doc["password_hash"]:
+        return None
+
+    try:
+        result = guardians_col.insert_one(guardian_doc)
+        guardian_doc["_id"] = result.inserted_id
+        print(f"DEBUG: Synced therapy-collab user into common auth for {email}")
+        return guardian_doc
+    except DuplicateKeyError:
+        return guardians_col.find_one({"email": email})
 
 # ─── Helper Functions ──────────────────────────────────────────────────────────
 def ocr_from_base64(image_b64: str) -> str:
@@ -224,26 +299,18 @@ def login():
         return jsonify({"error": "email and password required"}), 400
     email = data["email"].strip().lower()
     doc = guardians_col.find_one({"email": email})
-    if not doc:
+    if doc and verify_password(data["password"], doc.get("password_hash", "")):
+        print(f"DEBUG: Login attempt for {email}. Found role: {normalize_role(doc.get('role'))}")
+        return jsonify(build_auth_payload(doc))
+    if doc:
         return jsonify({"error": "Invalid email or password"}), 401
-    if not bcrypt.checkpw(data["password"].encode("utf-8"), doc["password_hash"].encode("utf-8")):
+
+    synced_doc = sync_guardian_from_therapy_user(email)
+    if not synced_doc or not verify_password(data["password"], synced_doc.get("password_hash", "")):
         return jsonify({"error": "Invalid email or password"}), 401
-    guardian_id = str(doc["_id"])
-    role = doc.get("role", "parent")
-    token = jwt.encode(
-        {"id": guardian_id, "email": email, "role": role},
-        SECRET_KEY,
-        algorithm="HS256",
-    )
-    user = {
-        "id": guardian_id,
-        "email": doc["email"],
-        "fullName": doc.get("fullName", ""),
-        "phone": doc.get("phone", ""),
-        "relationship": doc.get("relationship", "Parent"),
-        "role": role,
-    }
-    return jsonify({"token": token, "user": user})
+
+    print(f"DEBUG: Login attempt for {email}. Authenticated via therapy-collab sync.")
+    return jsonify(build_auth_payload(synced_doc))
 
 # ─── API routes ────────────────────────────────────────────────────────────────
 @app.route("/api/health", methods=["GET"])

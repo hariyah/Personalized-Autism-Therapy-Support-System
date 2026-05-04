@@ -7,10 +7,30 @@ const Child = require('../models/Child');
 const Analysis = require('../models/Analysis');
 const Notification = require('../models/Notification');
 const { protect, authorize } = require('../middleware/auth');
+const { buildResultSummary, buildTreatmentSuggestions, normalizeUrgencyLabel } = require('../utils/analysisRecommendations');
+const { buildFilename, buildAnalysisReportHtml } = require('../utils/analysisReport');
 
-const AI_URL = process.env.AI_URL || "http://localhost:7005/analyze-voice";
-const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7005/analyze-text";
+const AI_URL = process.env.AI_URL || "http://localhost:7006/analyze-voice";
+const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7006/analyze-text";
 const upload = multer({ storage: multer.memoryStorage() });
+
+const populateAnalysisAccess = (query) => query
+    .populate('performedBy', 'name')
+    .populate('doctorReview.doctor', 'name')
+    .populate({
+        path: 'child',
+        populate: { path: 'parent', select: 'name email phone' }
+    });
+
+const getSafeTranscript = (aiResult, textInput) => {
+    const transcript = String(aiResult?.transcript || textInput || '').trim();
+    return transcript || 'No transcript available';
+};
+
+const getSafeSummary = (aiResult, fallbackTranscript) => {
+    const summary = String(aiResult?.summary || '').trim();
+    return summary || fallbackTranscript || 'No transcript available';
+};
 
 router.use(protect);
 router.use(authorize('parent'));
@@ -49,7 +69,10 @@ router.get('/children/:id', async (req, res) => {
 // @route   GET /api/parent/children/:id/analyses
 router.get('/children/:id/analyses', async (req, res) => {
     try {
-        const analyses = await Analysis.find({ child: req.params.id }).sort('-createdAt');
+        const child = await Child.findOne({ _id: req.params.id, parent: req.user._id }).select('_id');
+        if (!child) return res.status(404).json({ success: false, message: 'Child not found' });
+
+        const analyses = await populateAnalysisAccess(Analysis.find({ child: req.params.id }).sort('-createdAt'));
         res.json({ success: true, analyses });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -91,25 +114,35 @@ router.post('/children/:id/analyses', upload.single('audio'), async (req, res) =
             return res.status(500).json({ success: false, message: aiResult.error });
         }
 
-        // Normalize for Analysis schema: transcript/summary/issueLabel required; urgencyLabel enum ['low','medium','high']
-        const validUrgency = ['low', 'medium', 'high'];
-        const transcript = (aiResult.transcript != null && aiResult.transcript !== '') ? aiResult.transcript : (textInput || '');
-        const summary = aiResult.summary || 'No transcript available';
-        const issueLabel = aiResult.issue_label || 'general';
-        const urgencyLabel = validUrgency.includes(aiResult.urgency_label) ? aiResult.urgency_label : 'medium';
+        const transcript = getSafeTranscript(aiResult, textInput);
+        const summary = getSafeSummary(aiResult, transcript);
+        const resultSummary = aiResult.result_summary || buildResultSummary({
+            issueLabel: aiResult.issue_label,
+            urgencyLabel: aiResult.urgency_label,
+            summary
+        });
+        const treatmentSuggestions = Array.isArray(aiResult.treatment_suggestions) && aiResult.treatment_suggestions.length > 0
+            ? aiResult.treatment_suggestions.map(item => String(item).trim()).filter(Boolean)
+            : buildTreatmentSuggestions(aiResult.issue_label, aiResult.urgency_label);
+        const urgencyLabel = normalizeUrgencyLabel(aiResult.urgency_label);
 
+        // Create analysis with AI results
         const analysis = await Analysis.create({
             child: req.params.id,
             performedBy: req.user._id,
             inputType: inputType,
             transcript,
-            issueLabel,
+            issueLabel: aiResult.issue_label,
             issueTop3: aiResult.issue_top3?.map(i => ({ label: i.label, confidence: i.score })) || [],
             urgencyLabel,
             urgencyTop3: aiResult.urgency_top3?.map(u => ({ label: u.label, confidence: u.score })) || [],
             summary,
+            resultSummary,
+            treatmentSuggestions,
             audioFilename: aiResult.audio_filename
         });
+
+        const populatedAnalysis = await populateAnalysisAccess(Analysis.findById(analysis._id));
 
         // Notify assigned doctors
         if (child.assignedDoctors?.length > 0) {
@@ -127,9 +160,44 @@ router.post('/children/:id/analyses', upload.single('audio'), async (req, res) =
             }
         }
 
-        res.status(201).json({ success: true, analysis });
+        res.status(201).json({ success: true, analysis: populatedAnalysis });
     } catch (error) {
-        console.error('Analysis error:', error.message);
+        console.error('Analysis error:', {
+            message: error.message,
+            code: error.code,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        res.status(500).json({ success: false, message: error.response?.data?.message || error.message });
+    }
+});
+
+// @route   GET /api/parent/analyses/:analysisId/report
+router.get('/analyses/:analysisId/report', async (req, res) => {
+    try {
+        const analysis = await populateAnalysisAccess(Analysis.findById(req.params.analysisId));
+
+        if (!analysis || !analysis.child) {
+            return res.status(404).json({ success: false, message: 'Analysis not found' });
+        }
+
+        const isParentChild = analysis.child.parent?._id?.toString?.() === req.user._id.toString()
+            || analysis.child.parent?.toString?.() === req.user._id.toString();
+        if (!isParentChild) {
+            return res.status(403).json({ success: false, message: 'This report does not belong to your child profile' });
+        }
+
+        if (!analysis.doctorReview?.reviewedAt) {
+            return res.status(400).json({ success: false, message: 'The doctor has not published the treatment report yet' });
+        }
+
+        const html = buildAnalysisReportHtml(analysis);
+        const filename = buildFilename(analysis);
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename=\"${filename}\"`);
+        res.send(html);
+    } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });

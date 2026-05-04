@@ -28,7 +28,7 @@ const Register = () => {
 
     return (
         <div className="min-h-screen bg-app flex overflow-hidden">
-            <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-16 overflow-hidden">
+            <div className="tc-dark-panel hidden lg:flex lg:w-1/2 relative flex-col justify-between p-16 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-teal-500 via-cyan-600 to-emerald-700 opacity-90" />
                 <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full -ml-48 -mt-48 blur-3xl" />
                 <div className="absolute bottom-0 right-0 w-72 h-72 bg-teal-400/20 rounded-full -mr-36 -mb-36 blur-2xl" />
@@ -62,7 +62,7 @@ const Register = () => {
                 </div>
             </div>
 
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative bg-[#0d1220]">
+            <div className="tc-dark-panel w-full lg:w-1/2 flex items-center justify-center p-8 relative bg-[#0d1220]">
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-600/5 rounded-full -ml-32 -mb-32 blur-3xl" />
                 <div className="max-w-md w-full relative z-10">
                     <div className="lg:hidden flex items-center gap-3 mb-10">

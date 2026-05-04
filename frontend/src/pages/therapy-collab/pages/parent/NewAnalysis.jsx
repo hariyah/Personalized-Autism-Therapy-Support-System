@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Sidebar from '../../components/Sidebar';
 import therapyApi from '../../utils/therapyApi';
 import { BASE } from '../../routes';
-import Sidebar from '../../components/Sidebar';
 import { FiMic, FiSquare, FiFileText, FiUploadCloud, FiAlertCircle, FiCheckCircle, FiUser } from 'react-icons/fi';
 
 const NewAnalysisParent = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const fileInputRef = React.useRef(null);
     const queryParams = new URLSearchParams(location.search);
     const preselectedChildId = queryParams.get('childId');
 
@@ -19,6 +20,7 @@ const NewAnalysisParent = () => {
     const [recordingTime, setRecordingTime] = useState(0);
     const [mediaRecorder, setMediaRecorder] = useState(null);
     const [audioBlob, setAudioBlob] = useState(null);
+    const [audioPreviewUrl, setAudioPreviewUrl] = useState(null);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
@@ -46,6 +48,43 @@ const NewAnalysisParent = () => {
         return () => clearInterval(interval);
     }, [isRecording]);
 
+    useEffect(() => () => {
+        if (audioPreviewUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(audioPreviewUrl);
+        }
+    }, [audioPreviewUrl]);
+
+    const resetAudio = () => {
+        if (audioPreviewUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(audioPreviewUrl);
+        }
+        setAudioBlob(null);
+        setAudioPreviewUrl(null);
+        setRecordingTime(0);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('audio/')) {
+            setError('Please upload a valid audio file.');
+            return;
+        }
+
+        if (audioPreviewUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(audioPreviewUrl);
+        }
+
+        setAudioBlob(file);
+        setAudioPreviewUrl(URL.createObjectURL(file));
+        setRecordingTime(0);
+        setError('');
+    };
+
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -55,13 +94,14 @@ const NewAnalysisParent = () => {
             recorder.onstop = () => {
                 const blob = new Blob(chunks, { type: 'audio/webm' });
                 setAudioBlob(blob);
+                setAudioPreviewUrl(URL.createObjectURL(blob));
                 stream.getTracks().forEach(t => t.stop());
             };
             recorder.start();
             setMediaRecorder(recorder);
             setIsRecording(true);
             setRecordingTime(0);
-            setAudioBlob(null);
+            resetAudio();
         } catch (err) {
             setError('Microphone access denied.');
         }
@@ -82,8 +122,8 @@ const NewAnalysisParent = () => {
             const formData = new FormData();
             formData.append('inputType', inputType);
             if (inputType === 'audio') {
-                if (!audioBlob) throw new Error('Please record audio first.');
-                formData.append('audio', audioBlob, 'recording.webm');
+                if (!audioBlob) throw new Error('Please record or upload audio first.');
+                formData.append('audio', audioBlob, audioBlob.name || 'recording.webm');
             } else {
                 if (!textInput.trim()) throw new Error('Please enter text.');
                 formData.append('transcript', textInput);
@@ -108,7 +148,7 @@ const NewAnalysisParent = () => {
     if (loading) return (
         <div className="flex min-h-screen bg-app"><Sidebar />
             <div className="flex-1 flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin"></div>
             </div>
         </div>
     );
@@ -120,18 +160,18 @@ const NewAnalysisParent = () => {
                 <div className="max-w-4xl mx-auto p-8 page-enter">
                     {/* Header */}
                     <div className="mb-10 text-center relative z-10">
-                        <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 px-4 py-2 rounded-full mb-6 relative mt-4">
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+                        <div className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] px-4 py-2 rounded-full mb-6 relative mt-4">
+                            <span className="text-[10px] font-bold text-violet-300 uppercase tracking-widest flex items-center gap-2">
                                 <span className={children.length > 0 ? 'glow-dot' : 'glow-dot-rose'} /> Parent Submission Portal
                             </span>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Record New Progress</h1>
+                        <h1 className="text-4xl font-black text-slate-100 mb-2 tracking-tight">Record New Progress</h1>
                         <p className="text-slate-400 font-medium">Capture daily progress or behavior for specialist review.</p>
                     </div>
 
                     <div className="card p-8 border-subtle card-glow relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] opacity-50" />
-                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] opacity-40" />
+                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px] opacity-40" />
 
                         {error && (
                             <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm font-bold flex items-center gap-3 animate-shake">
@@ -147,10 +187,10 @@ const NewAnalysisParent = () => {
 
                         {children.length === 0 ? (
                             <div className="text-center py-10 relative z-10">
-                                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200">
+                                <div className="w-16 h-16 bg-white/[0.04] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/[0.05]">
                                     <FiUser className="text-slate-600" size={24} />
                                 </div>
-                                <h3 className="text-slate-600 font-bold mb-2">No Profiles Available</h3>
+                                <h3 className="text-slate-300 font-bold mb-2">No Profiles Available</h3>
                                 <p className="text-slate-500 text-sm mb-6">You need to register a family member first.</p>
                                 <button onClick={() => navigate(`${BASE}/parent/children`)} className="btn-primary">Register Child Profile</button>
                             </div>
@@ -163,52 +203,75 @@ const NewAnalysisParent = () => {
                                     </label>
                                     <div className="relative">
                                         <select
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 font-bold text-sm outline-none focus:border-emerald-500/30 focus:ring-4 focus:ring-emerald-500/10 appearance-none text-center shadow-inner cursor-pointer"
+                                            className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-5 py-4 text-slate-200 font-bold text-sm outline-none focus:border-violet-500/30 focus:ring-4 focus:ring-violet-500/10 appearance-none text-center shadow-inner cursor-pointer"
                                             value={selectedChild}
                                             onChange={(e) => setSelectedChild(e.target.value)}
                                             required
                                         >
                                             {children.map(c => (
-                                                <option key={c._id} value={c._id} className="bg-slate-900 text-slate-800">{c.name}</option>
+                                                <option key={c._id} value={c._id} className="bg-white text-slate-700">{c.name}</option>
                                             ))}
                                         </select>
                                     </div>
                                 </div>
 
                                 {/* Input Type Toggle */}
-                                <div className="flex bg-slate-50 border border-slate-200 p-1.5 rounded-2xl mb-8 w-fit mx-auto shadow-inner">
-                                    <button type="button" onClick={() => setInputType('audio')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'audio' ? 'bg-gradient-to-r from-emerald-500/30 to-emerald-500/10 text-emerald-600 shadow-sm border border-emerald-500/30' : 'text-slate-500 hover:text-slate-600 hover:bg-slate-100'}`}>
+                                <div className="flex bg-white/[0.03] border border-white/[0.06] p-1.5 rounded-2xl mb-8 w-fit mx-auto shadow-inner">
+                                    <button type="button" onClick={() => setInputType('audio')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'audio' ? 'bg-gradient-to-r from-violet-500/30 to-violet-500/10 text-violet-300 shadow-sm border border-violet-500/30' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.05]'}`}>
                                         <FiMic size={14} /> Voice Note
                                     </button>
-                                    <button type="button" onClick={() => setInputType('text')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'text' ? 'bg-slate-100 text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-600 hover:bg-slate-100'}`}>
+                                    <button type="button" onClick={() => setInputType('text')} className={`flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${inputType === 'text' ? 'bg-white/[0.1] text-slate-200 shadow-sm border border-white/[0.1]' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.05]'}`}>
                                         <FiFileText size={14} /> Text Input
                                     </button>
                                 </div>
 
                                 {/* Audio Mode */}
                                 {inputType === 'audio' && (
-                                    <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mb-8">
+                                    <div className="text-center py-10 bg-white/[0.01] rounded-2xl border border-dashed border-white/[0.1] mb-8">
+                                        <input
+                                            type="file"
+                                            accept="audio/*"
+                                            ref={fileInputRef}
+                                            onChange={handleFileUpload}
+                                            className="hidden"
+                                        />
+                                        {!isRecording && !audioBlob && (
+                                            <div className="mb-8 flex flex-col items-center gap-4">
+                                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Choose a voice note source</p>
+                                                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                                    <button type="button" onClick={startRecording} className="flex items-center gap-2 px-8 py-4 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-full font-black uppercase tracking-[0.18em] hover:bg-rose-500/20 hover:scale-[1.02] transition-all shadow-xl shadow-rose-500/20 text-xs">
+                                                        <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse" /> Record Now
+                                                    </button>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">or</span>
+                                                    <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-8 py-4 bg-cyan-500/10 text-cyan-600 border border-cyan-500/30 rounded-full font-black uppercase tracking-[0.18em] hover:bg-cyan-500/20 hover:scale-[1.02] transition-all shadow-xl shadow-cyan-500/20 text-xs">
+                                                        <FiUploadCloud size={15} /> Upload From Device
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs font-semibold text-slate-500">Supports MP3, WAV, M4A, and WebM audio files.</p>
+                                            </div>
+                                        )}
                                         <div className="mb-8">
-                                            <div className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center transition-all duration-300 relative z-10 ${isRecording ? 'bg-rose-500/20 border-2 border-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.4)] animate-pulse' : audioBlob ? 'bg-emerald-500/20 border-2 border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-50 border-2 border-slate-200'}`}>
+                                            <div className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center transition-all duration-300 relative z-10 ${isRecording ? 'bg-rose-500/20 border-2 border-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.4)] animate-pulse' : audioBlob ? 'bg-emerald-500/20 border-2 border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-white/[0.03] border-2 border-white/[0.08]'}`}>
                                                 <FiMic size={40} className={isRecording ? 'text-rose-400' : audioBlob ? 'text-emerald-400' : 'text-slate-600'} />
                                             </div>
                                         </div>
-                                        <div className="text-5xl font-black text-slate-800 mb-8 font-mono tracking-wider tabular-nums">
+                                        <div className="text-5xl font-black text-slate-200 mb-8 font-mono tracking-wider tabular-nums">
                                             {formatTime(recordingTime)}
                                         </div>
                                         {!isRecording && !audioBlob ? (
-                                            <button type="button" onClick={startRecording} className="mx-auto flex items-center gap-2 px-10 py-5 bg-rose-500/10 text-rose-400 border border-rose-500/30 rounded-full font-black uppercase tracking-[0.2em] hover:bg-rose-500/20 hover:scale-[1.02] transition-all shadow-xl shadow-rose-500/20 text-xs">
-                                                <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse" /> Begin Recording
-                                            </button>
+                                            <p className="text-xs font-semibold text-slate-500">Record live audio or upload an existing voice note above.</p>
                                         ) : isRecording ? (
                                             <button type="button" onClick={stopRecording} className="btn-danger mx-auto flex items-center gap-2 px-10 py-5 rounded-full text-xs uppercase font-black tracking-[0.2em]">
                                                 <FiSquare size={14} fill="currentColor" /> Stop Recording
                                             </button>
                                         ) : (
                                             <div className="flex flex-col sm:flex-row justify-center gap-4 items-center">
-                                                <button type="button" onClick={() => setAudioBlob(null)} className="btn-secondary !rounded-full !py-4 text-xs">Retake Audio</button>
-                                                <div className="p-2 border border-slate-200 rounded-full bg-slate-50">
-                                                    <audio src={URL.createObjectURL(audioBlob)} controls className="h-10 opacity-80 filter invert-[0.8] mix-blend-screen" />
+                                                <button type="button" onClick={resetAudio} className="btn-secondary !rounded-full !py-4 text-xs">Retake Audio</button>
+                                                <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-secondary !rounded-full !py-4 text-xs flex items-center gap-2">
+                                                    <FiUploadCloud size={13} /> Upload Different
+                                                </button>
+                                                <div className="p-2 border border-white/[0.06] rounded-full bg-white/[0.02]">
+                                                    <audio src={audioPreviewUrl} controls className="h-10" />
                                                 </div>
                                             </div>
                                         )}
@@ -218,7 +281,7 @@ const NewAnalysisParent = () => {
                                 {/* Text Mode */}
                                 {inputType === 'text' && (
                                     <div className="mb-8">
-                                        <label className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em] mb-3 block flex items-center gap-2">
+                                        <label className="text-[10px] font-bold text-violet-400 uppercase tracking-[0.2em] mb-3 block flex items-center gap-2">
                                             <FiFileText /> Enter daily journal notes
                                         </label>
                                         <textarea
@@ -235,7 +298,7 @@ const NewAnalysisParent = () => {
                                 <button
                                     type="submit"
                                     disabled={processing || (inputType === 'audio' && !audioBlob) || (inputType === 'text' && !textInput.trim())}
-                                    className="w-full max-w-md mx-auto py-5 gradient-primary rounded-2xl font-black uppercase tracking-[0.2em] text-white text-[10px] shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 relative overflow-hidden"
+                                    className="w-full max-w-md mx-auto py-5 gradient-primary rounded-2xl font-black uppercase tracking-[0.2em] text-white text-[10px] shadow-xl shadow-violet-500/30 hover:shadow-violet-500/50 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 relative overflow-hidden"
                                 >
                                     {processing ? (
                                         <>
@@ -259,3 +322,4 @@ const NewAnalysisParent = () => {
 };
 
 export default NewAnalysisParent;
+

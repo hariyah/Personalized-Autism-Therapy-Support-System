@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from './contexts/AuthContext';
 
 function MainContent() {
   const location = useLocation();
@@ -23,7 +24,7 @@ function MainContent() {
           path="/"
           element={
             <ProtectedRoute>
-              <Navigate to="/dashboard" replace />
+              <HomeRedirect />
             </ProtectedRoute>
           }
         />
@@ -56,6 +57,13 @@ function MainContent() {
       </Routes>
     </main>
   );
+}
+
+function HomeRedirect() {
+  const { user } = useAuth();
+  const userRole = user?.role?.toLowerCase();
+  const target = userRole === 'doctor' ? '/therapy-collab/doctor/dashboard' : '/dashboard';
+  return <Navigate to={target} replace />;
 }
 
 function App() {
