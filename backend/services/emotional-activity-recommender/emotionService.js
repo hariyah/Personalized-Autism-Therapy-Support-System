@@ -100,17 +100,35 @@ async function getHealth() {
   throw e;
 }
 
-async function checkMLServiceHealth() {
+function isSourceReadyInHealth(data, source = 'upload') {
+  if (!data || typeof data !== 'object') return false;
+
+  const genericHealthy = Object.prototype.hasOwnProperty.call(data, 'healthy')
+    ? !!data.healthy
+    : true;
+  if (!genericHealthy) return false;
+
+  const modelsLoaded = data.modelsLoaded;
+  if (modelsLoaded && typeof modelsLoaded === 'object') {
+    if (source === 'camera' && Object.prototype.hasOwnProperty.call(modelsLoaded, 'camera')) {
+      return !!modelsLoaded.camera;
+    }
+    if (source !== 'camera' && Object.prototype.hasOwnProperty.call(modelsLoaded, 'upload')) {
+      return !!modelsLoaded.upload;
+    }
+  }
+
+  if (source !== 'camera' && Object.prototype.hasOwnProperty.call(data, 'modelLoaded')) {
+    return !!data.modelLoaded;
+  }
+
+  return genericHealthy;
+}
+
+async function checkMLServiceHealth(source = 'upload') {
   try {
     const data = await getHealth();
-    // Consider healthy if explicit healthy flag or any JSON returned without error
-    if (data && typeof data === 'object') {
-      if (Object.prototype.hasOwnProperty.call(data, 'healthy')) {
-        return !!data.healthy;
-      }
-      return true;
-    }
-    return false;
+    return isSourceReadyInHealth(data, source);
   } catch (e) {
     return false;
   }
