@@ -1,10 +1,72 @@
 import os
+import sys
 import json
 import shutil
 import subprocess
+from importlib.util import find_spec
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
+
+_SERVICE_DIR = Path(__file__).resolve().parent
+_VENV_PYTHON = _SERVICE_DIR / ".venv" / ("Scripts" if os.name == "nt" else "bin") / ("python.exe" if os.name == "nt" else "python")
+_VENV_REEXEC_ENV = "THERAPY_AI_SKIP_VENV_REEXEC"
+_REQUIRED_IMPORT_SPECS = {
+    "numpy": "numpy",
+    "torch": "torch",
+    "librosa": "librosa",
+    "Pillow": "PIL",
+    "fastapi": "fastapi",
+    "transformers": "transformers",
+    "joblib": "joblib",
+    "scikit-learn": "sklearn",
+}
+
+
+def _using_venv_python() -> bool:
+    try:
+        return Path(sys.executable).resolve() == _VENV_PYTHON.resolve()
+    except OSError:
+        return False
+
+
+def _reexec_with_venv_if_available() -> None:
+    if os.environ.get(_VENV_REEXEC_ENV) == "1":
+        return
+    if not _VENV_PYTHON.exists() or _using_venv_python():
+        return
+
+    print(
+        f"[INFO] Re-launching therapy-collab-ai with project virtualenv: {_VENV_PYTHON}",
+        flush=True,
+    )
+    env = os.environ.copy()
+    env[_VENV_REEXEC_ENV] = "1"
+    result = subprocess.run([str(_VENV_PYTHON), *sys.argv], cwd=str(_SERVICE_DIR), env=env)
+    raise SystemExit(result.returncode)
+
+
+def _fail_fast_if_dependencies_missing() -> None:
+    missing_packages = [
+        package_name
+        for package_name, import_name in _REQUIRED_IMPORT_SPECS.items()
+        if find_spec(import_name) is None
+    ]
+    if not missing_packages:
+        return
+
+    missing_list = ", ".join(missing_packages)
+    venv_python = _VENV_PYTHON.as_posix()
+    message_lines = [
+        f"[ERROR] Missing Python packages for therapy-collab-ai: {missing_list}",
+        "[ERROR] Create or activate backend/services/therapy-collab-ai/.venv and install requirements.txt.",
+        f"[ERROR] Then start the service with: {venv_python} main.py",
+    ]
+    raise SystemExit("\n".join(message_lines))
+
+
+_reexec_with_venv_if_available()
+_fail_fast_if_dependencies_missing()
 
 # Keep Hugging Face on the PyTorch code path; TensorFlow is only used
 # separately for the local emotion model below.
@@ -41,6 +103,7 @@ MODEL_URGENCY_DIR = os.getenv("MODEL_URGENCY_DIR", os.path.join(_MODELS_DIR, "ur
 MODEL_SUMM_DIR = os.getenv("MODEL_SUMM_DIR", os.path.join(_MODELS_DIR, "summarization_t5", "checkpoints", "checkpoint-875"))
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "openai/whisper-small")
 MODEL_TREATMENT_DIR = os.getenv("MODEL_TREATMENT_DIR", os.path.join(_MODELS_DIR, "treatment_recommender"))
+ALLOW_HF_HUB_FALLBACK = os.getenv("ALLOW_HF_HUB_FALLBACK", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 # Emotion Recognition (from PATSS) - minimal import to avoid tensorflow.python issues
 TF_AVAILABLE = False
@@ -220,14 +283,18 @@ def load_models():
 
     # If either classifier failed, load a shared zero-shot model as fallback
     if issue_clf is None or urgency_clf is None:
-        try:
-            _zsc_model = "facebook/bart-large-mnli"
-            print(f"Loading zero-shot classifier from hub ({_zsc_model})...")
-            zsc = pipeline("zero-shot-classification", model=_zsc_model, device=device)
-            print("[OK] Zero-shot classifier loaded (fallback for issue/urgency)")
-        except Exception as e:
-            print(f"Error loading zero-shot classifier: {e}")
+        if not ALLOW_HF_HUB_FALLBACK:
+            print("Skipping zero-shot fallback download. Using default local issue/urgency heuristics only.")
             zsc = None
+        else:
+            try:
+                _zsc_model = "facebook/bart-large-mnli"
+                print(f"Loading zero-shot classifier from hub ({_zsc_model})...")
+                zsc = pipeline("zero-shot-classification", model=_zsc_model, device=device)
+                print("[OK] Zero-shot classifier loaded (fallback for issue/urgency)")
+            except Exception as e:
+                print(f"Error loading zero-shot classifier: {e}")
+                zsc = None
 
     try:
         print("Loading summarizer...")
@@ -247,10 +314,35 @@ def load_models():
                 print("[OK] Summarizer loaded (local)")
             except Exception as local_e:
                 err_msg = str(local_e).lower()
-                if "no file named" in err_msg or "pytorch_model" in err_msg or "safetensors" in err_msg:
+                if not ALLOW_HF_HUB_FALLBACK:
+                    print(f"Local summarizer unavailable in {MODEL_SUMM_DIR}. Skipping hub download and using transcript fallback.")
+                    summarizer = None
+                elif "no file named" in err_msg or "pytorch_model" in err_msg or "safetensors" in err_msg:
                     print(f"Local summarizer missing weights in {MODEL_SUMM_DIR}. Falling back to hub.")
+                    summarizer = pipeline(
+                        "summarization",
+                        model=_hub_model,
+                        tokenizer=_hub_model,
+                        framework="pt",
+                        device=device,
+                    )
+                    print("[OK] Summarizer loaded (from hub)")
                 else:
                     print(f"Local summarizer load failed: {local_e}; falling back to hub.")
+                    summarizer = pipeline(
+                        "summarization",
+                        model=_hub_model,
+                        tokenizer=_hub_model,
+                        framework="pt",
+                        device=device,
+                    )
+                    print("[OK] Summarizer loaded (from hub)")
+        else:
+            if not ALLOW_HF_HUB_FALLBACK:
+                print(f"Summarizer path not found: {MODEL_SUMM_DIR}. Skipping hub download and using transcript fallback.")
+                summarizer = None
+            else:
+                print(f"Summarizer path not found: {MODEL_SUMM_DIR}, using hub: {_hub_model}")
                 summarizer = pipeline(
                     "summarization",
                     model=_hub_model,
@@ -259,16 +351,6 @@ def load_models():
                     device=device,
                 )
                 print("[OK] Summarizer loaded (from hub)")
-        else:
-            print(f"Summarizer path not found: {MODEL_SUMM_DIR}, using hub: {_hub_model}")
-            summarizer = pipeline(
-                "summarization",
-                model=_hub_model,
-                tokenizer=_hub_model,
-                framework="pt",
-                device=device,
-            )
-            print("[OK] Summarizer loaded (from hub)")
     except Exception as e:
         print(f"Error loading summarizer: {e}")
         summarizer = None
@@ -532,7 +614,10 @@ async def predict(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    # On Windows, StatReload can exhaust resources while crawling large virtualenv trees.
-    # Keep reload disabled by default; enable explicitly with UVICORN_RELOAD=1 when needed.
-    enable_reload = os.environ.get("UVICORN_RELOAD", "0").strip() == "1"
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 7006)), reload=enable_reload)
+    reload_enabled = os.environ.get("UVICORN_RELOAD", "false").strip().lower() in {"1", "true", "yes", "on"}
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 7006)),
+        reload=reload_enabled,
+    )

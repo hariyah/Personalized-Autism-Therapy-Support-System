@@ -124,7 +124,7 @@ $therapyCollab = Join-Path $Services "therapy-collab"
 if (Test-Path $therapyCollab) {
     Setup-NodeDeps $therapyCollab
     Write-Host "Starting therapy-collab..."
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyCollab`" && set PORT=7005 && set AI_URL=http://localhost:7006/analyze-voice && set AI_TEXT_URL=http://localhost:7006/analyze-text && npm start"
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyCollab`" && set PORT=7005 && set AI_URL=http://127.0.0.1:7006/analyze-voice && set AI_TEXT_URL=http://127.0.0.1:7006/analyze-text && npm start"
     Start-Sleep -Seconds 2
 }
 
@@ -152,7 +152,7 @@ if (Test-Path $therapyCollabAi) {
             if (-not $pipOk) {
                 Write-Warning "  therapy-collab-ai: full install failed (TensorFlow path length on Windows). Trying minimal deps..."
                 $ErrorActionPreference = "Continue"
-                & $venvPip install fastapi uvicorn python-multipart torch librosa soundfile audioread soxr "transformers<5" numpy pillow pydantic python-dotenv pydub imageio-ffmpeg 2>&1 | Out-Null
+                & $venvPip install fastapi uvicorn python-multipart torch librosa soundfile audioread soxr "transformers<5" numpy pillow pydantic python-dotenv pydub imageio-ffmpeg scikit-learn joblib 2>&1 | Out-Null
                 $ErrorActionPreference = $errPreference
                 if ($LASTEXITCODE -ne 0) { Write-Warning "  therapy-collab-ai: install had issues; start it manually if needed." }
             }
