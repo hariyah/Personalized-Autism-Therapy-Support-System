@@ -532,4 +532,7 @@ async def predict(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 7006)), reload=True)
+    # On Windows, StatReload can exhaust resources while crawling large virtualenv trees.
+    # Keep reload disabled by default; enable explicitly with UVICORN_RELOAD=1 when needed.
+    enable_reload = os.environ.get("UVICORN_RELOAD", "0").strip() == "1"
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 7006)), reload=enable_reload)

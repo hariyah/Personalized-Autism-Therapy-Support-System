@@ -175,13 +175,22 @@ def normalize_role(value) -> str:
     return role if role in ("parent", "doctor") else "parent"
 
 
+def jwt_token_as_str(raw) -> str:
+    """PyJWT may return str or bytes depending on version; browser needs a UTF-8 string."""
+    if isinstance(raw, (bytes, bytearray)):
+        return raw.decode("utf-8")
+    return str(raw)
+
+
 def build_auth_payload(doc: dict) -> dict:
     guardian_id = str(doc["_id"])
     role = normalize_role(doc.get("role"))
-    token = jwt.encode(
-        {"id": guardian_id, "email": doc["email"], "role": role},
-        SECRET_KEY,
-        algorithm="HS256",
+    token = jwt_token_as_str(
+        jwt.encode(
+            {"id": guardian_id, "email": doc["email"], "role": role},
+            SECRET_KEY,
+            algorithm="HS256",
+        )
     )
     user = {
         "id": guardian_id,
@@ -381,10 +390,12 @@ def register():
     }
     r = guardians_col.insert_one(doc)
     guardian_id = str(r.inserted_id)
-    token = jwt.encode(
-        {"id": guardian_id, "email": email, "role": role},
-        SECRET_KEY,
-        algorithm="HS256",
+    token = jwt_token_as_str(
+        jwt.encode(
+            {"id": guardian_id, "email": email, "role": role},
+            SECRET_KEY,
+            algorithm="HS256",
+        )
     )
     user = {
         "id": guardian_id,

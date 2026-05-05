@@ -45,9 +45,12 @@ if (savedToken) {
   setAuthToken(savedToken);
 }
 
-// Handle 401 errors on both clients
+// Handle 401 on API calls — but not on login/register (avoid clearing token / hard redirect mid-form)
 const handle401 = (error: any) => {
-  if (error.response?.status === 401) {
+  const reqUrl = String(error?.config?.url ?? '');
+  const skipRedirect =
+    reqUrl.includes('/api/auth/login') || reqUrl.includes('/api/auth/register');
+  if (!skipRedirect && error.response?.status === 401) {
     setAuthToken(null);
     localStorage.removeItem('auth_user');
     window.location.href = '/login';

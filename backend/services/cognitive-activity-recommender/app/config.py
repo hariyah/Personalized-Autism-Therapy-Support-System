@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     ollama_endpoint: str = "http://localhost:11434/api/chat"
     ollama_model: str = "llama3.2:3b"  # Use 3B model by default (smallest, works on most systems)
     ollama_use_cpu: bool = False  # Set to True to force CPU mode (slower but uses RAM instead of VRAM)
-    jwt_secret_key: str = "your-secret-key-change-in-production-use-env-var"
+    # Optional fallback for JWT_SECRET_KEY env; omit default so it cannot drift from Flask's SECRET_KEY
+    jwt_secret_key: Optional[str] = None
     # Common auth: same as autism-profile-builder SECRET_KEY so JWT from profile-builder is valid here
     secret_key: Optional[str] = None  # env SECRET_KEY (match profile-builder)
     auth_secret_key: Optional[str] = None  # env AUTH_SECRET_KEY (alternative)
