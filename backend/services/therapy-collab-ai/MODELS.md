@@ -1,13 +1,13 @@
-# Therapy Collab AI – Local models
+# Therapy Collab AI - Local models
 
 Expected layout under `models/`:
 
 - **Summarization (T5)**  
   `models/summarization_t5/checkpoints/checkpoint-875/`  
   Must contain: `config.json`, tokenizer files, **and** one of:
-  - `pytorch_model.bin`, or  
+  - `pytorch_model.bin`, or
   - `model.safetensors`  
-  If the weights file is missing, the service falls back to the hub model (facebook/bart-large-cnn).
+  If the weights file is missing, the service falls back to the hub model (`facebook/bart-large-cnn`).
 
 - **Issue classifier**  
   `models/issue_classifier_roberta/`  
@@ -27,4 +27,12 @@ Expected layout under `models/`:
   .venv\Scripts\activate
   pip install -r requirements.txt
   ```
-  Then run the app with this venv’s Python.
+
+Recommended start command:
+
+```bash
+.venv\Scripts\python.exe main.py
+```
+
+If you see `ModuleNotFoundError: No module named 'numpy'`, the service was started with the
+system Python instead of the project venv.

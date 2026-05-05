@@ -10,9 +10,10 @@ const Notification = require('../models/Notification');
 const { protect, authorize } = require('../middleware/auth');
 const { buildResultSummary, buildTreatmentSuggestions, normalizeUrgencyLabel } = require('../utils/analysisRecommendations');
 const { buildFilename, buildAnalysisReportHtml } = require('../utils/analysisReport');
+const { normalizeLoopbackUrl } = require('../utils/serviceUrl');
 
-const AI_URL = process.env.AI_URL || "http://localhost:7006/analyze-voice";
-const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7006/analyze-text";
+const AI_URL = normalizeLoopbackUrl(process.env.AI_URL || 'http://127.0.0.1:7006/analyze-voice');
+const AI_TEXT_URL = normalizeLoopbackUrl(process.env.AI_TEXT_URL || 'http://127.0.0.1:7006/analyze-text');
 const upload = multer({ storage: multer.memoryStorage() });
 
 const populateAnalysisAccess = (query) => query
@@ -46,6 +47,18 @@ const getSafeTranscript = (aiResult, textInput) => {
 const getSafeSummary = (aiResult, fallbackTranscript) => {
     const summary = String(aiResult?.summary || '').trim();
     return summary || fallbackTranscript || 'No transcript available';
+};
+
+const getAnalysisServiceErrorMessage = (error) => {
+    if (error?.code === 'ECONNREFUSED') {
+        return 'The therapy AI analysis service is not running on port 7006. Start the therapy-collab AI service and try again.';
+    }
+
+    if (error?.response?.status === 404) {
+        return 'The requested analysis endpoint was not found on the therapy AI service. Verify that the latest therapy-collab AI service is running.';
+    }
+
+    return error?.response?.data?.message || error?.message || 'Analysis failed.';
 };
 
 router.use(protect);
@@ -168,7 +181,7 @@ router.post('/patients/:id/analyses', upload.single('audio'), async (req, res) =
             status: error.response?.status,
             data: error.response?.data
         });
-        res.status(500).json({ success: false, message: error.response?.data?.message || error.message });
+        res.status(error.code === 'ECONNREFUSED' ? 503 : 500).json({ success: false, message: getAnalysisServiceErrorMessage(error) });
     }
 });
 

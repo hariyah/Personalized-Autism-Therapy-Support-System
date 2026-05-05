@@ -23,7 +23,7 @@ const SERVICES = {
   emotional: process.env.EMOTIONAL_URL || "http://localhost:7003",
   emotionMl: process.env.EMOTION_ML_URL || "http://localhost:7004",
   therapy: process.env.THERAPY_URL || "http://localhost:7005",
-  therapyAi: process.env.THERAPY_AI_URL || "http://localhost:7006",
+  therapyAi: process.env.THERAPY_AI_URL || "http://127.0.0.1:7006",
 };
 
 const app = express();
