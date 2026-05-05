@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 7005;
 const AI_URL = process.env.AI_URL || "http://localhost:7006/analyze-voice";
 const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7006/analyze-text";
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
+const MONGO_RETRY_MS = Number(process.env.MONGO_RETRY_MS || 5000);
 
 // Fail fast on DB queries when MongoDB is unavailable.
 mongoose.set("bufferCommands", false);
@@ -23,12 +24,52 @@ app.use(express.urlencoded({ extended: true }));
 // Setup multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
 
+let mongoRetryTimer = null;
+let mongoConnectAttempt = 0;
+
+function scheduleMongoReconnect(reason) {
+  if (!MONGO_URI || MONGO_URI === "YOUR_MONGO_URI" || mongoRetryTimer) {
+    return;
+  }
+
+  console.warn(
+    `${reason}. Retrying MongoDB connection in ${Math.round(MONGO_RETRY_MS / 1000)}s...`
+  );
+
+  mongoRetryTimer = setTimeout(() => {
+    mongoRetryTimer = null;
+    connectToMongo();
+  }, MONGO_RETRY_MS);
+}
+
+async function connectToMongo() {
+  if (!MONGO_URI || MONGO_URI === "YOUR_MONGO_URI") {
+    return;
+  }
+
+  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
+    return;
+  }
+
+  mongoConnectAttempt += 1;
+  try {
+    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+  } catch (err) {
+    scheduleMongoReconnect(`MongoDB connection error (attempt ${mongoConnectAttempt}): ${err.message}`);
+  }
+}
+
+mongoose.connection.on("connected", () => {
+  console.log("MongoDB connected");
+});
+
+mongoose.connection.on("disconnected", () => {
+  scheduleMongoReconnect("MongoDB disconnected");
+});
+
 // Connect to MongoDB (supports both MONGO_URI and MONGODB_URI)
 if (MONGO_URI && MONGO_URI !== "YOUR_MONGO_URI") {
-  mongoose
-    .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
-    .then(() => console.log("MongoDB connected"))
-    .catch((err) => console.log("MongoDB connection error:", err.message));
+  connectToMongo();
 } else {
   console.warn("MongoDB URI missing. Set MONGO_URI or MONGODB_URI in server/.env");
 }
