@@ -684,29 +684,47 @@ async function generateRecommendations(context, count = 6) {
   const isSlowModel = /tinyllama/i.test(model);
   const tinyllamaTimeoutMs = Number(process.env.OLLAMA_TINYLLAMA_TIMEOUT_MS || 65000);
   const requestTimeoutMs = isSlowModel ? Math.min(OLLAMA_TIMEOUT_MS, tinyllamaTimeoutMs) : OLLAMA_TIMEOUT_MS;
+  const defaultBudgetMs = Math.min(90000, requestTimeoutMs);
+  const parsedBudgetMs = Number(process.env.OLLAMA_TOTAL_BUDGET_MS || defaultBudgetMs);
+  const totalBudgetMs = Number.isFinite(parsedBudgetMs)
+    ? Math.max(15000, parsedBudgetMs)
+    : defaultBudgetMs;
+  const startedAt = Date.now();
+  const deadline = startedAt + totalBudgetMs;
 
   const uniqueTitles = new Set();
   const sanitized = [];
   let lastError = null;
 
   const attempts = [
-    async (messages) => {
-      const rawText = await callOllamaGenerate(model, messages, { temperature: 0.1, num_predict: 280, timeoutMs: requestTimeoutMs });
+    async (messages, timeoutMs) => {
+      const rawText = await callOllamaGenerate(model, messages, { temperature: 0.1, num_predict: 280, timeoutMs });
       return extractActivities(rawText);
     },
-    async (messages) => {
-      const rawText = await callOllamaGenerate(model, messages, { useJsonFormat: false, temperature: 0.15, num_predict: 180, timeoutMs: requestTimeoutMs });
+    async (messages, timeoutMs) => {
+      const rawText = await callOllamaGenerate(model, messages, { useJsonFormat: false, temperature: 0.15, num_predict: 180, timeoutMs });
       return extractActivities(rawText);
     }
   ];
   const maxCycles = isSlowModel ? 1 : 2;
   for (let cycle = 0; cycle < maxCycles && sanitized.length < safeCount; cycle += 1) {
+    const remainingBudgetMs = deadline - Date.now();
+    if (remainingBudgetMs < 4000) {
+      lastError = new Error(`Ollama generation budget exceeded (${totalBudgetMs}ms).`);
+      break;
+    }
+
+    const perAttemptTimeoutMs = Math.max(
+      4000,
+      Math.min(requestTimeoutMs, remainingBudgetMs - 500)
+    );
+
     const attempt = attempts[cycle % attempts.length];
     const remaining = Math.max(1, safeCount - sanitized.length);
     const messages = buildMessages(context, remaining, Array.from(uniqueTitles));
     let rawActivities = [];
     try {
-      rawActivities = await attempt(messages);
+      rawActivities = await attempt(messages, perAttemptTimeoutMs);
     } catch (err) {
       lastError = err;
       continue;
@@ -725,9 +743,17 @@ async function generateRecommendations(context, count = 6) {
   }
 
   if (!sanitized.length) {
+    const elapsed = Date.now() - startedAt;
     const message = String(lastError?.message || 'Ollama returned no structured activities.');
     if (/timed out|timeout/i.test(message)) {
-      throw new Error(`Ollama timed out after ${requestTimeoutMs}ms while using model "${model}".`);
+      throw new Error(
+        `Ollama timed out after ${elapsed}ms while using model "${model}" (budget ${totalBudgetMs}ms).`
+      );
+    }
+    if (/budget exceeded/i.test(message)) {
+      throw new Error(
+        `Ollama did not finish within ${totalBudgetMs}ms using model "${model}".`
+      );
     }
     throw new Error(message);
   }

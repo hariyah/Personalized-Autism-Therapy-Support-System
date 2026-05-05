@@ -12,17 +12,42 @@ if BASE_DIR not in sys.path:
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import JSONResponse
 
-# Optional TensorFlow import for real inference
+# Optional imports for real inference
+IMPORT_ERRORS: Dict[str, str] = {}
+TF_AVAILABLE = False
+NUMPY_AVAILABLE = False
+PIL_AVAILABLE = False
+CV2_AVAILABLE = False
+
 try:
     import tensorflow as tf
     from tensorflow.keras.applications.densenet import preprocess_input
-    import numpy as np
-    from PIL import Image
-    import cv2
-
     TF_AVAILABLE = True
-except Exception:
-    TF_AVAILABLE = False
+except Exception as e:
+    tf = None
+    preprocess_input = None
+    IMPORT_ERRORS["tensorflow"] = repr(e)
+
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except Exception as e:
+    np = None
+    IMPORT_ERRORS["numpy"] = repr(e)
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except Exception as e:
+    Image = None
+    IMPORT_ERRORS["pillow"] = repr(e)
+
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except Exception as e:
+    cv2 = None
+    IMPORT_ERRORS["opencv"] = repr(e)
 
 app = FastAPI()
 
@@ -35,6 +60,21 @@ LABELS_BY_SOURCE: Dict[str, list] = {
     "upload": DEFAULT_LABELS.copy(),
     "camera": DEFAULT_LABELS.copy(),
 }
+
+
+def _dependency_status():
+    return {
+        "tensorflow": TF_AVAILABLE,
+        "numpy": NUMPY_AVAILABLE,
+        "pillow": PIL_AVAILABLE,
+        "opencv": CV2_AVAILABLE,
+    }
+
+
+def _inference_dependencies_ready() -> bool:
+    # Upload inference requires TensorFlow + NumPy + Pillow.
+    # OpenCV is optional (face crop falls back to center crop).
+    return TF_AVAILABLE and NUMPY_AVAILABLE and PIL_AVAILABLE
 
 def _labels_from_map(data):
     classes = data.get("classes") or data.get("labels")
@@ -78,7 +118,7 @@ def _load_labels_for_source(source: str, model_path: str):
 def load_model_if_available(source: str) -> bool:
     if source not in MODEL_PATHS:
         return False
-    if not TF_AVAILABLE:
+    if not _inference_dependencies_ready():
         return False
     if MODELS[source] is not None:
         return True
@@ -125,7 +165,7 @@ def infer_camera_with_main(image_bytes: bytes):
 
 def infer_image(image_bytes: bytes, model, labels):
     """Return (pred_label, probs_dict) using the given model, or None if unavailable."""
-    if not TF_AVAILABLE or model is None:
+    if not _inference_dependencies_ready() or model is None:
         return None
 
     # Load image
@@ -203,16 +243,20 @@ async def _predict_with_source(file: UploadFile, source: str):
 
     pred = None
     probs_dict = None
+    failure_reason = None
     labels = LABELS_BY_SOURCE.get(source, DEFAULT_LABELS)
     if source == "camera":
         res = infer_camera_with_main(contents)
         if res is not None:
             pred, probs_dict = res
+        else:
+            failure_reason = "camera_inference_failed"
     else:
         # upload: try dedicated upload model first
         model_loaded = load_model_if_available(source)
         if not model_loaded:
             print(f"[INFO] Upload model not loaded for '{source}', falling back to camera pipeline for uploaded image.")
+            failure_reason = "upload_model_not_loaded"
 
         model = MODELS.get(source)
         if model is not None:
@@ -223,12 +267,16 @@ async def _predict_with_source(file: UploadFile, source: str):
             except Exception as e:
                 print(f"[ERROR] Exception during inference: {e}")
                 pred, probs_dict = None, None
+                failure_reason = "upload_inference_exception"
 
         # Fallback: run uploaded image through camera model (same emotion classes)
         if pred is None and probs_dict is None:
             res = infer_camera_with_main(contents)
             if res is not None:
                 pred, probs_dict = res
+                failure_reason = None
+            elif failure_reason is None:
+                failure_reason = "camera_fallback_failed"
 
     allow_uncertain = os.environ.get("EMOTION_ALLOW_UNCERTAIN", "1") == "1"
     if pred and probs_dict:
@@ -245,27 +293,43 @@ async def _predict_with_source(file: UploadFile, source: str):
         "emotion": "uncertain" if allow_uncertain else "Natural",
         "confidence": 0.0,
         "allPredictions": all_preds,
-        "details": {"note": "Stub ML service: real model not loaded or inference failed."},
+        "details": {
+            "note": "Real inference unavailable (dependencies/model missing or inference failure).",
+            "source": source,
+            "reason": failure_reason or "unknown",
+            "dependencyStatus": _dependency_status(),
+            "importErrors": IMPORT_ERRORS,
+            "modelPath": MODEL_PATHS.get(source),
+        },
     }
 
 
 @app.get("/health")
 async def health():
+    if MODELS["upload"] is None and os.path.exists(MODEL_PATHS["upload"]):
+        load_model_if_available("upload")
+
     upload_loaded = MODELS["upload"] is not None
+    camera_model_path = os.path.join(BASE_DIR, "models", "model.h5")
+    camera_pipeline_ready = TF_AVAILABLE and NUMPY_AVAILABLE and CV2_AVAILABLE and os.path.exists(camera_model_path)
+    healthy = upload_loaded or camera_pipeline_ready
+
     return {
-        "healthy": True,
+        "healthy": healthy,
         "modelLoaded": upload_loaded,
         "modelsLoaded": {
             "upload": upload_loaded,
-            "camera": False,
+            "camera": camera_pipeline_ready,
         },
         "modelPaths": {
             "upload": MODEL_PATHS["upload"],
-            "camera": os.path.join(BASE_DIR, "models", "model.h5"),
+            "camera": camera_model_path,
         },
         "cameraInference": "main.py:model.h5",
         "tfAvailable": TF_AVAILABLE,
-        "port": 5000,
+        "dependencyStatus": _dependency_status(),
+        "importErrors": IMPORT_ERRORS,
+        "port": 7004,
     }
 
 

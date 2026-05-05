@@ -16,7 +16,7 @@ Write-Host "  Repo root: $RepoRoot"
 Write-Host "  Services:  $Services"
 Write-Host ""
 Write-Host "  Starting:"
-Write-Host "    1. gateway                     (Express, port 7777)"
+Write-Host "    1. gateway                     (Express, port 7000)"
 Write-Host "    2. autism-profile-builder      (Flask, port 7001)"
 Write-Host "    3. cognitive-activity-recommender (FastAPI, port 7002)"
 Write-Host "    4. emotional-activity-recommender (Node, port 7003)"
@@ -59,11 +59,11 @@ function Setup-NodeDeps {
     Pop-Location
 }
 
-# 1. Gateway (Express, port 7777)
+# 1. Gateway (Express, port 7000)
 if (Test-Path $Gateway) {
     Setup-NodeDeps $Gateway
     Write-Host "Starting gateway..."
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$Gateway`" && set PORT=7777 && npm start"
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$Gateway`" && set PORT=7000 && npm start"
     Start-Sleep -Seconds 2
 }
 
@@ -167,7 +167,7 @@ if (Test-Path $therapyCollabAi) {
 Write-Host ""
 Write-Host "================================================"
 Write-Host "  All services are starting in separate windows."
-Write-Host "  gateway:                   http://localhost:7777"
+Write-Host "  gateway:                   http://localhost:7000"
 Write-Host "  autism-profile-builder:    http://localhost:7001"
 Write-Host "  cognitive-activity-recommender: http://localhost:7002"
 Write-Host "  emotional-activity-recommender:  http://localhost:7003"

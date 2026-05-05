@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import therapyApi from '../../utils/therapyApi';
-import { BASE } from '../../routes';
 import Sidebar from '../../components/Sidebar';
 import NotificationBell from '../../components/NotificationBell';
+import therapyApi from '../../utils/therapyApi';
+import { BASE } from '../../routes';
 import { FiUsers, FiAlertCircle, FiClock, FiChevronRight, FiTrendingUp, FiActivity, FiZap } from 'react-icons/fi';
 
 const DoctorDashboard = () => {
@@ -28,19 +28,19 @@ const DoctorDashboard = () => {
     if (loading) return (
         <div className="flex min-h-screen bg-app"><Sidebar />
             <div className="flex-1 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
+                <div className="w-10 h-10 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
             </div>
         </div>
     );
 
     const statCards = [
-        { label: 'Active Patients', value: stats?.totalPatients || 0, icon: FiUsers, color: 'emerald', sub: '+12% this month' },
+        { label: 'Active Patients', value: stats?.totalPatients || 0, icon: FiUsers, color: 'violet', sub: '+12% this month' },
         { label: 'Pending Review', value: stats?.pendingReviews || 0, icon: FiClock, color: 'teal', sub: 'Awaiting action' },
         { label: 'Critical Alerts', value: stats?.highUrgency || 0, icon: FiAlertCircle, color: 'rose', sub: 'Immediate focus' },
     ];
 
     const colorMap = {
-        emerald: { grad: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20', text: 'text-emerald-500' },
+        violet: { grad: 'from-violet-500/20 to-violet-500/5 border-violet-500/20', text: 'text-violet-400' },
         teal: { grad: 'from-teal-500/20   to-teal-500/5   border-teal-500/20', text: 'text-teal-400' },
         rose: { grad: 'from-rose-500/20   to-rose-500/5   border-rose-500/20', text: 'text-rose-400' },
     };
@@ -60,7 +60,7 @@ const DoctorDashboard = () => {
                     <div className="flex justify-between items-start mb-10">
                         <div>
                             <p className="text-xs font-bold text-teal-400 uppercase tracking-[0.3em] mb-2">Clinical Workspace</p>
-                            <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+                            <h1 className="text-4xl font-black text-slate-100 tracking-tight">
                                 <span className="gradient-text">Doctor</span> Dashboard
                             </h1>
                             <div className="flex items-center gap-2 mt-2">
@@ -70,9 +70,9 @@ const DoctorDashboard = () => {
                         </div>
                         <div className="flex items-center gap-4">
                             <NotificationBell />
-                            <div className="h-8 w-px bg-slate-200" />
+                            <div className="h-8 w-px bg-white/[0.06]" />
                             <div className="text-right">
-                                <p className="text-xs font-bold text-slate-600">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                                <p className="text-xs font-bold text-slate-300">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
                                 <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
                             </div>
                         </div>
@@ -88,7 +88,7 @@ const DoctorDashboard = () => {
                                     </div>
                                     <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{sub}</span>
                                 </div>
-                                <p className="text-3xl font-black text-slate-900 mb-1">{value}</p>
+                                <p className="text-3xl font-black text-slate-100 mb-1">{value}</p>
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</p>
                             </div>
                         ))}
@@ -99,9 +99,9 @@ const DoctorDashboard = () => {
                         {/* Patients List */}
                         <div className="lg:col-span-2">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-black text-slate-800">Active Assignments</h2>
-                                <Link to={`${BASE}/doctor/patients`} className="text-xs font-bold text-emerald-500 hover:text-emerald-600 uppercase tracking-widest transition-colors">
-                                    View All →
+                                <h2 className="text-lg font-black text-slate-200">Active Assignments</h2>
+                                <Link to={`${BASE}/doctor/patients`} className="text-xs font-bold text-violet-400 hover:text-violet-300 uppercase tracking-widest transition-colors">
+                                    View All â†’
                                 </Link>
                             </div>
 
@@ -114,13 +114,13 @@ const DoctorDashboard = () => {
                                     </div>
                                 ) : (
                                     patients.slice(0, 5).map(p => (
-                                        <Link to={`${BASE}/doctor/patients/${p._id}`} key={p._id} className="card border-subtle p-4 flex items-center justify-between hover:border-emerald-500/20 hover:bg-slate-50 transition-all group">
+                                        <Link to={`${BASE}/doctor/patients/${p._id}`} key={p._id} className="card border-subtle p-4 flex items-center justify-between hover:border-violet-500/20 hover:bg-white/[0.02] transition-all group">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center text-white font-black group-hover:scale-105 transition-transform shadow-md shadow-emerald-500/20">
+                                                <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center text-white font-black group-hover:scale-105 transition-transform shadow-md shadow-violet-500/20">
                                                     {p.name[0]}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-slate-800 text-sm group-hover:text-emerald-600 transition-colors">{p.name}</p>
+                                                    <p className="font-bold text-slate-200 text-sm group-hover:text-violet-300 transition-colors">{p.name}</p>
                                                     <p className="text-xs text-slate-600">Parent: {p.parent?.name || 'Unknown'}</p>
                                                 </div>
                                             </div>
@@ -128,7 +128,7 @@ const DoctorDashboard = () => {
                                                 <span className={getSeverityBadge(p.diagnosisDetails?.severity)}>
                                                     {p.diagnosisDetails?.severity || 'stable'}
                                                 </span>
-                                                <FiChevronRight className="text-slate-700 group-hover:text-emerald-500 transition-colors" size={16} />
+                                                <FiChevronRight className="text-slate-700 group-hover:text-violet-400 transition-colors" size={16} />
                                             </div>
                                         </Link>
                                     ))
@@ -138,11 +138,11 @@ const DoctorDashboard = () => {
 
                         {/* Right Panel */}
                         <div className="space-y-4">
-                            <h2 className="text-lg font-black text-slate-800">Quick Insights</h2>
+                            <h2 className="text-lg font-black text-slate-200">Quick Insights</h2>
 
                             {/* Growth Card */}
                             <div className="card border-subtle overflow-hidden">
-                                <div className="gradient-primary p-5 relative overflow-hidden">
+                                <div className="gradient-surface gradient-primary p-5 relative overflow-hidden">
                                     <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
                                     <FiTrendingUp className="text-white/70 mb-3 relative z-10" size={20} />
                                     <h3 className="font-black text-white mb-1 relative z-10">Practice Growth</h3>
@@ -157,14 +157,14 @@ const DoctorDashboard = () => {
 
                             {/* Alerts */}
                             <div className="card border-subtle p-4">
-                                <h3 className="text-sm font-bold text-slate-600 mb-3 flex items-center gap-2">
+                                <h3 className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
                                     <FiAlertCircle className="text-rose-400" size={15} /> System Alerts
                                 </h3>
                                 {stats?.highUrgency > 0 ? (
                                     <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4">
                                         <p className="text-[10px] font-black text-rose-400 uppercase tracking-wider mb-1">HIGH URGENCY</p>
                                         <p className="text-xs text-slate-400">
-                                            New analysis for <span className="text-slate-800 font-bold">{patients[0]?.name || 'Patient'}</span> shows behavioral spikes.
+                                            New analysis for <span className="text-slate-200 font-bold">{patients[0]?.name || 'Patient'}</span> shows behavioral spikes.
                                         </p>
                                     </div>
                                 ) : (
@@ -183,3 +183,4 @@ const DoctorDashboard = () => {
 };
 
 export default DoctorDashboard;
+

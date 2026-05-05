@@ -1,13 +1,44 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const axios = require('axios');
 const emotionService = require('./emotionService');
 const ollamaService = require('./ollamaService');
 const app = express();
 const port = process.env.PORT ? Number(process.env.PORT) : 7003;
+const OLLAMA_ROUTE_TIMEOUT_MS = Math.max(
+  5000,
+  Number(process.env.OLLAMA_ROUTE_TIMEOUT_MS || 70000)
+);
+const PROFILE_BUILDER_BASE_URL =
+  process.env.PROFILE_BUILDER_BASE_URL ||
+  process.env.AUTISM_PROFILE_API_URL ||
+  'http://127.0.0.1:7001';
+const PROFILE_FETCH_TIMEOUT_MS = Math.max(
+  1000,
+  Number(process.env.PROFILE_FETCH_TIMEOUT_MS || 8000)
+);
 
 app.use(cors());
 app.use(express.json());
+
+function withTimeout(promise, timeoutMs, timeoutMessage) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(timeoutMessage || `Operation timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    Promise.resolve(promise)
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
 
 // Configure multer for file uploads
 const upload = multer({
@@ -394,6 +425,30 @@ const activities = [
       neutral: 0.7
     },
     interestTags: ["artistic", "hands-on", "visual", "creative"]
+  },
+  {
+    id: 16,
+    title: "Gratitude Collage",
+    category: "emotional",
+    description: "Create a collage of people, places, and moments that feel comforting and positive, then discuss why they matter.",
+    duration: "15-30 minutes",
+    difficulty: "easy",
+    materials: ["Old magazines or printed pictures", "Glue", "Scissors", "Poster paper"],
+    benefits: ["Positive emotion building", "Emotional expression", "Conversation skills"],
+    ageRange: "5-16 years",
+    icon: "ðŸ§©",
+    costLevel: "low",
+    socialRequirement: "low",
+    emotionMapping: {
+      happy: 0.8,
+      sad: 0.8,
+      anxious: 0.7,
+      calm: 0.9,
+      excited: 0.7,
+      frustrated: 0.6,
+      neutral: 0.8
+    },
+    interestTags: ["artistic", "creative", "visual", "hands-on"]
   }
 ];
 
@@ -628,6 +683,10 @@ function normalizeTokens(values) {
 
 function mapBudgetLevel(financialStatus) {
   const v = String(financialStatus || '').trim().toLowerCase();
+  if (['financially struggling', 'struggling', 'very low', 'low income', 'budget limited'].includes(v)) return 1;
+  if (['financially stable', 'stable', 'average'].includes(v)) return 2;
+  if (['financially comfortable', 'comfortable', 'upper medium'].includes(v)) return 2;
+  if (['financially well-off', 'well-off', 'wealthy', 'high income'].includes(v)) return 3;
   if (v === 'free') return 0;
   if (v === 'low') return 1;
   if (v === 'medium' || v === 'moderate') return 2;
@@ -1318,6 +1377,202 @@ function sanitizeStringArray(values) {
   return [...new Set(values.map((v) => String(v || '').trim()).filter(Boolean))];
 }
 
+const A_SCORE_NEEDS_MAP = {
+  A1: 'communication',
+  A2: 'eye contact',
+  A3: 'pretend play',
+  A4: 'emotion understanding',
+  A5: 'routine flexibility',
+  A6: 'interest regulation',
+  A7: 'sensory processing',
+  A8: 'social interaction',
+  A9: 'physical contact tolerance',
+  A10: 'safety awareness'
+};
+
+function firstNonEmptyString(...values) {
+  for (const value of values) {
+    const text = String(value || '').trim();
+    if (text) return text;
+  }
+  return '';
+}
+
+function normalizeSeverityValue(value, fallback = 3) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(1, Math.min(5, n));
+}
+
+function normalizeAutismTypeLabel(value, severityFallback = 3) {
+  const text = String(value || '').trim();
+  if (text) return text;
+  const level = normalizeSeverityValue(severityFallback, 3);
+  return `ASD Level ${level}`;
+}
+
+function normalizeInterestsInput(primary, fallback = []) {
+  const primaryList = normalizeSelectedInterests(primary);
+  if (primaryList.length > 0) return primaryList;
+  return normalizeSelectedInterests(fallback);
+}
+
+function deriveNeedsFromAssessment(assessment) {
+  const scores = (assessment && typeof assessment.a_scores === 'object')
+    ? assessment.a_scores
+    : {};
+  const derived = [];
+  for (const [key, need] of Object.entries(A_SCORE_NEEDS_MAP)) {
+    const raw = Number(scores[key]);
+    if (Number.isFinite(raw) && raw >= 1) derived.push(need);
+  }
+  return sanitizeStringArray(derived);
+}
+
+function deriveTypeFromAssessment(assessment, fallbackType = 'ASD-2') {
+  const label = String(assessment?.severity_label || '').trim();
+  const explicitLevel = label.match(/level\s*([1-5])/i);
+  if (explicitLevel && explicitLevel[1]) return `ASD Level ${explicitLevel[1]}`;
+
+  const severity = normalizeSeverityValue(assessment?.severity_level, NaN);
+  if (Number.isFinite(severity)) return `ASD Level ${severity}`;
+
+  return normalizeAutismTypeLabel(fallbackType, 3);
+}
+
+function ageFromDob(dob) {
+  if (!dob) return null;
+  const ts = new Date(dob).getTime();
+  if (!Number.isFinite(ts) || ts <= 0) return null;
+  const years = Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24 * 365.25));
+  if (!Number.isFinite(years) || years < 0) return null;
+  return years;
+}
+
+async function fetchLatestAutismProfileSnapshot(req, child) {
+  const authHeader = String(req.headers?.authorization || '').trim();
+  if (!authHeader) return null;
+
+  const guardianId = firstNonEmptyString(
+    req.body?.guardianId,
+    req.body?.autismProfile?.guardianId,
+    req.body?.autismProfileDetails?.guardianId,
+    req.body?.profileContext?.guardianId,
+    req.headers?.['x-guardian-id']
+  );
+  if (!guardianId) return null;
+
+  let patientId = firstNonEmptyString(
+    req.body?.patientId,
+    req.body?.autismProfile?.patientId,
+    req.body?.autismProfileDetails?.patientId,
+    req.body?.profileContext?.patientId,
+    child?.profilePatientId,
+    child?.patientId
+  );
+
+  const commonAxiosConfig = {
+    timeout: PROFILE_FETCH_TIMEOUT_MS,
+    headers: { Authorization: authHeader }
+  };
+
+  if (!patientId) {
+    try {
+      const patientsResp = await axios.get(
+        `${PROFILE_BUILDER_BASE_URL}/api/patients/${encodeURIComponent(guardianId)}`,
+        commonAxiosConfig
+      );
+      const patients = Array.isArray(patientsResp.data) ? patientsResp.data : [];
+      const childName = String(child?.name || '').trim().toLowerCase();
+      const childAge = Number(child?.age);
+
+      const byName = patients.filter((p) => String(p?.name || '').trim().toLowerCase() === childName);
+      if (byName.length === 1) {
+        patientId = String(byName[0].patient_id || '').trim();
+      } else if (byName.length > 1 && Number.isFinite(childAge)) {
+        const best = byName.find((p) => ageFromDob(p?.dob) === childAge);
+        if (best?.patient_id) patientId = String(best.patient_id).trim();
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  if (!patientId) return null;
+
+  try {
+    const assessmentsResp = await axios.get(
+      `${PROFILE_BUILDER_BASE_URL}/api/assessments/${encodeURIComponent(guardianId)}/${encodeURIComponent(patientId)}`,
+      commonAxiosConfig
+    );
+    const assessments = Array.isArray(assessmentsResp.data) ? assessmentsResp.data : [];
+    if (!assessments.length) return null;
+    return {
+      patientId,
+      guardianId,
+      assessment: assessments[0]
+    };
+  } catch (_) {
+    return null;
+  }
+}
+
+async function buildRecommendationContext(req, child) {
+  const requestAutismProfile =
+    (req.body?.autismProfile && typeof req.body.autismProfile === 'object'
+      ? req.body.autismProfile
+      : null) ||
+    (req.body?.autismProfileDetails && typeof req.body.autismProfileDetails === 'object'
+      ? req.body.autismProfileDetails
+      : null) ||
+    {};
+  const childAutismProfile = child?.autismDetails && typeof child.autismDetails === 'object'
+    ? child.autismDetails
+    : {};
+  const snapshot = await fetchLatestAutismProfileSnapshot(req, child);
+  const assessment = snapshot?.assessment || null;
+
+  const baseSeverity = normalizeSeverityValue(
+    requestAutismProfile?.severity ?? childAutismProfile?.severity,
+    3
+  );
+  const assessmentSeverity = normalizeSeverityValue(assessment?.severity_level, baseSeverity);
+  const severity = Number.isFinite(Number(assessment?.severity_level)) ? assessmentSeverity : baseSeverity;
+
+  const baseType = normalizeAutismTypeLabel(
+    requestAutismProfile?.type ?? childAutismProfile?.type,
+    severity
+  );
+  const type = assessment ? deriveTypeFromAssessment(assessment, baseType) : baseType;
+
+  const requestNeeds = sanitizeStringArray(requestAutismProfile?.specificNeeds);
+  const childNeeds = sanitizeStringArray(childAutismProfile?.specificNeeds);
+  const assessmentNeeds = deriveNeedsFromAssessment(assessment);
+  const specificNeeds = sanitizeStringArray([
+    ...assessmentNeeds,
+    ...requestNeeds,
+    ...childNeeds
+  ]);
+
+  return {
+    childName: child?.name,
+    childAge: child?.age,
+    emotion: firstNonEmptyString(req.body?.emotion, child?.currentEmotion, 'Natural'),
+    interests: normalizeInterestsInput(req.body?.interests, child?.interests || []),
+    financialStatus: firstNonEmptyString(req.body?.financialStatus, child?.financialStatus, 'medium'),
+    socialStatus: firstNonEmptyString(req.body?.socialStatus, child?.socialStatus, 'alone'),
+    autismProfile: {
+      severity,
+      type,
+      specificNeeds
+    },
+    autismProfileSource: assessment ? 'autism-profile-component' : 'request-or-child-profile',
+    linkedAutismProfile: snapshot
+      ? { guardianId: snapshot.guardianId, patientId: snapshot.patientId }
+      : null
+  };
+}
+
 // API Routes
 app.get('/api/activities', (req, res) => {
   const { category } = req.query;
@@ -1360,6 +1615,7 @@ app.post('/api/children', (req, res) => {
   const preferences = interests.length > 0 ? interests.slice(0, 8) : ['visual', 'structured'];
   const socialStatus = normalizeChildSocialStatus(req.body?.socialStatus);
   const financialStatus = normalizeChildFinancialStatus(req.body?.financialStatus);
+  const profilePatientId = firstNonEmptyString(req.body?.profilePatientId, req.body?.patientId);
 
   const nextId = childProfiles.reduce((max, child) => Math.max(max, Number(child.id) || 0), 0) + 1;
   const newChild = {
@@ -1377,6 +1633,7 @@ app.post('/api/children', (req, res) => {
       type: autismType,
       specificNeeds
     },
+    profilePatientId: profilePatientId || undefined,
     interests,
     currentEmotion: 'neutral',
     emotionHistory: []
@@ -1417,6 +1674,9 @@ app.put('/api/children/:id', (req, res) => {
   if (req.body.financialStatus) child.financialStatus = req.body.financialStatus;
   if (req.body.autismDetails) child.autismDetails = { ...child.autismDetails, ...req.body.autismDetails };
   if (req.body.interests) child.interests = req.body.interests;
+  if (req.body.profilePatientId || req.body.patientId) {
+    child.profilePatientId = firstNonEmptyString(req.body.profilePatientId, req.body.patientId) || child.profilePatientId;
+  }
   
   res.json(child);
 });
@@ -1525,7 +1785,7 @@ app.post('/api/emotion/:childId/recognize', upload.single('image'), async (req, 
     console.error('Error recognizing emotion:', error);
     res.status(500).json({
       error: error.message || 'Failed to recognize emotion',
-      hint: 'Make sure the ML service is running on port 5000'
+      hint: 'Make sure the ML service is running on port 7004'
     });
   }
 });
@@ -1533,15 +1793,18 @@ app.post('/api/emotion/:childId/recognize', upload.single('image'), async (req, 
 // NEW: Check ML service health
 app.get('/api/ml-service/health', async (req, res) => {
   try {
-    const isHealthy = await emotionService.checkMLServiceHealth();
+    const details = await emotionService.getHealth();
+    const isHealthy = !!details?.healthy;
     res.json({
       healthy: isHealthy,
-      serviceUrl: process.env.ML_SERVICE_URL || 'http://localhost:5000'
+      serviceUrl: process.env.ML_SERVICE_URL || 'http://127.0.0.1:7004',
+      details
     });
   } catch (error) {
     res.json({
       healthy: false,
-      error: error.message
+      error: error.message,
+      serviceUrl: process.env.ML_SERVICE_URL || 'http://127.0.0.1:7004'
     });
   }
 });
@@ -1549,27 +1812,30 @@ app.get('/api/ml-service/health', async (req, res) => {
 // Compatibility endpoint: frontend expects POST /api/predict-emotion
 // Accepts multipart form-data with field 'image' and forwards to ML service
 app.post('/api/predict-emotion', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No image file provided' });
+  }
+
+  const filename = req.file.originalname || 'upload.jpg';
+  const source = filename.toLowerCase() === 'camera.jpg' ? 'camera' : 'upload';
+
   // Fast-fail if ML service appears down to avoid generic network errors
   try {
-    const healthy = await emotionService.checkMLServiceHealth();
+    const healthy = await emotionService.checkMLServiceHealth(source);
     if (!healthy) {
       return res.status(503).json({
         success: false,
         error: 'ML service unavailable',
-        hint: 'Start the ML service on port 5000 using ml_service/start_service_with_env.bat and ensure BEST_MODEL_PATH.txt points to a valid model.'
+        hint: source === 'camera'
+          ? 'Camera emotion model is not ready. Start the ML service on port 7004 and verify the camera model file exists.'
+          : 'Upload emotion model is not ready yet. Wait for ML startup to finish or restart backend/services/emotional-activity-recommender-ml/start_service_with_env.bat.'
       });
     }
   } catch (e) {
     // Continue to normal flow; detailed errors handled below
   }
 
-  if (!req.file) {
-    return res.status(400).json({ success: false, error: 'No image file provided' });
-  }
-
   try {
-    const filename = req.file.originalname || 'upload.jpg';
-    const source = filename.toLowerCase() === 'camera.jpg' ? 'camera' : 'upload';
     const prediction = await emotionService.predictEmotionFromImage(req.file.buffer, filename, source);
     // Normalize to internal labels for UI; show Uncertain only when flagged
     const isUncertain = String(prediction.emotion || '').toLowerCase() === 'uncertain';
@@ -1714,39 +1980,37 @@ app.post('/api/recommendations/:childId', async (req, res) => {
     return res.status(404).json({ error: 'Child not found' });
   }
   
-  // Extract factors from request body or use child profile defaults
-  const emotion = req.body.emotion || child.currentEmotion || 'Natural';
-  const interests = Array.isArray(req.body.interests) ? req.body.interests : (child.interests || []);
-  const financialStatus = req.body.financialStatus || child.financialStatus || 'medium';
-  const socialStatus = req.body.socialStatus || child.socialStatus || 'alone';
-  const autismSeverityRaw = req.body.autismProfile?.severity ?? child.autismDetails?.severity ?? 3;
-  const autismSeverity = Number.isFinite(Number(autismSeverityRaw)) ? Number(autismSeverityRaw) : 3;
-  const autismType = req.body.autismProfile?.type || child.autismDetails?.type || 'ASD-2';
-  const autismSpecificNeeds = Array.isArray(req.body.autismProfile?.specificNeeds)
-    ? req.body.autismProfile.specificNeeds
-    : (Array.isArray(child.autismDetails?.specificNeeds) ? child.autismDetails.specificNeeds : []);
-
-  const recommendationContext = {
-    childName: child.name,
-    childAge: child.age,
-    emotion,
-    interests,
-    financialStatus,
-    socialStatus,
-    autismProfile: {
-      severity: autismSeverity,
-      type: autismType,
-      specificNeeds: autismSpecificNeeds
-    }
+  const recommendationContext = await buildRecommendationContext(req, child);
+  child.interests = normalizeSelectedInterests(recommendationContext.interests);
+  child.financialStatus = recommendationContext.financialStatus;
+  child.socialStatus = recommendationContext.socialStatus;
+  child.autismDetails = {
+    ...(child.autismDetails || {}),
+    ...(recommendationContext.autismProfile || {})
   };
 
   const topKRaw = req.body.top_k ?? req.body.topK ?? 6;
   const topK = Math.min(Math.max(Number(topKRaw) || 6, 1), 10);
+  const forceFallback =
+    req.body?.forceFallback === true ||
+    req.body?.disableOllama === true ||
+    req.query?.forceFallback === '1';
+
+  if (forceFallback) {
+    const fallbackRecommendations = filterNonSensoryActivities(
+      getFormAwareFallbackRecommendations(recommendationContext, topK)
+    );
+    return res.json(fallbackRecommendations);
+  }
 
   // Generate with Ollama first, then quality-gate and fall back to deterministic form-aware scoring when needed.
   try {
     const generated = filterNonSensoryActivities(
-      await ollamaService.generateRecommendations(recommendationContext, topK)
+      await withTimeout(
+        ollamaService.generateRecommendations(recommendationContext, topK),
+        OLLAMA_ROUTE_TIMEOUT_MS,
+        `Ollama route budget exceeded (${OLLAMA_ROUTE_TIMEOUT_MS}ms).`
+      )
     );
     if (shouldUseFormFallback(generated, recommendationContext, topK)) {
       const fallbackRecommendations = filterNonSensoryActivities(

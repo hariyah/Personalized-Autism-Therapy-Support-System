@@ -13,7 +13,7 @@ export default function ProfileDetail() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ChildProfile | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null);
-  const [recentOutcomes, setRecentOutcomes] = useState<ActivityOutcome[]>([]);
+  const [, setRecentOutcomes] = useState<ActivityOutcome[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -25,6 +25,10 @@ from transformers import (
     AutoTokenizer,
 )
 from pydantic import BaseModel
+from treatment_recommender import (
+    load_treatment_model,
+    predict_treatment_suggestions,
+)
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _MODELS_DIR = os.path.join(_BASE_DIR, "models")
@@ -36,6 +40,7 @@ MODEL_ISSUE_DIR = os.getenv("MODEL_ISSUE_DIR", os.path.join(_MODELS_DIR, "issue_
 MODEL_URGENCY_DIR = os.getenv("MODEL_URGENCY_DIR", os.path.join(_MODELS_DIR, "urgency_classifier", "checkpoints", "checkpoint-876"))
 MODEL_SUMM_DIR = os.getenv("MODEL_SUMM_DIR", os.path.join(_MODELS_DIR, "summarization_t5", "checkpoints", "checkpoint-875"))
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "openai/whisper-small")
+MODEL_TREATMENT_DIR = os.getenv("MODEL_TREATMENT_DIR", os.path.join(_MODELS_DIR, "treatment_recommender"))
 
 # Emotion Recognition (from PATSS) - minimal import to avoid tensorflow.python issues
 TF_AVAILABLE = False
@@ -67,6 +72,8 @@ issue_clf = None
 urgency_clf = None
 summarizer = None
 zsc = None
+treatment_model = None
+treatment_metadata = None
 
 ISSUE_LABELS = []
 URGENCY_LABELS = ["low", "medium", "high"]
@@ -77,6 +84,18 @@ def top_k(scores: List[Dict[str, Any]], k=3):
 
 def clean_text(text: str) -> str:
     return " ".join(str(text).strip().split())
+
+def format_label(label: str) -> str:
+    return " ".join(part.capitalize() for part in str(label or "unknown").split("_") if part) or "Unknown"
+
+def build_result_summary(issue_label: str, urgency_label: str, summary: str) -> str:
+    issue = format_label(issue_label)
+    urgency = format_label(urgency_label).lower()
+    clean_summary = clean_text(summary or "")
+
+    if not clean_summary:
+        return f"{issue} was identified with {urgency} urgency."
+    return f"{issue} was identified with {urgency} urgency. {clean_summary}"
 
 # Mongoose Analysis schema expects urgencyLabel in ['low', 'medium', 'high']
 VALID_URGENCY = frozenset({"low", "medium", "high"})
@@ -131,6 +150,7 @@ def load_audio_for_librosa(path: str, target_sr: int = 16000):
 @app.on_event("startup")
 def load_models():
     global asr, issue_clf, urgency_clf, summarizer, zsc, ISSUE_LABELS
+    global treatment_model, treatment_metadata
     try:
         print("Loading ASR model...")
         asr = pipeline("automatic-speech-recognition", model=WHISPER_MODEL, device=device)
@@ -253,6 +273,17 @@ def load_models():
         print(f"Error loading summarizer: {e}")
         summarizer = None
 
+    try:
+        treatment_model, treatment_metadata = load_treatment_model(MODEL_TREATMENT_DIR)
+        if treatment_model is not None:
+            print(f"[OK] Treatment recommender loaded from {MODEL_TREATMENT_DIR}")
+        else:
+            print("Treatment recommender not found. Using rule fallback.")
+    except Exception as e:
+        print(f"Error loading treatment recommender: {e}")
+        treatment_model = None
+        treatment_metadata = None
+
     global emotion_model
     emotion_path_exists = os.path.isfile(MODEL_EMOTION_PATH)
     if TF_AVAILABLE and emotion_path_exists:
@@ -273,6 +304,7 @@ def load_models():
     print(f"  Issue classifier:    {'OK (local)' if issue_clf else ('OK (zero-shot)' if zsc else 'UNAVAILABLE')}")
     print(f"  Urgency classifier:  {'OK (local)' if urgency_clf else ('OK (zero-shot)' if zsc else 'UNAVAILABLE')}")
     print(f"  Summarizer:          {'OK' if summarizer else 'UNAVAILABLE'}")
+    print(f"  Treatment model:     {'OK' if treatment_model is not None else 'RULE FALLBACK'}")
     print(f"  Emotion model:       {'OK' if emotion_model else 'UNAVAILABLE'}")
     print("--- Ready ---\n")
 
@@ -342,6 +374,15 @@ async def analyze_voice(file: UploadFile = File(...)):
         except Exception as e:
             print(f"Summarization error: {e}")
 
+        result_summary = build_result_summary(issue_label, urgency_label, summary)
+        treatment_result = predict_treatment_suggestions(
+            treatment_model,
+            treatment_metadata,
+            transcript,
+            issue_label,
+            urgency_label,
+        )
+
         # Cleanup temporary files
         try:
             os.remove(audio_path)
@@ -356,6 +397,12 @@ async def analyze_voice(file: UploadFile = File(...)):
             "urgency_label": urgency_label,
             "urgency_top3": urgency_top3,
             "summary": summary or "No transcript available",
+            "result_summary": result_summary,
+            "treatment_suggestions": treatment_result["treatment_suggestions"],
+            "treatment_profile": treatment_result["treatment_profile"],
+            "treatment_model_used": treatment_result["treatment_model_used"],
+            "treatment_model_confidence": treatment_result["treatment_model_confidence"],
+            "treatment_training_mode": treatment_result["treatment_training_mode"],
         }
     except Exception as e:
         print(f"Analyze voice error: {e}")
@@ -413,6 +460,15 @@ async def analyze_text(request: TextRequest):
         except Exception as e:
             print(f"Summarization error: {e}")
 
+        result_summary = build_result_summary(issue_label, urgency_label, summary)
+        treatment_result = predict_treatment_suggestions(
+            treatment_model,
+            treatment_metadata,
+            transcript,
+            issue_label,
+            urgency_label,
+        )
+
         return {
             "transcript": transcript or "",
             "issue_label": issue_label,
@@ -420,6 +476,12 @@ async def analyze_text(request: TextRequest):
             "urgency_label": urgency_label,
             "urgency_top3": urgency_top3,
             "summary": summary or "No transcript available",
+            "result_summary": result_summary,
+            "treatment_suggestions": treatment_result["treatment_suggestions"],
+            "treatment_profile": treatment_result["treatment_profile"],
+            "treatment_model_used": treatment_result["treatment_model_used"],
+            "treatment_model_confidence": treatment_result["treatment_model_confidence"],
+            "treatment_training_mode": treatment_result["treatment_training_mode"],
         }
     except Exception as e:
         print(f"Analyze text error: {e}")

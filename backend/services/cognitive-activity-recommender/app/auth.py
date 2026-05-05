@@ -34,7 +34,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         if not user_id:
             raise credentials_exception
         email: str = payload.get("email", "")
-        return {"id": user_id, "email": email}
+        role: str = payload.get("role", "parent")
+        return {"id": user_id, "email": email, "role": role}
     except JWTError:
         raise credentials_exception
 

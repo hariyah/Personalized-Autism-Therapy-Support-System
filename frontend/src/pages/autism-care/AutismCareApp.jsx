@@ -13,7 +13,7 @@ import {
 import { FaPuzzlePiece, FaPaw } from 'react-icons/fa';
 import { GiDinosaurRex } from 'react-icons/gi';
 
-const API_BASE_URL = (import.meta.env?.VITE_EMOTIONAL_API_URL) || 'http://localhost:7777/emotional/api';
+const API_BASE_URL = (import.meta.env?.VITE_EMOTIONAL_API_URL) || 'http://localhost:7000/emotional/api';
 
 export default function AutismCareApp() {
   const [children, setChildren] = useState([]);
@@ -59,6 +59,12 @@ export default function AutismCareApp() {
       fetchRecommendations(selectedChild.id);
     }
   }, [selectedChild]);
+
+  useEffect(() => {
+    if (currentView === 'activities') {
+      fetchActivities();
+    }
+  }, [currentView]);
 
   useEffect(() => {
     setFormRecommendations([]);
@@ -290,8 +296,8 @@ export default function AutismCareApp() {
   };
 
   const interestOptions = [
-    'train', 'cartoon', 'music', 'dance', 'art', 'sports', 'puzzles', 'outdoors',
-    'reading', 'visual', 'structured', 'quiet', 'play-based', 'movement',
+    'cartoon', 'music', 'dance', 'sports', 'puzzles', 'outdoors',
+    'reading', 'visual', 'quiet', 'play-based', 'movement',
     'trains, cars, and vehicles', 'dinosaurs', 'weather and space', 'pets',
     'birdwatching or insects', 'marine life', 'drawing, painting, and art creation',
     'crafting', 'cultural traditions', 'books and stories'
@@ -300,13 +306,24 @@ export default function AutismCareApp() {
   const socialOptions = ['alone','with-parent','with-family','community'];
 
   const submitRecommendationRequest = async () => {
+    const isSnapshotForSelectedChild =
+      Number(latestDetectionSnapshot?.childId) === Number(selectedChild?.id);
+    const snapshotEmotion = isSnapshotForSelectedChild
+      ? String(latestDetectionSnapshot?.emotion || '').trim()
+      : '';
+    const payloadEmotion =
+      snapshotEmotion ||
+      String(predictedEmotion?.emotion || '').trim() ||
+      selectedChild?.currentEmotion ||
+      null;
+
     const payload = {
-      emotion: predictedEmotion?.emotion || selectedChild?.currentEmotion || null,
+      emotion: payloadEmotion,
       interests: formInputs.interests.map(interest => String(interest).toLowerCase()),
       financialStatus: formInputs.financialStatus,
       socialStatus: formInputs.socialStatus,
       autismProfile: { type: formInputs.autismType, severity: Number(formInputs.autismSeverity) },
-      topK: 5
+      topK: 4
     };
     if (!selectedChild) {
       alert('Please select a child profile first.');
@@ -327,7 +344,7 @@ export default function AutismCareApp() {
       if (nonSensoryRecommendations.length === 0) {
         throw new Error('Only sensory activities were returned. Please try again with different inputs.');
       }
-      setFormRecommendations(nonSensoryRecommendations);
+      setFormRecommendations(nonSensoryRecommendations.slice(0, 4));
       setLastRecommendationContext({
         childId: selectedChild.id,
         emotion: payload.emotion,
@@ -374,11 +391,11 @@ export default function AutismCareApp() {
             <span>Dashboard</span>
           </button>
           <button 
-            className={`nav-item ${currentView === 'activities' ? 'active' : ''}`}
-            onClick={() => setCurrentView('activities')}
+            className={`nav-item ${currentView === 'recommendation-form' ? 'active' : ''}`}
+            onClick={() => setCurrentView('recommendation-form')}
           >
-            <FiBook className="nav-icon" />
-            <span>Activity Library</span>
+            <FiSettings className="nav-icon" />
+            <span>Get Recommendations</span>
           </button>
           <button 
             className={`nav-item ${currentView === 'recommendations' ? 'active' : ''}`}
@@ -388,11 +405,11 @@ export default function AutismCareApp() {
             <span>Recommendations</span>
           </button>
           <button 
-            className={`nav-item ${currentView === 'recommendation-form' ? 'active' : ''}`}
-            onClick={() => setCurrentView('recommendation-form')}
+            className={`nav-item ${currentView === 'activities' ? 'active' : ''}`}
+            onClick={() => setCurrentView('activities')}
           >
-            <FiSettings className="nav-icon" />
-            <span>Get Recommendations</span>
+            <FiBook className="nav-icon" />
+            <span>Activity Library</span>
           </button>
         </nav>
         <div className="sidebar-footer">
@@ -453,6 +470,7 @@ export default function AutismCareApp() {
             submitRecommendationRequest={submitRecommendationRequest}
             formRecommendations={formRecommendations}
             predictedEmotion={predictedEmotion}
+            latestDetectionSnapshot={latestDetectionSnapshot}
             getCategoryColor={getCategoryColor}
             setSelectedActivity={setSelectedActivity}
             setCurrentView={setCurrentView}
@@ -461,7 +479,6 @@ export default function AutismCareApp() {
           <RecommendationsView
             selectedChild={selectedChild}
             recommendations={activeRecommendations}
-            activities={activities}
             getCategoryColor={getCategoryColor}
             onSelect={setSelectedActivity}
             predictedEmotion={predictedEmotion}
@@ -568,6 +585,109 @@ function DashboardView({
     upload: 'Image Upload',
     camera: 'Camera Detection',
     manual: 'Manual Update'
+  };
+
+  const normalizeEmotionKey = (value) => {
+    const token = String(value || '').trim().toLowerCase();
+    if (!token) return 'calm';
+    if (['natural', 'neutral', 'calm'].includes(token)) return 'calm';
+    if (['joy', 'happy', 'happiness', 'excited'].includes(token)) return 'joy';
+    if (['fear', 'fearful', 'anxious', 'anxiety'].includes(token)) return 'fear';
+    if (['anger', 'angry', 'frustrated'].includes(token)) return 'anger';
+    if (['sad', 'sadness', 'depressed'].includes(token)) return 'sadness';
+    if (['surprise', 'surprised'].includes(token)) return 'surprise';
+    return 'calm';
+  };
+
+  const biometricEmotionMeta = [
+    { key: 'surprise', label: 'Surprise', color: '#47b5df', chip: '#d8f2ff', chipText: '#0f6f8f', emoji: '😲' },
+    { key: 'fear', label: 'Fear', color: '#675fe0', chip: '#e8e5ff', chipText: '#4a3eb7', emoji: '😨' },
+    { key: 'anger', label: 'Anger', color: '#eb5f88', chip: '#ffe5ee', chipText: '#b83a62', emoji: '😠' },
+    { key: 'calm', label: 'Calm', color: '#3658ce', chip: '#e3e8ff', chipText: '#2542a8', emoji: '😌' },
+    { key: 'sadness', label: 'Sadness', color: '#4b84df', chip: '#deecff', chipText: '#2f63bf', emoji: '😢' },
+    { key: 'joy', label: 'Joy', color: '#26b79f', chip: '#d7f7ef', chipText: '#14826f', emoji: '😊' }
+  ];
+
+  const createEmptyDistribution = () =>
+    biometricEmotionMeta.reduce((acc, emotion) => {
+      acc[emotion.key] = 0;
+      return acc;
+    }, {});
+
+  const latestEmotionHistory = Array.isArray(selectedChild?.emotionHistory) ? selectedChild.emotionHistory : [];
+  const latestHistoryEntry =
+    latestEmotionHistory.length > 0 ? latestEmotionHistory[latestEmotionHistory.length - 1] : null;
+  const liveDistributionSource = latestDetectionSource === 'camera'
+    ? cameraPredictedEmotion?.allPredictions
+    : latestDetectionSource === 'upload'
+    ? predictedEmotion?.allPredictions
+    : null;
+  const fallbackDistributionSource =
+    latestHistoryEntry?.emotions && typeof latestHistoryEntry.emotions === 'object'
+      ? latestHistoryEntry.emotions
+      : null;
+  const rawDistributionSource =
+    liveDistributionSource && Object.keys(liveDistributionSource).length > 0
+      ? liveDistributionSource
+      : fallbackDistributionSource && Object.keys(fallbackDistributionSource).length > 0
+      ? fallbackDistributionSource
+      : null;
+
+  const biometricTotals = createEmptyDistribution();
+
+  if (rawDistributionSource) {
+    Object.entries(rawDistributionSource).forEach(([emotion, score]) => {
+      const key = normalizeEmotionKey(emotion);
+      let numeric = Number(score);
+      if (!Number.isFinite(numeric) || numeric <= 0) return;
+      if (numeric > 1) numeric = numeric / 100;
+      biometricTotals[key] += numeric;
+    });
+  } else if (latestEmotionHistory.length > 0) {
+    latestEmotionHistory.slice(-12).forEach((entry) => {
+      const key = normalizeEmotionKey(entry?.emotion || entry?.originalLabel || '');
+      biometricTotals[key] += 1;
+    });
+  } else {
+    biometricTotals[normalizeEmotionKey(displayEmotion)] = 1;
+  }
+
+  const biometricTotal = Object.values(biometricTotals).reduce((sum, value) => sum + value, 0);
+  const biometricDistribution = biometricEmotionMeta.map((emotion) => ({
+    ...emotion,
+    percent: biometricTotal > 0 ? (biometricTotals[emotion.key] / biometricTotal) * 100 : 0
+  }));
+  const sortedBiometricDistribution = [...biometricDistribution].sort((a, b) => b.percent - a.percent);
+  const dominantBiometricEmotion = sortedBiometricDistribution[0] || biometricEmotionMeta[0];
+  const activeBiometricRows = sortedBiometricDistribution.filter((row) => row.percent > 0.1);
+  const biometricHistoryRows = (activeBiometricRows.length > 0 ? activeBiometricRows : sortedBiometricDistribution).slice(0, 4);
+  const confidencePercent =
+    displayConfidence !== null
+      ? Math.max(0, Math.min(100, displayConfidence * 100))
+      : Math.max(0, Math.min(100, dominantBiometricEmotion.percent));
+  const detailConfidencePercent =
+    latestDetectionSource === 'profile'
+      ? Math.max(0, Math.min(100, dominantBiometricEmotion.percent))
+      : confidencePercent;
+  const biometricStatus = latestDetectionSource === 'profile' ? 'Standby' : 'Live';
+  const dominantEmoji =
+    biometricEmotionMeta.find((emotion) => emotion.key === dominantBiometricEmotion.key)?.emoji || '🧠';
+
+  const donutSegments = [];
+  let donutCursor = 0;
+  biometricDistribution.forEach((row) => {
+    if (row.percent <= 0.1) return;
+    const start = donutCursor;
+    donutCursor += row.percent;
+    donutSegments.push(`${row.color} ${start.toFixed(2)}% ${donutCursor.toFixed(2)}%`);
+  });
+  if (donutSegments.length === 0) {
+    donutSegments.push('#bfd6ea 0% 100%');
+  } else if (donutCursor < 100) {
+    donutSegments.push(`#d9e8f4 ${donutCursor.toFixed(2)}% 100%`);
+  }
+  const biometricDonutStyle = {
+    '--biometric-donut': `conic-gradient(${donutSegments.join(', ')})`
   };
 
   const handleEmotionUpdate = () => {
@@ -758,7 +878,7 @@ function DashboardView({
     liveIntervalRef.current = setInterval(() => {
       if (!cameraActive || liveLoadingRef.current) return;
       captureAndPredict();
-    }, 3000);
+    }, 1000);
   };
 
   return (
@@ -782,55 +902,27 @@ function DashboardView({
         <StatCard
           icon={<FiUsers />}
           title="Total Children"
-          value={stats.totalChildren}
           color="#4A90E2"
           subtitle="Active profiles"
         />
         <StatCard
           icon={<FiStar />}
           title="Recommendations"
-          value={stats.activeRecommendations}
           color="#F5A623"
           subtitle="For selected child"
         />
         <StatCard
           icon={<FiBook />}
           title="Total Activities"
-          value={stats.totalActivities}
           color="#FF6B6B"
           subtitle="Available in library"
         />
         <StatCard
           icon={<FiLayers />}
           title="Categories"
-          value="3"
           color="#9B59B6"
           subtitle="Social, Behavioral, Emotional"
         />
-      </div>
-
-      <div className="category-stats">
-        <h2 className="section-title">Activity Categories</h2>
-        <div className="category-cards">
-          <CategoryStatCard
-            category="social"
-            count={stats.socialActivities}
-            color={getCategoryColor('social')}
-            icon={<FiUsers />}
-          />
-          <CategoryStatCard
-            category="behavioral"
-            count={stats.behavioralActivities}
-            color={getCategoryColor('behavioral')}
-            icon={<FiTarget />}
-          />
-          <CategoryStatCard
-            category="emotional"
-            count={stats.emotionalActivities}
-            color={getCategoryColor('emotional')}
-            icon={<FiHeart />}
-          />
-        </div>
       </div>
 
       {/* Image Upload Section for Emotion Detection */}
@@ -1071,7 +1163,7 @@ function DashboardView({
               >
                 {liveDetecting ? 'Stop Live Detection' : 'Start Live Detection'}
               </button>
-              <p className="camera-hint">Live detection captures a frame every 3 seconds.</p>
+              <p className="camera-hint">Live detection captures a frame every 1 second.</p>
               {lastDetectedAt && (
                 <p className="camera-last-detect">Last capture: {lastDetectedAt}</p>
               )}
@@ -1179,110 +1271,101 @@ function DashboardView({
           </div>
 
           <div className="emotion-status-grid">
-            {/* Main Emotion Card */}
-            <div className="emotion-main-card">
-              <div className="emotion-card-header">
-                <span className="emotion-label-text">Real-time emotion</span>
-              </div>
-              <div className={`emotion-display-large emotion-${displayEmotion || 'calm'}`}>
-                <div className="emotion-text-large">
-                  {(displayEmotion || 'calm').charAt(0).toUpperCase() + (displayEmotion || 'calm').slice(1)}
-                </div>
-                <div className="emotion-live-meta">
-                  <span className={`emotion-source-badge source-${latestDetectionSource}`}>
-                    {sourceLabels[latestDetectionSource] || 'Live'}
-                  </span>
-                  {displayConfidence !== null && (
-                    <span className="emotion-confidence-badge">
-                      {(displayConfidence * 100).toFixed(1)}% confidence
+            <div className="biometric-distribution-card">
+              <p className="biometric-card-title">State Distribution</p>
+              <div className="biometric-donut-stage">
+                <div className="biometric-donut-ring" style={biometricDonutStyle}>
+                  <div className="biometric-donut-core">
+                    <span className="biometric-donut-percent">
+                      {Math.round(dominantBiometricEmotion.percent)}%
                     </span>
-                  )}
+                    <span className="biometric-donut-emotion">{dominantBiometricEmotion.label}</span>
+                  </div>
                 </div>
+              </div>
+              <div className="biometric-legend-grid">
+                {biometricDistribution.map((row) => (
+                  <div key={row.key} className="biometric-legend-entry">
+                    <span
+                      className="biometric-legend-bullet"
+                      style={{ backgroundColor: row.color }}
+                    ></span>
+                    <span className="biometric-legend-name">{row.label}</span>
+                    <span className="biometric-legend-score">({Math.round(row.percent)})</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="emotion-side-stack">
-              {/* Update Emotion Section */}
-              <div className="emotion-update-card">
-                <div className="emotion-update-header">
-                  <div className="update-icon">
-                    <FiSettings />
-                  </div>
-                  <span className="update-title">Update Emotion</span>
-                </div>
-                <div className="emotion-update-controls">
-                  <select 
-                    className="emotion-select-modern"
-                    value={emotionInput}
-                    onChange={(e) => setEmotionInput(e.target.value)}
-                  >
-                    <option value="">Select emotion...</option>
-                    {validEmotions.map(emotion => (
-                      <option key={emotion} value={emotion}>
-                        {emotion.charAt(0).toUpperCase() + emotion.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                  <button 
-                    className="btn-emotion-update-modern"
-                    onClick={handleEmotionUpdate}
-                    disabled={!emotionInput}
-                  >
-                    <span>Apply</span>
-                  </button>
+            <div className="biometric-panel-stack">
+              <div className="biometric-mini-card">
+                <div className="biometric-mini-title">Recent Biometric History</div>
+                <div className="biometric-history-meters">
+                  {biometricHistoryRows.map((row) => (
+                    <div key={row.key} className="biometric-history-meter">
+                      <span className="biometric-history-label">{row.label}</span>
+                      <div className="biometric-history-bar-track">
+                        <div
+                          className="biometric-history-bar-fill"
+                          style={{ width: `${row.percent.toFixed(1)}%`, backgroundColor: row.color }}
+                        ></div>
+                      </div>
+                      <span className="biometric-history-percent">{Math.round(row.percent)}%</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Profile Details Card */}
-              <div className="emotion-details-card">
-                <div className="emotion-card-header">
-                  <span className="emotion-label-text">Profile Details</span>
+              <div className="biometric-mini-card">
+                <div className="biometric-mini-title">System Confidence</div>
+                <div className="biometric-confidence-row">
+                  <span className="biometric-confidence-emoji">{dominantEmoji}</span>
+                  <div className="biometric-confidence-meta">
+                    <strong>{dominantBiometricEmotion.label}</strong>
+                    <span>{sourceLabels[latestDetectionSource] || 'Live source'}</span>
+                  </div>
+                  <span className="biometric-confidence-value">{Math.round(confidencePercent)}%</span>
                 </div>
-                <div className="emotion-details-grid">
-                  {selectedChild.socialStatus && (
-                    <div className="detail-item">
-                      <div className="detail-icon">
-                        <FiUsers />
-                      </div>
-                      <div className="detail-content">
-                        <span className="detail-label">Social Status</span>
-                        <span className="detail-value">{selectedChild.socialStatus}</span>
-                      </div>
-                    </div>
-                  )}
-                  {selectedChild.financialStatus && (
-                    <div className="detail-item">
-                      <div className="detail-icon">
-                        <FiDollarSign />
-                      </div>
-                      <div className="detail-content">
-                        <span className="detail-label">Financial Status</span>
-                        <span className="detail-value">{selectedChild.financialStatus}</span>
-                      </div>
-                    </div>
-                  )}
-                  {selectedChild.autismDetails && (
-                    <>
-                      <div className="detail-item">
-                        <div className="detail-icon">
-                          <FiBarChart2 />
-                        </div>
-                        <div className="detail-content">
-                          <span className="detail-label">Autism Severity</span>
-                          <span className="detail-value">{selectedChild.autismDetails.severity}/5</span>
-                        </div>
-                      </div>
-                      <div className="detail-item">
-                        <div className="detail-icon">
-                          <FiInfo />
-                        </div>
-                        <div className="detail-content">
-                          <span className="detail-label">Type</span>
-                          <span className="detail-value">{selectedChild.autismDetails.type}</span>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                <div className="biometric-system-progress">
+                  <div
+                    className="biometric-system-progress-fill"
+                    style={{ width: `${confidencePercent.toFixed(1)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="biometric-mini-card biometric-detail-card">
+                <div className="biometric-detail-header">
+                  <span className="biometric-mini-title">Biometric Details</span>
+                  <span className="biometric-detail-state">{biometricStatus}</span>
+                </div>
+                <div className="biometric-detail-row">
+                  <span
+                    className="biometric-detail-pill"
+                    style={{
+                      backgroundColor: dominantBiometricEmotion.chip,
+                      color: dominantBiometricEmotion.chipText
+                    }}
+                  >
+                    {dominantBiometricEmotion.label}
+                  </span>
+                  <div className="biometric-detail-copy">
+                    <span>Current captured emotion</span>
+                    <strong>{detailConfidencePercent.toFixed(1)}% confidence</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="biometric-mini-card">
+                <div className="biometric-mini-title">System Confidence</div>
+                <div className="biometric-system-meter-row">
+                  <div className="biometric-system-progress">
+                    <div
+                      className="biometric-system-progress-fill"
+                      style={{ width: `${confidencePercent.toFixed(1)}%` }}
+                    ></div>
+                  </div>
+                  <span className="biometric-system-value">{Math.round(confidencePercent)}%</span>
                 </div>
               </div>
             </div>
@@ -1345,7 +1428,7 @@ function ActivitiesView({ activities, selectedCategory, setSelectedCategory, get
   return (
     <div className="activities-page">
       <header className="page-header">
-        <h1>Activity Library</h1>
+        <h1 className="activity-library-title">Activity Library</h1>
         <p>Browse and explore all available therapy activities</p>
       </header>
 
@@ -1393,49 +1476,13 @@ function ActivitiesView({ activities, selectedCategory, setSelectedCategory, get
   );
 }
 
-function RecommendationsView({ selectedChild, recommendations, activities, getCategoryColor, onSelect, predictedEmotion }) {
-  const totals = {
-    social: recommendations.filter(a => a.category === 'social').length,
-    behavioral: recommendations.filter(a => a.category === 'behavioral').length,
-    emotional: recommendations.filter(a => a.category === 'emotional').length,
-  };
-  const allTotals = {
-    social: activities.filter(a => a.category === 'social').length,
-    behavioral: activities.filter(a => a.category === 'behavioral').length,
-    emotional: activities.filter(a => a.category === 'emotional').length,
-  };
-
-  const percent = (num, den) => den ? Math.round((num / den) * 100) : 0;
-
+function RecommendationsView({ recommendations, getCategoryColor, onSelect, predictedEmotion }) {
   return (
     <div className="activities-page">
       <header className="page-header">
-        <h1>Personalized Recommendations</h1>
-        <p>
-          {selectedChild ? `For ${selectedChild.name}` : 'Select a child'}
-          {predictedEmotion?.emotion ? ' | Emotion: ' + predictedEmotion.emotion : ''}
-        </p>
+        <h1 className="personalized-recommendations-title">Personalized Recommendations</h1>
+        {predictedEmotion?.emotion && <p>{`Emotion: ${predictedEmotion.emotion}`}</p>}
       </header>
-
-      {/* Summary charts */}
-      <div className="stats-grid">
-        {['social','behavioral','emotional'].map(cat => (
-          <div key={cat} className="stat-card" style={{ borderTopColor: getCategoryColor(cat) }}>
-            <div className="stat-content" style={{ width: '100%' }}>
-              <p className="stat-title" style={{ color: '#2c3e50' }}>{cat[0].toUpperCase() + cat.slice(1)}</p>
-              <div className="progress-bar" style={{ height: 12 }}>
-                <div
-                  className="progress-fill"
-                  style={{ width: `${percent(totals[cat], allTotals[cat])}%` }}
-                ></div>
-              </div>
-              <p className="stat-subtitle">
-                {totals[cat]} of {allTotals[cat]} - {percent(totals[cat], allTotals[cat])}%
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Recommended activities list */}
       <div className="activity-grid">
@@ -1457,30 +1504,15 @@ function RecommendationsView({ selectedChild, recommendations, activities, getCa
   );
 }
 
-function StatCard({ icon, title, value, color, subtitle }) {
+function StatCard({ icon, title, color, subtitle }) {
   return (
     <div className="stat-card" style={{ borderTopColor: color }}>
       <div className="stat-icon" style={{ backgroundColor: color + '20', color: color }}>
         {icon}
       </div>
       <div className="stat-content">
-        <h3 className="stat-value">{value}</h3>
         <p className="stat-title">{title}</p>
         <p className="stat-subtitle">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
-function CategoryStatCard({ category, count, color, icon }) {
-  return (
-    <div className="category-stat-card" style={{ borderLeftColor: color }}>
-      <div className="category-stat-icon" style={{ color: color }}>
-        {icon}
-      </div>
-      <div className="category-stat-content">
-        <h3 className="category-stat-value">{count}</h3>
-        <p className="category-stat-label">{category.charAt(0).toUpperCase() + category.slice(1)} Activities</p>
       </div>
     </div>
   );
@@ -2995,6 +3027,7 @@ function RecommendationFormView({
   submitRecommendationRequest,
   formRecommendations,
   predictedEmotion,
+  latestDetectionSnapshot,
   getCategoryColor,
   setSelectedActivity,
   setCurrentView
@@ -3002,6 +3035,35 @@ function RecommendationFormView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
+  const sourceLabels = {
+    profile: 'Profile',
+    upload: 'Image Upload',
+    camera: 'Camera Detection',
+    manual: 'Manual Update'
+  };
+
+  const isSnapshotForSelectedChild =
+    Number(latestDetectionSnapshot?.childId) === Number(selectedChild?.id);
+  const snapshotEmotion = isSnapshotForSelectedChild
+    ? String(latestDetectionSnapshot?.emotion || '').trim()
+    : '';
+  const snapshotConfidence = isSnapshotForSelectedChild
+    ? Number(latestDetectionSnapshot?.confidence || 0)
+    : 0;
+  const snapshotSource = isSnapshotForSelectedChild
+    ? String(latestDetectionSnapshot?.source || '').trim().toLowerCase()
+    : '';
+  const fallbackEmotion = String(predictedEmotion?.emotion || '').trim();
+  const formEmotion = snapshotEmotion || fallbackEmotion || String(selectedChild?.currentEmotion || '').trim();
+  const formEmotionSource = snapshotEmotion
+    ? sourceLabels[snapshotSource] || 'Live Detection'
+    : fallbackEmotion
+    ? 'Image Upload'
+    : 'Profile';
+  const formEmotionConfidence = snapshotEmotion
+    ? snapshotConfidence
+    : Number(predictedEmotion?.confidence || 0);
+  const emotionClassName = String(formEmotion || 'natural').toLowerCase();
 
   const interestIcons = {
     train: '\u{1F686}',
@@ -3077,29 +3139,31 @@ function RecommendationFormView({
                 <FiSmile className="step-icon" />
                 Current Emotion
               </h2>
-              <p>Detected emotion from uploaded image or select manually</p>
+              <p>Detected from latest image upload, camera capture, or profile update</p>
             </div>
           </div>
           <div className="step-content">
-            {predictedEmotion ? (
+            {formEmotion ? (
               <div className="emotion-status-card">
                 <div className="emotion-display-large">
-                  <div className={`emotion-badge-large emotion-${predictedEmotion.emotion}`}>
-                    <span>{predictedEmotion.emotion}</span>
+                  <div className={`emotion-badge-large emotion-${emotionClassName}`}>
+                    <span>{formEmotion}</span>
                   </div>
                   <div className="confidence-display">
                     <span className="confidence-label">Confidence:</span>
-                    <span className="confidence-value">{(predictedEmotion.confidence * 100).toFixed(1)}%</span>
+                    <span className="confidence-value">
+                      {formEmotionConfidence > 0 ? `${(formEmotionConfidence * 100).toFixed(1)}%` : 'N/A'}
+                    </span>
                   </div>
                 </div>
                 <p className="emotion-note">
-                  <FiInfo /> This emotion will be used for recommendations
+                  <FiInfo /> Source: {formEmotionSource}. This emotion will be used for recommendations
                 </p>
               </div>
             ) : (
               <div className="emotion-status-card empty">
                 <FiSmile className="empty-icon" />
-                <p>No emotion detected yet. Upload an image from the Dashboard to detect emotion.</p>
+                <p>No emotion detected yet. Use image upload or camera detection from the Dashboard.</p>
                 <button 
                   className="btn-secondary"
                   onClick={() => setCurrentView('dashboard')}
@@ -3111,7 +3175,7 @@ function RecommendationFormView({
             <button 
               className="btn-step-next"
               onClick={() => setCurrentStep(2)}
-              disabled={!predictedEmotion}
+              disabled={!formEmotion}
             >
               Continue <FiArrowRight />
             </button>

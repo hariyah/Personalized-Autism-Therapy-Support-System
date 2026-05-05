@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiBell, FiCheckCircle, FiAlertCircle, FiInfo, FiX } from 'react-icons/fi';
 import { useNotifications } from '../contexts/NotificationContext';
+import { BASE } from '../routes';
 
 const NotificationBell = () => {
     const { unreadCount, notifications, markAsRead, markAllAsRead } = useNotifications();
@@ -21,7 +22,10 @@ const NotificationBell = () => {
 
     const handleClick = (n) => {
         markAsRead(n._id);
-        if (n.action_url) navigate(n.action_url);
+        if (n.action_url) {
+            const target = n.action_url.startsWith('/') ? `${BASE}${n.action_url}` : n.action_url;
+            navigate(target);
+        }
         setIsOpen(false);
     };
 
