@@ -13,6 +13,7 @@ opencv-python
 pydantic
 python-dotenv
 pydub
+imageio-ffmpeg
 scikit-learn
 protobuf>=4.25,<5
 tensorflow==2.17.1

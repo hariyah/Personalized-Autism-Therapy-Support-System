@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import therapyApi from '../../utils/therapyApi';
 import { BASE } from '../../routes';
 import Sidebar from '../../components/Sidebar';
+import NotificationBell from '../../components/NotificationBell';
 import ChatBox from '../../components/ChatBox';
 import AnalysisCard from '../../components/AnalysisCard';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -87,7 +88,8 @@ const PatientProfile = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex items-center gap-3">
+                            <NotificationBell />
                             <button onClick={() => setActiveTab('chat')} className={`btn-secondary flex items-center gap-2 ${activeTab === 'chat' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-lg shadow-emerald-500/10' : ''}`}><FiMessageSquare /> <span className="hidden sm:inline">Consultation</span></button>
                             <button onClick={() => navigate(`${BASE}/doctor/new-analysis/${id}`)} className="btn-primary flex items-center gap-2"><FiPlus /> New Analysis</button>
                         </div>

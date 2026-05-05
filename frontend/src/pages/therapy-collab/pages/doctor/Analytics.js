@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import therapyApi from '../../utils/therapyApi';
 import Sidebar from '../../components/Sidebar';
+import NotificationBell from '../../components/NotificationBell';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { FiActivity, FiUsers, FiBarChart2, FiTrendingUp } from 'react-icons/fi';
 
@@ -33,12 +34,15 @@ const Analytics = () => {
             <div className="flex-1 overflow-auto">
                 <div className="max-w-7xl mx-auto p-8 page-enter">
                     {/* Header */}
-                    <div className="mb-10">
-                        <p className="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
-                            <FiBarChart2 /> Clinical Reports Layer
-                        </p>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Practice <span className="gradient-text">Analytics</span></h1>
-                        <p className="text-slate-500 text-sm font-medium mt-2">Macro-level insights across all patient profiles.</p>
+                    <div className="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
+                        <div>
+                            <p className="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
+                                <FiBarChart2 /> Clinical Reports Layer
+                            </p>
+                            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Practice <span className="gradient-text">Analytics</span></h1>
+                            <p className="text-slate-500 text-sm font-medium mt-2">Macro-level insights across all patient profiles.</p>
+                        </div>
+                        <NotificationBell />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">

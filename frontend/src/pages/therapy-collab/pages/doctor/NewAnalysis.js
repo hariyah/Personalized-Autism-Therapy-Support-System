@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import therapyApi from '../../utils/therapyApi';
 import { BASE } from '../../routes';
 import Sidebar from '../../components/Sidebar';
+import NotificationBell from '../../components/NotificationBell';
 import { FiMic, FiSquare, FiFileText, FiUploadCloud, FiAlertCircle, FiCheckCircle, FiUser } from 'react-icons/fi';
 
 const NewAnalysisDoctor = () => {
@@ -156,16 +157,21 @@ const NewAnalysisDoctor = () => {
             <div className="flex-1 overflow-auto">
                 <div className="max-w-4xl mx-auto p-8 page-enter">
                     {/* Header */}
-                    <div className="mb-10 text-center relative z-10">
-                        <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 px-4 py-2 rounded-full mb-6 relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-full opacity-50 blur-sm" />
-                            <span className="relative z-10 text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
-                                <span className={selectedPatient ? 'glow-dot' : 'glow-dot-rose'} />
-                                Patient Connection: <span className="text-slate-900">{selectedPatient?.name || 'Select Patient'}</span>
-                            </span>
+                    <div className="mb-10 relative z-10">
+                        <div className="flex justify-end mb-4">
+                            <NotificationBell />
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Clinical Record Analysis</h1>
-                        <p className="text-slate-400 font-medium">Capture voice notes or input text for ML-driven pattern recognition.</p>
+                        <div className="text-center">
+                            <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 px-4 py-2 rounded-full mb-6 relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-full opacity-50 blur-sm" />
+                                <span className="relative z-10 text-[10px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+                                    <span className={selectedPatient ? 'glow-dot' : 'glow-dot-rose'} />
+                                    Patient Connection: <span className="text-slate-900">{selectedPatient?.name || 'Select Patient'}</span>
+                                </span>
+                            </div>
+                            <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Clinical Record Analysis</h1>
+                            <p className="text-slate-400 font-medium">Capture voice notes or input text for ML-driven pattern recognition.</p>
+                        </div>
                     </div>
 
                     <div className="card p-8 border-subtle card-glow relative overflow-hidden">

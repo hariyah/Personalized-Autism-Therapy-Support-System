@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
@@ -85,20 +86,37 @@ def normalize_urgency(label: str) -> str:
         return label.lower()
     return "medium"
 
+def resolve_ffmpeg_executable() -> str | None:
+    ffmpeg_exe = shutil.which("ffmpeg")
+    if ffmpeg_exe:
+        return ffmpeg_exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return None
+
 def load_audio_for_librosa(path: str, target_sr: int = 16000):
-    """Load audio with librosa; convert WebM/unsupported formats to WAV via pydub first."""
+    """Load audio with librosa; convert WebM/unsupported formats to WAV first."""
     path_lower = path.lower()
     need_convert = path_lower.endswith(".webm") or path_lower.endswith(".weba") or "webm" in path_lower
     wav_path = None
     if need_convert:
         try:
-            from pydub import AudioSegment
+            ffmpeg_exe = resolve_ffmpeg_executable()
+            if not ffmpeg_exe:
+                raise RuntimeError("ffmpeg is required to convert WebM audio")
             wav_path = path + ".wav"
-            seg = AudioSegment.from_file(path, format="webm")
-            seg.export(wav_path, format="wav")
+            subprocess.run(
+                [ffmpeg_exe, "-y", "-i", path, wav_path],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
             path = wav_path
         except Exception as e:
-            print(f"pydub conversion failed: {e}")
+            print(f"ffmpeg conversion failed: {e}")
             raise
     try:
         audio_data, sr = librosa.load(path, sr=target_sr)

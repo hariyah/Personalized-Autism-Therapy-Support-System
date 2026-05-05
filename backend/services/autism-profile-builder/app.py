@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, g, Response
+import json
 import joblib
 import pandas as pd
 import numpy as np
@@ -9,6 +10,8 @@ import io
 import re
 import base64
 import os
+import urllib.error
+import urllib.request
 from datetime import datetime
 from functools import wraps
 import jwt
@@ -37,9 +40,27 @@ def add_cors_headers(response):
     return response
 
 # ─── Config ────────────────────────────────────────────────────────────────────
+def load_local_env(env_path):
+    if not os.path.isfile(env_path):
+        return
+    with open(env_path, "r", encoding="utf-8") as env_file:
+        for raw_line in env_file:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            os.environ.setdefault(key, value)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_local_env(os.path.join(BASE_DIR, ".env"))
+
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("MONGODB_DB", "autism_profile")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip()
 
 # Configure Tesseract for Windows. Allow env override, otherwise use the local install path.
 pytesseract.pytesseract.tesseract_cmd = os.environ.get(
@@ -175,6 +196,89 @@ def compute_severity_details(a_scores: dict) -> dict:
         "max_restricted": len(restricted_keys),
     }
 
+def build_assessment_prompt(payload: dict) -> str:
+    return (
+        "You are a clinical support assistant for autism assessments. "
+        "Based on the structured assessment data, write a short parent-friendly summary and practical suggestions. "
+        "Do not diagnose beyond the provided results. "
+        "Return strict JSON only with this schema: "
+        '{"summary":"2-4 sentences","suggestions":["suggestion 1","suggestion 2","suggestion 3"]}. '
+        "Keep suggestions concrete, supportive, and specific to the behavioral profile.\n\n"
+        f"Assessment data:\n{json.dumps(payload, ensure_ascii=True, indent=2)}"
+    )
+
+def extract_json_payload(text: str) -> dict:
+    cleaned = (text or "").strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.split("\n", 1)[-1]
+        if cleaned.endswith("```"):
+            cleaned = cleaned.rsplit("```", 1)[0]
+        cleaned = cleaned.strip()
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError("Gemini response did not contain valid JSON")
+    return json.loads(cleaned[start:end + 1])
+
+def generate_assessment_insights(payload: dict) -> dict:
+    if not GEMINI_API_KEY or GEMINI_API_KEY.lower().startswith("your-"):
+        raise RuntimeError("Gemini API key is not configured in autism-profile-builder/.env")
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    )
+    body = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": build_assessment_prompt(payload)
+                    }
+                ]
+            }
+        ],
+        "generationConfig": {
+            "responseMimeType": "application/json"
+        }
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            raw = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        raise RuntimeError(f"Gemini request failed: {detail or exc.reason}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Gemini request failed: {exc.reason}") from exc
+
+    candidates = raw.get("candidates") or []
+    parts = (((candidates[0] if candidates else {}).get("content") or {}).get("parts") or [])
+    text = "".join(part.get("text", "") for part in parts if isinstance(part, dict)).strip()
+    parsed = extract_json_payload(text)
+
+    summary = " ".join(str(parsed.get("summary", "")).split())
+    suggestions = [
+        " ".join(str(item).split())
+        for item in parsed.get("suggestions", [])
+        if str(item).strip()
+    ]
+    if not summary:
+        raise RuntimeError("Gemini response did not include a summary")
+    if not suggestions:
+        raise RuntimeError("Gemini response did not include suggestions")
+
+    return {
+        "summary": summary,
+        "suggestions": suggestions[:3],
+        "model": GEMINI_MODEL,
+    }
+
 # ─── Auth routes ───────────────────────────────────────────────────────────────
 @app.route("/api/auth/register", methods=["POST"])
 def register():
@@ -307,6 +411,51 @@ def predict():
             **result,
         })
     return jsonify(result)
+
+@app.route("/api/assessment-insights", methods=["POST"])
+@token_required
+def assessment_insights():
+    data = request.get_json()
+    if not data or "assessment" not in data:
+        return jsonify({"error": "assessment payload required"}), 400
+
+    assessment = data.get("assessment") or {}
+    sections = data.get("sections") or {}
+    a_scores = assessment.get("a_scores") or {}
+    filled_indicators = {
+        key: int(a_scores.get(key, 0) or 0)
+        for key in [f"A{i}" for i in range(1, 11)]
+    }
+    positive_indicators = [
+        {
+            "indicator": key,
+            "question": QUESTION_LABELS[key],
+            "domain": DOMAIN_INFO[key],
+        }
+        for key, value in filled_indicators.items()
+        if value == 1
+    ]
+    prompt_payload = {
+        "patient": {
+            "name": data.get("patient_name") or "Patient",
+            "age": assessment.get("age"),
+            "sex": "Male" if int(assessment.get("sex", 1) or 1) == 1 else "Female",
+        },
+        "severity": {
+            "level": assessment.get("severity_level"),
+            "label": assessment.get("severity_label"),
+        },
+        "domain_scores": assessment.get("domain_scores") or {},
+        "positive_indicators": positive_indicators,
+        "report_sections": sections,
+        "ocr_excerpt": (data.get("ocr_text") or "")[:1200],
+    }
+    try:
+        return jsonify(generate_assessment_insights(prompt_payload))
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 503
+    except Exception as exc:
+        return jsonify({"error": f"Failed to generate assessment insights: {exc}"}), 500
 
 @app.route("/api/patients", methods=["POST"])
 @token_required

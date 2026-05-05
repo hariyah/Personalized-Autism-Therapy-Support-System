@@ -152,7 +152,7 @@ if (Test-Path $therapyCollabAi) {
             if (-not $pipOk) {
                 Write-Warning "  therapy-collab-ai: full install failed (TensorFlow path length on Windows). Trying minimal deps..."
                 $ErrorActionPreference = "Continue"
-                & $venvPip install fastapi uvicorn python-multipart torch librosa "transformers<5" numpy pillow pydantic python-dotenv 2>&1 | Out-Null
+                & $venvPip install fastapi uvicorn python-multipart torch librosa soundfile audioread soxr "transformers<5" numpy pillow pydantic python-dotenv pydub imageio-ffmpeg 2>&1 | Out-Null
                 $ErrorActionPreference = $errPreference
                 if ($LASTEXITCODE -ne 0) { Write-Warning "  therapy-collab-ai: install had issues; start it manually if needed." }
             }
