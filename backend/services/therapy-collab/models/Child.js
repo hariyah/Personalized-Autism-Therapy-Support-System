@@ -2,7 +2,16 @@ const mongoose = require('mongoose');
 
 const childSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    dateOfBirth: { type: Date, required: true },
+    dateOfBirth: {
+        type: Date,
+        required: true,
+        validate: {
+            validator(value) {
+                return value instanceof Date && !Number.isNaN(value.getTime()) && value <= new Date();
+            },
+            message: 'Date of birth cannot be in the future.'
+        }
+    },
     gender: { type: String, enum: ['male', 'female', 'other'], required: true },
     parent: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     diagnosisDetails: {
@@ -29,9 +38,22 @@ const childSchema = new mongoose.Schema({
 // Virtual for age
 childSchema.virtual('age').get(function () {
     if (!this.dateOfBirth) return null;
-    const diff_ms = Date.now() - this.dateOfBirth.getTime();
-    const age_dt = new Date(diff_ms);
-    return Math.abs(age_dt.getUTCFullYear() - 1970);
+    const birthDate = new Date(this.dateOfBirth);
+    if (Number.isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    if (birthDate > today) return null;
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const hasNotHadBirthdayYet =
+        monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate());
+
+    if (hasNotHadBirthdayYet) {
+        age -= 1;
+    }
+
+    return age >= 0 ? age : null;
 });
 
 childSchema.set('toJSON', { virtuals: true });

@@ -7,9 +7,10 @@ import AnalysisCard from '../../components/AnalysisCard';
 import CarePlanBoard from '../../components/CarePlanBoard';
 import ChatBox from '../../components/ChatBox';
 import UrgencyDonutChart from '../../components/UrgencyDonutChart';
-import { FiArrowLeft, FiEdit, FiActivity, FiUser, FiInfo, FiMessageSquare, FiShield, FiTrendingUp } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit, FiActivity, FiUser, FiInfo, FiMessageSquare, FiShield, FiTrendingUp, FiTrash2 } from 'react-icons/fi';
 import { downloadAnalysisReport } from '../../utils/reportDownload';
 import { getUrgencyChartData, getUrgencyCounts } from '../../utils/analysisInsights';
+import { getApiErrorMessage } from '../../utils/apiErrorMessage';
 
 const ChildProfile = () => {
     const { id } = useParams();
@@ -17,6 +18,9 @@ const ChildProfile = () => {
     const [child, setChild] = useState(null);
     const [analyses, setAnalyses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
     const location = useLocation();
     const tabs = [
         { id: 'overview', label: 'Overview' },
@@ -65,6 +69,20 @@ const ChildProfile = () => {
         }
     };
 
+    const handleDeleteChild = async () => {
+        setIsDeleting(true);
+        setDeleteError('');
+        try {
+            await therapyApi.delete(`/api/parent/children/${id}`);
+            navigate(`${BASE}/parent/children`);
+        } catch (error) {
+            console.error(error);
+            setDeleteError(getApiErrorMessage(error, 'Unable to delete this child profile right now.'));
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     if (loading) {
         return <div className="flex min-h-screen bg-app"><Sidebar /><div className="flex-1 flex items-center justify-center"><div className="w-10 h-10 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin"></div></div></div>;
     }
@@ -101,7 +119,7 @@ const ChildProfile = () => {
                                 </div>
                                 <div>
                                     <h1 className="text-4xl font-black text-slate-100 leading-tight tracking-tight">{child.name}</h1>
-                                    <p className="text-slate-500 font-medium text-sm mt-1">Age {child.age} | {child.gender}</p>
+                                    <p className="text-slate-500 font-medium text-sm mt-1">Age {child.age ?? 'N/A'} | {child.gender}</p>
                                 </div>
                             </div>
                             <div className="flex flex-wrap gap-3">
@@ -113,6 +131,15 @@ const ChildProfile = () => {
                                 </button>
                                 <button onClick={() => navigate(`${BASE}/parent/new-analysis?childId=${id}`)} className="btn-secondary flex items-center gap-2 border-violet-500/30 text-violet-300 hover:bg-violet-500/10">
                                     <FiInfo /> New Recording
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setDeleteError('');
+                                        setShowDeleteConfirm(true);
+                                    }}
+                                    className="btn-secondary flex items-center gap-2 border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
+                                >
+                                    <FiTrash2 /> Delete Profile
                                 </button>
                                 <button className="w-12 h-12 bg-white/[0.04] rounded-xl border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-violet-500 transition-all shadow-sm">
                                     <FiEdit size={16} />
@@ -285,6 +312,46 @@ const ChildProfile = () => {
                     )}
                 </div>
             </div>
+
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+                    <div className="card border-subtle rounded-3xl w-full max-w-md p-6 shadow-2xl shadow-slate-900/30">
+                        <div className="w-14 h-14 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-300 flex items-center justify-center mb-4">
+                            <FiTrash2 size={24} />
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-100 mb-2">Delete Child Profile?</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            This will permanently remove <span className="font-bold text-slate-200">{child.name}</span> and related therapy hub records.
+                        </p>
+                        {deleteError ? (
+                            <div className="mt-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                                {deleteError}
+                            </div>
+                        ) : null}
+                        <div className="flex gap-3 pt-6">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowDeleteConfirm(false);
+                                    setDeleteError('');
+                                }}
+                                disabled={isDeleting}
+                                className="btn-secondary flex-1 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteChild}
+                                disabled={isDeleting}
+                                className="flex-1 rounded-2xl border border-rose-500/20 bg-rose-500/15 px-5 py-3 text-sm font-bold text-rose-200 hover:bg-rose-500/20 transition-all disabled:opacity-50"
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete Profile'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
