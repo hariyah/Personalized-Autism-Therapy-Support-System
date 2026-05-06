@@ -2,8 +2,10 @@ import axios from 'axios';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 
+const therapyBase = (import.meta.env?.VITE_THERAPY_API_URL || 'http://localhost:7005').trim().replace(/\/+$/, '');
+
 const therapyApi = axios.create({
-    baseURL: '/therapy',
+    baseURL: therapyBase,
 });
 
 // Ensure every request uses the current token (handles late login or multiple tabs)

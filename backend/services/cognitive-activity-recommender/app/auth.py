@@ -12,6 +12,7 @@ distinct candidate secrets derived from that file plus the Flask-equivalent merg
 
 from __future__ import annotations
 
+import logging
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -20,6 +21,8 @@ from typing import Dict, List, Optional, Tuple
 import jwt as pyjwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
 
@@ -47,13 +50,13 @@ def _jwt_secret_candidates_flask_ordered() -> Tuple[str, ...]:
 
     if _PROFILE_BUILDER_ENV.is_file():
         try:
-            text = _PROFILE_BUILDER_ENV.read_text(encoding="utf-8")
+            text = _PROFILE_BUILDER_ENV.read_text(encoding="utf-8-sig", errors="replace")
             for key, val in _parse_dotenv_lines(text):
                 merged.setdefault(key, val)
                 if key == "SECRET_KEY" and val.strip():
                     file_secret_values.append(val.strip())
         except OSError:
-            pass
+            logger.warning("Cannot read autism-profile-builder .env for JWT secrets", exc_info=True)
 
     flask_equiv = (merged.get("SECRET_KEY") or "dev-secret-change-in-production").strip()
 

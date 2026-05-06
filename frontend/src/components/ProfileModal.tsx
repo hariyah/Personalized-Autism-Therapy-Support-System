@@ -1,6 +1,41 @@
 import { useState, useEffect } from 'react';
 import type { ChildProfile, ChildProfileCreate, CommunicationLevel, AutismLevel, SensoryLevel, Goal } from '../types';
 
+const MAX_CHILD_AGE = 14;
+const MIN_CHILD_AGE = 2;
+const MIN_NAME_LEN = 4;
+
+function formatLocalISODate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function ageFromBirthDate(iso: string): number {
+  if (!iso) return NaN;
+  const [y, m, day] = iso.split('-').map(Number);
+  if (!y || !m || !day) return NaN;
+  const birth = new Date(y, m - 1, day);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const md = today.getMonth() - birth.getMonth();
+  if (md < 0 || (md === 0 && today.getDate() < birth.getDate())) age -= 1;
+  return age;
+}
+
+function minBirthDateISO(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - (MAX_CHILD_AGE + 1));
+  return formatLocalISODate(d);
+}
+
+function maxBirthDateISO(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - MIN_CHILD_AGE);
+  return formatLocalISODate(d);
+}
+
 interface ProfileModalProps {
   onClose: () => void;
   onSubmit: (profile: ChildProfileCreate | Partial<ChildProfileCreate>) => Promise<void>;
@@ -9,7 +44,7 @@ interface ProfileModalProps {
 
 export default function ProfileModal({ onClose, onSubmit, initialProfile }: ProfileModalProps) {
   const isEditMode = !!initialProfile;
-  
+
   const [formData, setFormData] = useState<Partial<ChildProfileCreate>>({
     name: '',
     age: 5,
@@ -23,6 +58,9 @@ export default function ProfileModal({ onClose, onSubmit, initialProfile }: Prof
     goals: [],
   });
 
+  /** Optional calendar helper only — not saved; clears when age is typed. */
+  const [helperBirthIso, setHelperBirthIso] = useState('');
+
   useEffect(() => {
     if (initialProfile) {
       setFormData({
@@ -33,28 +71,60 @@ export default function ProfileModal({ onClose, onSubmit, initialProfile }: Prof
         sensory_sensitivity: initialProfile.sensory_sensitivity,
         goals: initialProfile.goals,
       });
+      setHelperBirthIso('');
     }
   }, [initialProfile]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleAgeNumberChange = (raw: string) => {
+    setHelperBirthIso('');
+    if (raw === '') {
+      setFormData((prev) => ({ ...prev, age: undefined as unknown as number }));
+      return;
+    }
+    const n = parseInt(raw, 10);
+    if (Number.isFinite(n)) {
+      setFormData((prev) => ({ ...prev, age: n }));
+    }
+  };
+
+  const handleHelperCalendarChange = (iso: string) => {
+    setHelperBirthIso(iso);
+    const a = ageFromBirthDate(iso);
+    if (Number.isFinite(a) && a >= 0) {
+      setFormData((prev) => ({ ...prev, age: a }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.age || !formData.communication_level || !formData.autism_level) {
+    const name = (formData.name || '').trim();
+    if (!name || !formData.communication_level || !formData.autism_level) {
       setError('Please fill in all required fields');
       return;
     }
+    if (name.length < MIN_NAME_LEN) {
+      setError(`Name must be at least ${MIN_NAME_LEN} characters (after spaces are trimmed).`);
+      return;
+    }
+    const age = Number(formData.age);
+    if (!Number.isFinite(age) || age < MIN_CHILD_AGE || age > MAX_CHILD_AGE) {
+      setError(`Age must be between ${MIN_CHILD_AGE} and ${MAX_CHILD_AGE}.`);
+      return;
+    }
+
+    const payload = { ...formData, name, age };
 
     setIsSubmitting(true);
     setError(null);
 
     try {
       if (isEditMode) {
-        // For edit mode, send partial update
-        await onSubmit(formData);
+        await onSubmit(payload);
       } else {
-        // For create mode, send full profile
-        await onSubmit(formData as ChildProfileCreate);
+        await onSubmit(payload as ChildProfileCreate);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${isEditMode ? 'update' : 'create'} profile`);
@@ -89,30 +159,57 @@ export default function ProfileModal({ onClose, onSubmit, initialProfile }: Prof
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name *
+                Name *{' '}
+                <span className="text-xs text-gray-500 font-normal">(at least {MIN_NAME_LEN} characters)</span>
               </label>
               <input
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                minLength={MIN_NAME_LEN}
+                autoComplete="name"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Age *
+            <div className="rounded-lg border border-gray-200 bg-gray-50/80 p-4 space-y-3">
+              <label className="block text-sm font-medium text-gray-800">
+                Age * <span className="text-xs text-gray-500 font-normal">({MIN_CHILD_AGE}–{MAX_CHILD_AGE} years)</span>
               </label>
-              <input
-                type="number"
-                min="2"
-                max="18"
-                value={formData.age || ''}
-                onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) })}
-                required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+                <div className="flex-1 min-w-0">
+                  <label htmlFor="profile-age" className="sr-only">
+                    Age in years
+                  </label>
+                  <input
+                    id="profile-age"
+                    type="number"
+                    min={MIN_CHILD_AGE}
+                    max={MAX_CHILD_AGE}
+                    value={Number.isFinite(Number(formData.age)) ? formData.age : ''}
+                    onChange={(e) => handleAgeNumberChange(e.target.value)}
+                    required
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  />
+                </div>
+                <div className="flex-1 min-w-0 sm:border-l sm:border-gray-200 sm:pl-3">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Optional: birth date (sets age from calendar)
+                  </label>
+                  <input
+                    type="date"
+                    value={helperBirthIso}
+                    min={minBirthDateISO()}
+                    max={maxBirthDateISO()}
+                    onChange={(e) => handleHelperCalendarChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono text-base [color-scheme:light]"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Only the number above is saved. Use the calendar if you prefer; typing a new age clears the calendar
+                selection.
+              </p>
             </div>
 
             <div>
@@ -230,4 +327,3 @@ export default function ProfileModal({ onClose, onSubmit, initialProfile }: Prof
     </div>
   );
 }
-

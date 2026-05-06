@@ -1,4 +1,8 @@
-export const API_BASE = "/api";
+const profileOrigin = (import.meta.env?.VITE_PROFILE_API_URL ?? "http://localhost:7001")
+  .trim()
+  .replace(/\/+$/, "");
+/** Full base for profile-builder JSON routes (gateway e.g. http://localhost:7000 or direct :7001). */
+export const API_BASE = `${profileOrigin}/api`;
 const AUTH_TOKEN_KEY = "auth_token";
 
 function getAuthHeaders() {
