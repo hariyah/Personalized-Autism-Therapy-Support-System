@@ -1,9 +1,5 @@
 
 # AI-Driven Personalized Behavioral, Emotional & Social Therapy Autism Appropriate Activity Recommendation System 
-<img width="250" height="400" alt="image" src="https://github.com/user-attachments/assets/e0adf18a-a1b5-4f83-b7d5-c54f4ba787d1"  /> <img width="250" height="400" alt="image" src="https://github.com/user-attachments/assets/850018e9-e915-4d0d-a3f4-f78a91617773" /> <img width="250" height="200" alt="image" src="https://github.com/user-attachments/assets/8555da41-850d-4eb5-9777-49f047972557"/> 
-
-
-
 
 ## 1. PROJECT OVERVIEW
 
