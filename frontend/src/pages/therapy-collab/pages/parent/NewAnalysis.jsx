@@ -1,14 +1,17 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
+import ResultsDisplay from '../../components/ResultsDisplay';
 import therapyApi from '../../utils/therapyApi';
 import { BASE } from '../../routes';
-import { FiMic, FiSquare, FiFileText, FiUploadCloud, FiAlertCircle, FiCheckCircle, FiUser } from 'react-icons/fi';
+import { FiMic, FiSquare, FiFileText, FiUploadCloud, FiAlertCircle, FiCheckCircle, FiUser, FiActivity } from 'react-icons/fi';
+import { prepareAudioUpload } from '../../utils/audioUpload';
 
 const NewAnalysisParent = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = useRef(null);
+    const resultsRef = useRef(null);
     const queryParams = new URLSearchParams(location.search);
     const preselectedChildId = queryParams.get('childId');
 
@@ -25,6 +28,7 @@ const NewAnalysisParent = () => {
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [latestAnalysis, setLatestAnalysis] = useState(null);
 
     useEffect(() => {
         therapyApi.get('/api/parent/children')
@@ -53,6 +57,12 @@ const NewAnalysisParent = () => {
             URL.revokeObjectURL(audioPreviewUrl);
         }
     }, [audioPreviewUrl]);
+
+    useEffect(() => {
+        if (latestAnalysis && resultsRef.current) {
+            resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [latestAnalysis]);
 
     const resetAudio = () => {
         if (audioPreviewUrl?.startsWith('blob:')) {
@@ -116,22 +126,27 @@ const NewAnalysisParent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); setSuccess(''); setProcessing(true);
+        setError('');
+        setSuccess('');
+        setProcessing(true);
 
         try {
+            if (!selectedChild) throw new Error('Please select a child profile first.');
+
             const formData = new FormData();
             formData.append('inputType', inputType);
             if (inputType === 'audio') {
                 if (!audioBlob) throw new Error('Please record or upload audio first.');
-                formData.append('audio', audioBlob, audioBlob.name || 'recording.webm');
+                const preparedAudio = await prepareAudioUpload(audioBlob, 'parent-recording');
+                formData.append('audio', preparedAudio, preparedAudio.name || 'parent-recording.wav');
             } else {
                 if (!textInput.trim()) throw new Error('Please enter text.');
                 formData.append('transcript', textInput);
             }
 
-            await therapyApi.post(`/api/parent/children/${selectedChild}/analyses`, formData);
-            setSuccess('Analysis completed perfectly! Specialist has been notified.');
-            setTimeout(() => navigate(`${BASE}/parent/children/${selectedChild}`), 2500);
+            const response = await therapyApi.post(`/api/parent/children/${selectedChild}/analyses`, formData);
+            setLatestAnalysis(response.data.analysis);
+            setSuccess('Analysis completed successfully. Pattern recognition and treatment suggestions are ready below.');
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Analysis failed. Please try again.');
         } finally {
@@ -315,6 +330,26 @@ const NewAnalysisParent = () => {
                             </form>
                         )}
                     </div>
+
+                    {latestAnalysis && (
+                        <section ref={resultsRef} className="mt-8 card p-8 border-subtle card-glow">
+                            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-violet-300">Latest Result</p>
+                                    <h2 className="mt-2 text-2xl font-black text-slate-100">Analysis and Suggestions</h2>
+                                    <p className="mt-2 text-sm text-slate-400">The AI calculated the pattern breakdown, generated the analysis summary, and prepared support suggestions for this record.</p>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`${BASE}/parent/children/${selectedChild}`)}
+                                    className="btn-secondary flex items-center justify-center gap-2"
+                                >
+                                    <FiActivity size={14} />
+                                    Open Child Record
+                                </button>
+                            </div>
+                            <ResultsDisplay results={latestAnalysis} />
+                        </section>
+                    )}
                 </div>
             </div>
         </div>
@@ -322,4 +357,3 @@ const NewAnalysisParent = () => {
 };
 
 export default NewAnalysisParent;
-

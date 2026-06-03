@@ -4,16 +4,15 @@ const multer = require('multer');
 const axios = require('axios');
 const FormData = require('form-data');
 const Child = require('../models/Child');
+const User = require('../models/User');
 const Analysis = require('../models/Analysis');
-const Message = require('../models/Message');
 const Notification = require('../models/Notification');
-const DoctorPatient = require('../models/DoctorPatient');
 const { protect, authorize } = require('../middleware/auth');
 const { buildResultSummary, buildTreatmentSuggestions, normalizeUrgencyLabel } = require('../utils/analysisRecommendations');
 const { buildFilename, buildAnalysisReportHtml } = require('../utils/analysisReport');
 
-const AI_URL = process.env.AI_URL || "http://localhost:7006/analyze-voice";
-const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7006/analyze-text";
+const AI_URL = process.env.AI_URL || "http://localhost:8000/analyze-voice";
+const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:8000/analyze-text";
 const upload = multer({ storage: multer.memoryStorage() });
 
 const populateAnalysisAccess = (query) => query
@@ -34,60 +33,6 @@ const getSafeSummary = (aiResult, fallbackTranscript) => {
     return summary || fallbackTranscript || 'No transcript available';
 };
 
-const parseDateInput = (value) => {
-    if (!value) return null;
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date;
-};
-
-const calculateAgeFromDateOfBirth = (value) => {
-    const birthDate = parseDateInput(value);
-    if (!birthDate) return null;
-
-    const today = new Date();
-    if (birthDate > today) return null;
-
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    const hasNotHadBirthdayYet =
-        monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate());
-
-    if (hasNotHadBirthdayYet) {
-        age -= 1;
-    }
-
-    return age >= 0 ? age : null;
-};
-
-const validateChildPayload = (payload = {}) => {
-    const errors = [];
-    const name = String(payload.name || '').trim();
-
-    if (!name) {
-        errors.push('Full name is required.');
-    }
-
-    if (!payload.gender) {
-        errors.push('Gender is required.');
-    }
-
-    const computedAge = calculateAgeFromDateOfBirth(payload.dateOfBirth);
-    if (computedAge === null) {
-        errors.push('Date of birth must be a valid date in the past or today.');
-    }
-
-    if (payload.age !== undefined && payload.age !== null && payload.age !== '') {
-        const providedAge = Number(payload.age);
-        if (!Number.isInteger(providedAge) || providedAge < 0) {
-            errors.push('Age must be a non-negative whole number.');
-        } else if (computedAge !== null && providedAge !== computedAge) {
-            errors.push(`Age must match the selected date of birth. Expected ${computedAge}.`);
-        }
-    }
-
-    return { errors, computedAge };
-};
-
 router.use(protect);
 router.use(authorize('parent'));
 
@@ -104,34 +49,9 @@ router.get('/children', async (req, res) => {
 // @route   POST /api/parent/children
 router.post('/children', async (req, res) => {
     try {
-        const { errors } = validateChildPayload(req.body);
-        if (errors.length > 0) {
-            return res.status(400).json({ success: false, message: errors[0], errors });
-        }
-
-        const childPayload = {
-            ...req.body,
-            name: String(req.body.name || '').trim(),
-            dateOfBirth: parseDateInput(req.body.dateOfBirth),
-            parent: req.user._id
-        };
-
-        delete childPayload.age;
-
-        if (childPayload.diagnosisDetails) {
-            childPayload.diagnosisDetails = {
-                ...childPayload.diagnosisDetails,
-                diagnosisDate: parseDateInput(childPayload.diagnosisDetails.diagnosisDate) || undefined
-            };
-        }
-
-        const child = await Child.create(childPayload);
+        const child = await Child.create({ ...req.body, parent: req.user._id });
         res.status(201).json({ success: true, child });
     } catch (error) {
-        if (error.name === 'ValidationError') {
-            const messages = Object.values(error.errors || {}).map(item => item.message);
-            return res.status(400).json({ success: false, message: messages[0] || error.message, errors: messages });
-        }
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -139,29 +59,15 @@ router.post('/children', async (req, res) => {
 // @route   DELETE /api/parent/children/:id
 router.delete('/children/:id', async (req, res) => {
     try {
-        const child = await Child.findOne({ _id: req.params.id, parent: req.user._id }).select('_id name');
-        if (!child) {
-            return res.status(404).json({ success: false, message: 'Child not found' });
-        }
+        const child = await Child.findOneAndDelete({ _id: req.params.id, parent: req.user._id });
+        if (!child) return res.status(404).json({ success: false, message: 'Child not found' });
+        
+        // Clean up associated analyses
+        await Analysis.deleteMany({ child: req.params.id });
+        // Clean up associated notifications
+        await Notification.deleteMany({ child: req.params.id });
 
-        const analysisIds = await Analysis.find({ child: child._id }).distinct('_id');
-        const messageIds = await Message.find({ child: child._id }).distinct('_id');
-        const notificationClauses = [{ child: child._id }];
-
-        if (analysisIds.length > 0) {
-            notificationClauses.push({ analysis: { $in: analysisIds } });
-        }
-        if (messageIds.length > 0) {
-            notificationClauses.push({ messageRef: { $in: messageIds } });
-        }
-
-        await Notification.deleteMany({ $or: notificationClauses });
-        await Analysis.deleteMany({ child: child._id });
-        await Message.deleteMany({ child: child._id });
-        await DoctorPatient.deleteMany({ child: child._id });
-        await Child.deleteOne({ _id: child._id, parent: req.user._id });
-
-        res.json({ success: true, message: `${child.name} was deleted successfully.` });
+        res.json({ success: true, message: 'Child profile deleted successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -328,6 +234,51 @@ router.get('/dashboard/stats', async (req, res) => {
         ]);
 
         res.json({ success: true, stats: { totalChildren: childrenIds.length, totalAnalyses, recentAnalyses, urgencyCounts } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// @route   GET /api/parent/doctors
+router.get('/doctors', async (req, res) => {
+    try {
+        const doctors = await User.find({ role: 'doctor' }).select('name email specialization');
+        res.json({ success: true, doctors });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// @route   POST /api/parent/children/:id/assign-doctor
+router.post('/children/:id/assign-doctor', async (req, res) => {
+    try {
+        const { doctorId } = req.body;
+        const child = await Child.findOne({ _id: req.params.id, parent: req.user._id });
+        
+        if (!child) return res.status(404).json({ success: false, message: 'Child not found' });
+        
+        const doctor = await User.findOne({ _id: doctorId, role: 'doctor' });
+        if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
+
+        if (child.assignedDoctors.includes(doctorId)) {
+            return res.status(400).json({ success: false, message: 'Doctor already assigned' });
+        }
+
+        child.assignedDoctors.push(doctorId);
+        await child.save();
+
+        // Notify doctor
+        await Notification.create({
+            user: doctorId,
+            type: 'system',
+            severity: 'low',
+            title: 'New Patient Assigned',
+            message: `${req.user.name} assigned you to ${child.name}'s care team.`,
+            child: child._id,
+            action_url: `/doctor/patients/${child._id}`
+        });
+
+        res.json({ success: true, child });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

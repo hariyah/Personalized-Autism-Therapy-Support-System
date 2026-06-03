@@ -1,5 +1,8 @@
-// src/utils/api.js
-const BASE = "/api";
+// Autism profile-builder (Flask): /api/patients, /api/health, /api/ocr, …
+const profileOrigin = (import.meta.env?.VITE_PROFILE_API_URL ?? "http://localhost:7001")
+  .trim()
+  .replace(/\/+$/, "");
+const BASE = `${profileOrigin}/api`;
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {

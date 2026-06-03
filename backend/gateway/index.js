@@ -23,8 +23,13 @@ const SERVICES = {
   emotional: process.env.EMOTIONAL_URL || "http://localhost:7003",
   emotionMl: process.env.EMOTION_ML_URL || "http://localhost:7004",
   therapy: process.env.THERAPY_URL || "http://localhost:7005",
-  therapyAi: process.env.THERAPY_AI_URL || "http://localhost:7006",
+  therapyAi: process.env.THERAPY_AI_URL || "http://127.0.0.1:7006",
 };
+
+/** Strip trailing slash for safe URL joins (http-proxy-middleware v3 mount rules). */
+function origin(url) {
+  return String(url || "").replace(/\/+$/, "");
+}
 
 const app = express();
 app.use(cors());
@@ -42,19 +47,38 @@ app.get("/health", (req, res) => {
       emotionMl: "/emotion-ml",
       therapyAi: "/therapy-ai",
       therapy: "/therapy",
-      auth: "/api/auth (login, register -> profile-builder)",
+      auth: "/api/auth -> profile-builder",
+      profileApi: "/api/* (patients, health, ocr, … -> profile-builder)",
     },
   });
 });
 
-// Common auth: /api/auth/* -> autism-profile-builder /api/auth/* (single login/register for all services)
+// http-proxy-middleware v3: when using app.use(MOUNT, proxy), put MOUNT on target URL
+// (see https://github.com/chimurai/http-proxy-middleware/blob/master/MIGRATION_V3.md).
+
+const pb = origin(SERVICES.profileBuilder);
+
+// Common auth: /api/auth/* -> autism-profile-builder /api/auth/*
 app.use(
   "/api/auth",
   createProxyMiddleware({
-    target: SERVICES.profileBuilder,
+    target: `${pb}/api/auth`,
     changeOrigin: true,
     onError: (err, req, res) => {
       res.status(502).json({ error: "Auth service unavailable", message: err.message });
+    },
+  })
+);
+
+// Other profile-builder JSON routes: /api/patients, /api/health, /api/ocr, /api/predict, …
+// Registered after /api/auth so /api/auth/* stays on the auth proxy above.
+app.use(
+  "/api",
+  createProxyMiddleware({
+    target: `${pb}/api`,
+    changeOrigin: true,
+    onError: (err, req, res) => {
+      res.status(502).json({ error: "Profile API unavailable", message: err.message });
     },
   })
 );
@@ -63,7 +87,7 @@ app.use(
 app.use(
   "/profile-builder",
   createProxyMiddleware({
-    target: SERVICES.profileBuilder,
+    target: pb,
     changeOrigin: true,
     pathRewrite: { "^/profile-builder": "" },
     onError: (err, req, res) => {
@@ -76,7 +100,7 @@ app.use(
 app.use(
   "/cognitive",
   createProxyMiddleware({
-    target: SERVICES.cognitive,
+    target: origin(SERVICES.cognitive),
     changeOrigin: true,
     pathRewrite: { "^/cognitive": "" },
     onError: (err, req, res) => {
@@ -89,7 +113,7 @@ app.use(
 app.use(
   "/emotional",
   createProxyMiddleware({
-    target: SERVICES.emotional,
+    target: origin(SERVICES.emotional),
     changeOrigin: true,
     pathRewrite: { "^/emotional": "" },
     onError: (err, req, res) => {
@@ -102,7 +126,7 @@ app.use(
 app.use(
   "/emotion-ml",
   createProxyMiddleware({
-    target: SERVICES.emotionMl,
+    target: origin(SERVICES.emotionMl),
     changeOrigin: true,
     pathRewrite: { "^/emotion-ml": "" },
     onError: (err, req, res) => {
@@ -115,7 +139,7 @@ app.use(
 app.use(
   "/therapy-ai",
   createProxyMiddleware({
-    target: SERVICES.therapyAi,
+    target: origin(SERVICES.therapyAi),
     changeOrigin: true,
     pathRewrite: { "^/therapy-ai": "" },
     onError: (err, req, res) => {
@@ -128,7 +152,7 @@ app.use(
 app.use(
   "/therapy",
   createProxyMiddleware({
-    target: SERVICES.therapy,
+    target: origin(SERVICES.therapy),
     changeOrigin: true,
     pathRewrite: { "^/therapy": "" },
     onError: (err, req, res) => {

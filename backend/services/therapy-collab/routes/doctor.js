@@ -11,8 +11,8 @@ const { protect, authorize } = require('../middleware/auth');
 const { buildResultSummary, buildTreatmentSuggestions, normalizeUrgencyLabel } = require('../utils/analysisRecommendations');
 const { buildFilename, buildAnalysisReportHtml } = require('../utils/analysisReport');
 
-const AI_URL = process.env.AI_URL || "http://localhost:7006/analyze-voice";
-const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:7006/analyze-text";
+const AI_URL = process.env.AI_URL || "http://localhost:8000/analyze-voice";
+const AI_TEXT_URL = process.env.AI_TEXT_URL || "http://localhost:8000/analyze-text";
 const upload = multer({ storage: multer.memoryStorage() });
 
 const populateAnalysisAccess = (query) => query

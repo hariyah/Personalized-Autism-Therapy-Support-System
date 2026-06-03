@@ -103,7 +103,7 @@ if exist "%SERVICES%\therapy-collab" (
   call npm install
   popd
   echo Starting therapy-collab...
-  start "therapy-collab (7005)" /D "%SERVICES%\therapy-collab" cmd /k "set PORT=7005 && set AI_URL=http://localhost:7006/analyze-voice && set AI_TEXT_URL=http://localhost:7006/analyze-text && npm start"
+  start "therapy-collab (7005)" /D "%SERVICES%\therapy-collab" cmd /k "set PORT=7005 && set AI_URL=http://127.0.0.1:7006/analyze-voice && set AI_TEXT_URL=http://127.0.0.1:7006/analyze-text && npm start"
   timeout /t 3 /nobreak >nul
 )
 
@@ -118,7 +118,7 @@ if exist "%SERVICES%\therapy-collab-ai" (
   "%THERAPY_AI_VENV%\Scripts\pip.exe" install -r "%SERVICES%\therapy-collab-ai\requirements.txt"
   if errorlevel 1 (
     echo   WARNING: therapy-collab-ai install had issues. Trying minimal deps...
-    "%THERAPY_AI_VENV%\Scripts\pip.exe" install fastapi uvicorn python-multipart torch librosa "transformers<5" numpy pillow pydantic python-dotenv
+    "%THERAPY_AI_VENV%\Scripts\pip.exe" install fastapi uvicorn python-multipart torch librosa soundfile audioread soxr "transformers<5" numpy pillow pydantic python-dotenv pydub imageio-ffmpeg scikit-learn joblib
   )
   echo Starting therapy-collab-ai...
   start "therapy-collab-ai (7006)" /D "%SERVICES%\therapy-collab-ai" cmd /k "set PORT=7006 && "%THERAPY_AI_VENV%\Scripts\python.exe" main.py"

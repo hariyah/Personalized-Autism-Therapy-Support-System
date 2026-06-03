@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
 import { authApi, setAuthToken } from '../api/client';
 import type { User, UserLogin, UserCreate } from '../types';
 
@@ -18,24 +19,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
+    let cancelled = false;
     const token = localStorage.getItem('auth_token');
     const savedUser = localStorage.getItem('auth_user');
-    
+
     if (token && savedUser) {
       try {
         const userData = JSON.parse(savedUser);
         setUser(userData);
         setAuthToken(token);
-        // Verify token is still valid
-        authApi.getMe().catch(() => {
-          logout();
+        authApi.getMe().catch((err: unknown) => {
+          if (cancelled) return;
+          const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+          if (status === 401) {
+            logout();
+          }
         });
-      } catch (error) {
+      } catch {
         logout();
       }
     }
     setLoading(false);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = async (credentials: UserLogin): Promise<User> => {

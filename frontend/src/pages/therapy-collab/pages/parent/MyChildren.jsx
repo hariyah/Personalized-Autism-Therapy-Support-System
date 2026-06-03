@@ -127,6 +127,11 @@ const MyChildren = () => {
             return;
         }
 
+        if (computedAge < 2 || computedAge > 16) {
+            setFormError('Child age must be between 2 and 16 years old.');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             await therapyApi.post('/api/parent/children', {

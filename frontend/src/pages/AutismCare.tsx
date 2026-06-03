@@ -1,7 +1,7 @@
 /**
  * Autism Care tab: integrated content from the root /frontend app
  * (emotional activities, children, recommendations, emotion detection).
- * API base URL: set VITE_EMOTIONAL_API_URL (default http://localhost:7000/emotional/api via gateway).
+ * API base URL: VITE_EMOTIONAL_API_URL (e.g. http://localhost:7003/api or http://localhost:7000/emotional/api).
  */
 
 import AutismCareApp from './autism-care/AutismCareApp.jsx';

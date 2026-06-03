@@ -12,15 +12,23 @@ import type {
   Token,
 } from '../types';
 
+function apiBase(value: string | undefined, fallback: string): string {
+  const raw = (value ?? fallback).trim();
+  return raw.replace(/\/+$/, '');
+}
+
+const cognitiveBase = apiBase(import.meta.env.VITE_COGNITIVE_API_URL, 'http://localhost:7002');
+const profileBase = apiBase(import.meta.env.VITE_PROFILE_API_URL, 'http://localhost:7001');
+
 const client = axios.create({
-  baseURL: '/cognitive',
+  baseURL: cognitiveBase,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 const authClient = axios.create({
-  baseURL: '',
+  baseURL: profileBase,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,9 +53,12 @@ if (savedToken) {
   setAuthToken(savedToken);
 }
 
-// Handle 401 errors on both clients
+// Handle 401 on API calls — but not on login/register (avoid clearing token / hard redirect mid-form)
 const handle401 = (error: any) => {
-  if (error.response?.status === 401) {
+  const reqUrl = String(error?.config?.url ?? '');
+  const skipRedirect =
+    reqUrl.includes('/api/auth/login') || reqUrl.includes('/api/auth/register');
+  if (!skipRedirect && error.response?.status === 401) {
     setAuthToken(null);
     localStorage.removeItem('auth_user');
     window.location.href = '/login';
@@ -107,7 +118,7 @@ export const outcomesApi = {
   },
 };
 
-// Auth API — login/register go to profile-builder via gateway /api/auth
+// Auth API — login/register on profile-builder; getMe on cognitive service
 export const authApi = {
   register: async (userData: UserCreate): Promise<Token> => {
     const response = await authClient.post<Token>('/api/auth/register', {
@@ -130,4 +141,3 @@ export const authApi = {
     return response.data;
   },
 };
-

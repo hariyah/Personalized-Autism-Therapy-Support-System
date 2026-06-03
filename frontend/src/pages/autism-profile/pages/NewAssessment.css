@@ -1,5 +1,4 @@
 /* src/pages/NewAssessment.css */
-.new-assessment {}
 
 /* Steps bar */
 .steps-bar {
@@ -54,7 +53,7 @@
 .step-item.done .step-line { background: var(--green-500); }
 
 /* Step panel */
-.step-panel { max-width: 780px; }
+.step-panel { max-width: 1400px; }
 
 .step-heading { margin-bottom: 28px; }
 .step-heading h2 { font-size: 1.6rem; color: var(--teal-900); margin-bottom: 8px; }
@@ -266,11 +265,92 @@
 /* Result grid */
 .result-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
 .result-card { padding: 24px; }
 .result-card h3 { font-size: 1.1rem; color: var(--teal-900); margin-bottom: 16px; }
+
+.ai-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--teal-100);
+  color: var(--teal-700);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.ai-summary-subtitle {
+  font-size: 0.83rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-top: -6px;
+}
+.ai-summary-state,
+.ai-summary-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+}
+.ai-summary-state {
+  background: var(--slate-100);
+  color: var(--text-muted);
+}
+.ai-summary-error {
+  background: #fff7ed;
+  color: #9a3412;
+}
+.ai-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ai-summary-block {
+  padding: 14px 16px;
+  background: var(--slate-100);
+  border-radius: 12px;
+}
+.ai-summary-block p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.ai-section-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--teal-700);
+}
+.ai-suggestions-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
 
 .domain-scores { display: flex; flex-direction: column; gap: 10px; }
 .domain-score-item {
@@ -283,8 +363,11 @@
   font-weight: 600; color: var(--teal-800);
 }
 
-@media (max-width: 700px) {
+@media (max-width: 980px) {
   .result-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
   .steps-bar   { gap: 4px; }
   .step-label  { display: none; }
   .patient-info-grid { grid-template-columns: 1fr; }

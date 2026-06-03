@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import therapyApi from '../../utils/therapyApi';
@@ -7,6 +7,7 @@ import AnalysisCard from '../../components/AnalysisCard';
 import DoctorReviewPanel from '../../components/DoctorReviewPanel';
 import ResultsDisplay from '../../components/ResultsDisplay';
 import { FiActivity, FiAlertCircle, FiCheckCircle, FiFileText, FiMic, FiSquare, FiUploadCloud, FiUser } from 'react-icons/fi';
+import { prepareAudioUpload } from '../../utils/audioUpload';
 
 const NewAnalysisDoctor = () => {
     const { patientId } = useParams();
@@ -189,8 +190,8 @@ const NewAnalysisDoctor = () => {
             formData.append('inputType', inputType);
             if (inputType === 'audio') {
                 if (!audioBlob) throw new Error('Please record or upload audio first.');
-                const fileName = audioBlob.name || 'recording.webm';
-                formData.append('audio', audioBlob, fileName);
+                const preparedAudio = await prepareAudioUpload(audioBlob, 'doctor-recording');
+                formData.append('audio', preparedAudio, preparedAudio.name || 'doctor-recording.wav');
             } else {
                 if (!textInput.trim()) throw new Error('Please enter text describing the symptoms.');
                 formData.append('transcript', textInput);

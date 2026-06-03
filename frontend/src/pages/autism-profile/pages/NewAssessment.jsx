@@ -1,5 +1,5 @@
 // src/pages/NewAssessment.jsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { BASE } from "../routes";
@@ -63,11 +63,14 @@ export default function NewAssessment() {
   const [sections, setSections]   = useState({});
   const [age, setAge]             = useState(7);
   const [sex, setSex]             = useState(1);
-  const [patientName, setPatientName] = useState("");
+  const [patientName] = useState("");
 
   // Step 2 state
   const [result, setResult]       = useState(null);
   const [predicting, setPredicting] = useState(false);
+  const [aiInsights, setAiInsights] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
 
   // ── Dropzone ──────────────────────────────────────────────────────────────
   const onDrop = useCallback(async (acceptedFiles) => {
@@ -122,6 +125,8 @@ export default function NewAssessment() {
       return;
     }
     setPredicting(true);
+    setAiInsights(null);
+    setAiError("");
     try {
       const res = await api.predict({
         a_scores:    aScores,
@@ -138,6 +143,42 @@ export default function NewAssessment() {
       setPredicting(false);
     }
   }
+
+  useEffect(() => {
+    if (step !== 2 || !result) return;
+
+    let isActive = true;
+
+    async function loadInsights() {
+      setAiLoading(true);
+      setAiError("");
+      try {
+        const insights = await api.assessmentInsights({
+          patient_id: patientId,
+          patient_name: patientName || "Patient",
+          assessment: result,
+          sections,
+          ocr_text: ocrText,
+        });
+        if (isActive) {
+          setAiInsights(insights);
+        }
+      } catch (err) {
+        if (isActive) {
+          setAiError(err.message || "Unable to generate AI summary right now.");
+        }
+      } finally {
+        if (isActive) {
+          setAiLoading(false);
+        }
+      }
+    }
+
+    loadInsights();
+    return () => {
+      isActive = false;
+    };
+  }, [step, result, patientId, patientName, sections, ocrText]);
 
   // ── Inferred count ────────────────────────────────────────────────────────
   const autoFilled = Object.values(aScores).filter(v => v !== null).length;
@@ -349,6 +390,48 @@ export default function NewAssessment() {
               </p>
               <RadarChartPanel radarData={result.radar_data} />
             </div>
+
+            <div className="card result-card ai-summary-card">
+              <div className="ai-summary-header">
+                <h3>AI Summary & Suggestions</h3>
+                <span className="ai-badge"><Sparkles size={12} /> Gemini</span>
+              </div>
+              <p className="ai-summary-subtitle">
+                Personalized interpretation based on the assessment result and extracted report context.
+              </p>
+
+              {aiLoading && (
+                <div className="ai-summary-state">
+                  <span className="spinner" />
+                  Generating summary and suggestions...
+                </div>
+              )}
+
+              {!aiLoading && aiError && (
+                <div className="ai-summary-error">
+                  <AlertCircle size={16} />
+                  <span>{aiError}</span>
+                </div>
+              )}
+
+              {!aiLoading && !aiError && aiInsights && (
+                <div className="ai-summary-content">
+                  <div className="ai-summary-block">
+                    <span className="ai-section-label">Summary</span>
+                    <p>{aiInsights.summary}</p>
+                  </div>
+
+                  <div className="ai-summary-block">
+                    <span className="ai-section-label">Suggestions</span>
+                    <ul className="ai-suggestions-list">
+                      {(aiInsights.suggestions || []).map((suggestion, index) => (
+                        <li key={`${index}-${suggestion}`}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="step-actions" style={{ marginTop: 28 }}>
@@ -359,6 +442,8 @@ export default function NewAssessment() {
               setStep(0); setFile(null); setPreview(null); setOcrText(""); setSections({});
               setAScores(Object.fromEntries(Object.keys(QUESTIONS).map(k => [k, null])));
               setResult(null);
+              setAiInsights(null);
+              setAiError("");
             }}>
               New Assessment
             </button>

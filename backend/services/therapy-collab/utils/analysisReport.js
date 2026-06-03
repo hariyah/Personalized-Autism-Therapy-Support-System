@@ -146,7 +146,7 @@ function buildAnalysisReportHtml(analysis) {
       <div class="card"><div class="value">${transcript}</div></div>
     </div>
     <div class="footer">
-      This report is generated from the saved system analysis and the doctor-reviewed treatment plan. Parents should use it as a care coordination document and follow the doctor's final guidance.
+      This report is generated from the saved system analysis and the doctor-reviewed treatment plan. Parents should use it as a care coordination document and follow the doctor’s final guidance.
     </div>
   </div>
 </body>

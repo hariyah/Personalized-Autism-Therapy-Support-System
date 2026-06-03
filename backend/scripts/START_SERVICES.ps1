@@ -81,10 +81,20 @@ if (Test-Path $profileBuilder) {
 # 3. Cognitive Activity Recommender (FastAPI, port 7002)
 $cognitive = Join-Path $Services "cognitive-activity-recommender"
 if (Test-Path $cognitive) {
-    Setup-PythonVenv $cognitive
+    $cognitiveVenv = "C:\cognitive_venv"
+    $cognitiveVenvPy = Join-Path $cognitiveVenv "Scripts\python.exe"
+    $cognitiveVenvPip = Join-Path $cognitiveVenv "Scripts\pip.exe"
+    if (-not (Test-Path $cognitiveVenvPy)) {
+        Write-Host "  Creating short-path venv for cognitive-activity-recommender at $cognitiveVenv..."
+        if (-not (Test-Path $cognitiveVenv)) { New-Item -ItemType Directory -Path $cognitiveVenv -Force | Out-Null }
+        python -m venv $cognitiveVenv
+    }
+    Write-Host "  Installing/updating Python requirements in cognitive-activity-recommender..."
+    $reqTxt = Join-Path $cognitive "requirements.txt"
+    & $cognitiveVenvPip install -r $reqTxt
+    
     Write-Host "Starting cognitive-activity-recommender..."
-    $pyExe = Join-Path $cognitive ".venv\Scripts\python.exe"
-    $uvicorn = if (Test-Path $pyExe) { "`"$pyExe`" -m uvicorn app.main:app --host 0.0.0.0 --port 7002" } else { "python -m uvicorn app.main:app --host 0.0.0.0 --port 7002" }
+    $uvicorn = "`"$cognitiveVenvPy`" -m uvicorn app.main:app --host 0.0.0.0 --port 7002"
     Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$cognitive`" && $uvicorn"
     Start-Sleep -Seconds 2
 }
@@ -124,44 +134,40 @@ $therapyCollab = Join-Path $Services "therapy-collab"
 if (Test-Path $therapyCollab) {
     Setup-NodeDeps $therapyCollab
     Write-Host "Starting therapy-collab..."
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyCollab`" && set PORT=7005 && set AI_URL=http://localhost:7006/analyze-voice && set AI_TEXT_URL=http://localhost:7006/analyze-text && npm start"
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyCollab`" && set PORT=7005 && set AI_URL=http://127.0.0.1:7006/analyze-voice && set AI_TEXT_URL=http://127.0.0.1:7006/analyze-text && npm start"
     Start-Sleep -Seconds 2
 }
 
 # 7. Therapy Collab AI (Python, port 7006)
-# Note: Full pip install can fail on Windows (TensorFlow path length). We try full install, then minimal if needed.
 $therapyCollabAi = Join-Path $Services "therapy-collab-ai"
 if (Test-Path $therapyCollabAi) {
-    if (Test-Path (Join-Path $therapyCollabAi "requirements.txt")) {
-        $venvPy = Join-Path $therapyCollabAi ".venv\Scripts\python.exe"
-        if (-not (Test-Path $venvPy)) {
-            Write-Host "  Creating venv in therapy-collab-ai..."
-            Push-Location $therapyCollabAi
-            python -m venv .venv
-            Pop-Location
-        }
-        $venvPip = Join-Path $therapyCollabAi ".venv\Scripts\pip.exe"
-        if (Test-Path $venvPip) {
-            Write-Host "  Installing/updating Python requirements in therapy-collab-ai..."
-            $reqTxt = Join-Path $therapyCollabAi "requirements.txt"
-            $errPreference = $ErrorActionPreference
-            $ErrorActionPreference = "Continue"
-            & $venvPip install -r $reqTxt 2>&1 | Out-Null
-            $pipOk = ($LASTEXITCODE -eq 0)
-            $ErrorActionPreference = $errPreference
-            if (-not $pipOk) {
-                Write-Warning "  therapy-collab-ai: full install failed (TensorFlow path length on Windows). Trying minimal deps..."
-                $ErrorActionPreference = "Continue"
-                & $venvPip install fastapi uvicorn python-multipart torch librosa "transformers<5" numpy pillow pydantic python-dotenv 2>&1 | Out-Null
-                $ErrorActionPreference = $errPreference
-                if ($LASTEXITCODE -ne 0) { Write-Warning "  therapy-collab-ai: install had issues; start it manually if needed." }
-            }
-        }
+    $therapyAiVenv = "C:\therapy_ai_venv"
+    $therapyAiVenvPy = Join-Path $therapyAiVenv "Scripts\python.exe"
+    $therapyAiVenvPip = Join-Path $therapyAiVenv "Scripts\pip.exe"
+    if (-not (Test-Path $therapyAiVenvPy)) {
+        Write-Host "  Creating short-path venv for therapy-collab-ai at $therapyAiVenv..."
+        if (-not (Test-Path $therapyAiVenv)) { New-Item -ItemType Directory -Path $therapyAiVenv -Force | Out-Null }
+        python -m venv $therapyAiVenv
     }
+    
+    Write-Host "  Installing/updating Python requirements in therapy-collab-ai..."
+    $reqTxt = Join-Path $therapyCollabAi "requirements.txt"
+    $errPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    & $therapyAiVenvPip install -r $reqTxt 2>&1 | Out-Null
+    $pipOk = ($LASTEXITCODE -eq 0)
+    $ErrorActionPreference = $errPreference
+    if (-not $pipOk) {
+        Write-Warning "  therapy-collab-ai: full install failed. Trying minimal deps..."
+        & $therapyAiVenvPip install fastapi uvicorn python-multipart torch librosa soundfile audioread soxr "transformers<5" numpy pillow pydantic python-dotenv pydub imageio-ffmpeg scikit-learn joblib 2>&1 | Out-Null
+    }
+
+    Write-Host "Bootstrapping therapy-collab-ai models..."
+    & "$therapyAiVenvPy" bootstrap_models.py
+    
     Write-Host "Starting therapy-collab-ai..."
-    $pyExe = Join-Path $therapyCollabAi ".venv\Scripts\python.exe"
-    $pyCmd = if (Test-Path $pyExe) { "`"$pyExe`" main.py" } else { "python main.py" }
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyCollabAi`" && set PORT=7006 && $pyCmd"
+    $uvicorn = "`"$therapyAiVenvPy`" -m uvicorn main:app --host 127.0.0.1 --port 7006"
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/k", "cd /d `"$therapyCollabAi`" && set PORT=7006 && $uvicorn"
 }
 
 Write-Host ""

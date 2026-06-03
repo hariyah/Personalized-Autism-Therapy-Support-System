@@ -1,4 +1,8 @@
-export const API_BASE = "/api";
+const profileOrigin = (import.meta.env?.VITE_PROFILE_API_URL ?? "http://localhost:7001")
+  .trim()
+  .replace(/\/+$/, "");
+/** Full base for profile-builder JSON routes (gateway e.g. http://localhost:7000 or direct :7001). */
+export const API_BASE = `${profileOrigin}/api`;
 const AUTH_TOKEN_KEY = "auth_token";
 
 function getAuthHeaders() {
@@ -22,6 +26,7 @@ export const api = {
   health:         ()                          => request("/health"),
   ocr:            (image_b64)                 => request("/ocr",  { method: "POST", body: JSON.stringify({ image_b64 }) }),
   predict:        (payload)                   => request("/predict", { method: "POST", body: JSON.stringify(payload) }),
+  assessmentInsights: (payload)              => request("/assessment-insights", { method: "POST", body: JSON.stringify(payload) }),
   createPatient:  (payload)                   => request("/patients", { method: "POST", body: JSON.stringify(payload) }),
   getPatients:    (guardian_id)                => request(`/patients/${guardian_id}`),
   getAssessments: (guardian_id, patient_id)    => request(`/assessments/${guardian_id}/${patient_id}`),

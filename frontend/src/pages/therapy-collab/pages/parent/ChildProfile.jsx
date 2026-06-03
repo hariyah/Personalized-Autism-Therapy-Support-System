@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import therapyApi from '../../utils/therapyApi';
@@ -7,7 +7,7 @@ import AnalysisCard from '../../components/AnalysisCard';
 import CarePlanBoard from '../../components/CarePlanBoard';
 import ChatBox from '../../components/ChatBox';
 import UrgencyDonutChart from '../../components/UrgencyDonutChart';
-import { FiArrowLeft, FiEdit, FiActivity, FiUser, FiInfo, FiMessageSquare, FiShield, FiTrendingUp, FiTrash2 } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit, FiActivity, FiUser, FiInfo, FiMessageSquare, FiShield, FiTrendingUp, FiTrash2, FiX } from 'react-icons/fi';
 import { downloadAnalysisReport } from '../../utils/reportDownload';
 import { getUrgencyChartData, getUrgencyCounts } from '../../utils/analysisInsights';
 import { getApiErrorMessage } from '../../utils/apiErrorMessage';
@@ -19,6 +19,9 @@ const ChildProfile = () => {
     const [analyses, setAnalyses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [availableDoctors, setAvailableDoctors] = useState([]);
+    const [isAssigning, setIsAssigning] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState('');
     const location = useLocation();
@@ -43,8 +46,34 @@ const ChildProfile = () => {
 
     useEffect(() => {
         fetchChildData();
+        if (!child?.assignedDoctors?.length) {
+            fetchDoctors();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
+
+    const fetchDoctors = async () => {
+        try {
+            const res = await therapyApi.get('/api/parent/doctors');
+            setAvailableDoctors(res.data.doctors || []);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleAssignDoctor = async (doctorId) => {
+        setIsAssigning(true);
+        try {
+            await therapyApi.post(`/api/parent/children/${id}/assign-doctor`, { doctorId });
+            setShowAssignModal(false);
+            fetchChildData();
+        } catch (error) {
+            console.error(error);
+            alert(getApiErrorMessage(error, 'Failed to assign doctor'));
+        } finally {
+            setIsAssigning(false);
+        }
+    };
 
     const fetchChildData = async () => {
         try {
@@ -262,8 +291,13 @@ const ChildProfile = () => {
                                         </div>
                                     ) : (
                                         <div>
-                                            <p className="text-xs text-slate-400 leading-relaxed mb-4">No specialist assigned yet. The network will assign a doctor to review analyses soon.</p>
-                                            <div className="p-3 bg-white/[0.04] rounded-xl border border-dashed border-white/[0.1] text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Status: Pending</div>
+                                            <p className="text-xs text-slate-400 leading-relaxed mb-4">No specialist assigned yet. Connect with a doctor to enable consultations.</p>
+                                            <button 
+                                                onClick={() => setShowAssignModal(true)}
+                                                className="w-full py-3 rounded-xl border border-dashed border-violet-500/30 text-violet-400 font-bold text-[10px] uppercase tracking-widest hover:bg-violet-500/5 hover:border-violet-500/50 transition-all"
+                                            >
+                                                Connect Specialist
+                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -352,13 +386,58 @@ const ChildProfile = () => {
                     </div>
                 </div>
             )}
+            {showAssignModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+                    <div className="card border-subtle rounded-3xl w-full max-w-lg p-6 shadow-2xl shadow-slate-900/30">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-100">Connect Specialist</h3>
+                                <p className="text-sm text-slate-400">Select a clinical specialist for {child.name}</p>
+                            </div>
+                            <button onClick={() => setShowAssignModal(false)} className="text-slate-500 hover:text-white"><FiX size={20} /></button>
+                        </div>
+                        
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            {availableDoctors.length === 0 ? (
+                                <p className="text-center py-10 text-slate-500 text-sm italic">No specialists available at the moment.</p>
+                            ) : (
+                                availableDoctors.map(doctor => (
+                                    <div key={doctor._id} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05] transition-all group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center text-white font-bold">{doctor.name[0]}</div>
+                                            <div>
+                                                <p className="font-bold text-slate-200">{doctor.name.startsWith('Dr') ? doctor.name : `Dr. ${doctor.name}`}</p>
+                                                <p className="text-[10px] text-slate-500 uppercase tracking-widest">{doctor.specialization || 'Clinical Specialist'}</p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleAssignDoctor(doctor._id)}
+                                            disabled={isAssigning}
+                                            className="px-4 py-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold hover:bg-violet-500 hover:text-white transition-all disabled:opacity-50"
+                                        >
+                                            {isAssigning ? 'Connecting...' : 'Connect'}
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        
+                        <div className="mt-6 pt-6 border-t border-white/[0.05]">
+                            <button onClick={() => setShowAssignModal(false)} className="btn-secondary w-full py-3">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 const Detail = ({ label, value, isPill }) => (
     <div>
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-slate-600" /> {label}</p>
+        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-slate-600" />
+            <span>{label}</span>
+        </div>
         <div className="pl-3">
             {isPill ? (
                 <span className={`badge-${value === 'severe' ? 'high' : value === 'moderate' ? 'medium' : 'low'}`}>

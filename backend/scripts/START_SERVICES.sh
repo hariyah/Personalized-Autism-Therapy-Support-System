@@ -126,7 +126,7 @@ fi
 if [ -d "$SERVICES/therapy-collab" ]; then
   setup_node_deps "$SERVICES/therapy-collab" || true
   echo "Starting therapy-collab..."
-  (cd "$SERVICES/therapy-collab" && PORT=7005 AI_URL=http://localhost:7006/analyze-voice AI_TEXT_URL=http://localhost:7006/analyze-text npm start) &
+  (cd "$SERVICES/therapy-collab" && PORT=7005 AI_URL=http://127.0.0.1:7006/analyze-voice AI_TEXT_URL=http://127.0.0.1:7006/analyze-text npm start) &
   pids+=($!)
   sleep 2
 fi

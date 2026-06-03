@@ -29,7 +29,7 @@ const ISSUE_TREATMENTS = {
         'Use familiar adults or peers before increasing social demand.',
         'Monitor recent stressors that may be linked to social withdrawal.'
     ],
-    regression_E: [
+    regression_speech: [
         'Reduce communication pressure and allow extra response time.',
         'Support communication with visuals, gestures, or AAC tools when available.',
         'Schedule speech-language follow-up if regression persists.'
@@ -78,7 +78,62 @@ export const formatAnalysisLabel = (label = 'unknown') => String(label)
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ') || 'Unknown';
 
-export const getIssueLabel = (analysis = {}) => analysis.issueLabel || analysis.issue_label || 'unknown';
+const ISSUE_LABEL_ORDER = [
+    'aggression',
+    'anxiety_meltdown',
+    'daily_progress',
+    'feeding_issue',
+    'health_concern',
+    'regression_social',
+    'regression_speech',
+    'repetitive_behavior',
+    'routine_change',
+    'school_concern',
+    'self_injury',
+    'sensory_overload',
+    'sleep_issue'
+];
+
+const ISSUE_LABEL_ALIASES = {
+    regression_e: 'regression_speech',
+    'regression speech': 'regression_speech',
+    'daily progress': 'daily_progress',
+    'feeding issue': 'feeding_issue',
+    'health concern': 'health_concern',
+    'school concern': 'school_concern',
+    'routine change': 'routine_change',
+    'self injury': 'self_injury',
+    'sensory overload': 'sensory_overload',
+    'sleep issue': 'sleep_issue',
+    'anxiety meltdown': 'anxiety_meltdown',
+    'repetitive behavior': 'repetitive_behavior'
+};
+
+export const normalizeIssueLabel = (label = 'unknown') => {
+    const normalized = String(label || '').trim().toLowerCase().replace(/-/g, '_');
+    const canonical = ISSUE_LABEL_ALIASES[normalized] || normalized.replace(/\s+/g, '_');
+
+    if (ISSUE_LABEL_ORDER.includes(canonical)) {
+        return canonical;
+    }
+
+    if (canonical.startsWith('label_')) {
+        const index = Number(canonical.split('_')[1]);
+        if (Number.isInteger(index) && ISSUE_LABEL_ORDER[index]) {
+            return ISSUE_LABEL_ORDER[index];
+        }
+    }
+
+    return 'unknown';
+};
+
+export const getIssueLabel = (analysis = {}) => normalizeIssueLabel(
+    analysis.issueLabel
+    || analysis.issue_label
+    || analysis.issueTop3?.[0]?.label
+    || analysis.issue_top3?.[0]?.label
+    || 'unknown'
+);
 
 export const URGENCY_LEVELS = [
     { key: 'high', label: 'High', shortLabel: 'High', color: '#fb7185' },
@@ -86,19 +141,41 @@ export const URGENCY_LEVELS = [
     { key: 'low', label: 'Low', shortLabel: 'Low', color: '#34d399' }
 ];
 
+const URGENCY_LABEL_ALIASES = {
+    low: 'low',
+    'low risk': 'low',
+    'low priority': 'low',
+    mild: 'low',
+    label_1: 'low',
+    medium: 'medium',
+    'medium risk': 'medium',
+    'medium priority': 'medium',
+    med: 'medium',
+    moderate: 'medium',
+    label_2: 'medium',
+    high: 'high',
+    'high risk': 'high',
+    'high priority': 'high',
+    severe: 'high',
+    urgent: 'high',
+    critical: 'high',
+    label_0: 'high'
+};
+
 export const normalizeUrgencyLabel = (label = 'unknown') => {
     const normalized = String(label || '').trim().toLowerCase();
-
-    if (normalized === 'med') return 'medium';
-    if (URGENCY_LEVELS.some(level => level.key === normalized)) {
-        return normalized;
-    }
-
-    return 'unknown';
+    return URGENCY_LABEL_ALIASES[normalized] || 'unknown';
 };
 
 export const getUrgencyLabel = (analysis = {}) => normalizeUrgencyLabel(
-    analysis.urgencyLabel || analysis.urgency_label || 'unknown'
+    analysis.urgencyLabel
+    || analysis.urgency_label
+    || analysis.severity
+    || analysis.riskLevel
+    || analysis.risk_level
+    || analysis.urgencyTop3?.[0]?.label
+    || analysis.urgency_top3?.[0]?.label
+    || 'unknown'
 );
 
 export const getUrgencyCounts = (analyses = []) => analyses.reduce((acc, analysis) => {
@@ -111,6 +188,26 @@ export const getUrgencyCounts = (analyses = []) => analyses.reduce((acc, analysi
     return acc;
 }, { high: 0, medium: 0, low: 0 });
 
+export const normalizeUrgencyCounts = (urgencyCounts = {}) => {
+    if (Array.isArray(urgencyCounts)) {
+        return urgencyCounts.reduce((acc, item) => {
+            const urgency = normalizeUrgencyLabel(item?._id ?? item?.label ?? item?.key);
+            const value = Number(item?.count ?? item?.value) || 0;
+
+            if (urgency !== 'unknown') {
+                acc[urgency] += value;
+            }
+
+            return acc;
+        }, { high: 0, medium: 0, low: 0 });
+    }
+
+    return URGENCY_LEVELS.reduce((acc, level) => {
+        acc[level.key] = Number(urgencyCounts?.[level.key]) || 0;
+        return acc;
+    }, { high: 0, medium: 0, low: 0 });
+};
+
 export const getUrgencyChartData = (analyses = []) => {
     const counts = getUrgencyCounts(analyses);
 
@@ -118,6 +215,43 @@ export const getUrgencyChartData = (analyses = []) => {
         ...level,
         value: counts[level.key]
     }));
+};
+
+export const getIssuePatternData = (analysis = {}, limit = 3) => {
+    const rawPatterns = analysis.issueTop3 || analysis.issue_top3 || [];
+    const normalizedPatterns = rawPatterns
+        .map((item, index) => {
+            const confidence = Number(item?.confidence ?? item?.score ?? 0);
+            const safeConfidence = Number.isFinite(confidence)
+                ? Math.max(0, Math.min(confidence, 1))
+                : 0;
+            const label = normalizeIssueLabel(item?.label || getIssueLabel(analysis));
+
+            return {
+                key: `${label || 'unknown'}-${index}`,
+                label: formatAnalysisLabel(label),
+                confidence: safeConfidence,
+                percentage: Math.round(safeConfidence * 100)
+            };
+        })
+        .filter(item => item.label && item.label !== 'Unknown')
+        .slice(0, limit);
+
+    if (normalizedPatterns.length > 0) {
+        return normalizedPatterns;
+    }
+
+    const fallbackLabel = getIssueLabel(analysis);
+    if (fallbackLabel === 'unknown') {
+        return [];
+    }
+
+    return [{
+        key: `${fallbackLabel}-0`,
+        label: formatAnalysisLabel(fallbackLabel),
+        confidence: 1,
+        percentage: 100
+    }];
 };
 
 export const getResultSummary = (analysis = {}) => {

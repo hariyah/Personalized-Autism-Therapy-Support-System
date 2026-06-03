@@ -6,6 +6,7 @@ import NotificationBell from '../../components/NotificationBell';
 import therapyApi from '../../utils/therapyApi';
 import { BASE } from '../../routes';
 import { FiUsers, FiActivity, FiAlertCircle, FiTrendingUp, FiMessageSquare, FiChevronRight, FiHeart, FiZap } from 'react-icons/fi';
+import { normalizeUrgencyCounts } from '../../utils/analysisInsights';
 
 const ParentDashboard = () => {
     const [children, setChildren] = useState([]);
@@ -53,11 +54,13 @@ const ParentDashboard = () => {
 
     if (loading) return <Loader />;
 
+    const urgencyCounts = normalizeUrgencyCounts(stats?.urgencyCounts);
+
     const statCards = [
         { label: 'Children', value: stats?.totalChildren || 0, icon: FiUsers, color: 'violet' },
         { label: 'Analyses', value: stats?.totalAnalyses || 0, icon: FiActivity, color: 'teal' },
         { label: 'This Week', value: stats?.recentAnalyses || 0, icon: FiTrendingUp, color: 'cyan' },
-        { label: 'Alerts', value: stats?.urgencyCounts?.find(u => u._id === 'high')?.count || 0, icon: FiAlertCircle, color: 'rose' },
+        { label: 'Alerts', value: urgencyCounts.high, icon: FiAlertCircle, color: 'rose' },
     ];
 
     const colorMap = {

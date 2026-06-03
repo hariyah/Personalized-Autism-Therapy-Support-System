@@ -5,19 +5,20 @@ import time
 import sys
 from pathlib import Path
 
+server_path = Path(__file__).parent.resolve()
+venv_python = server_path / ".venv" / "Scripts" / "python.exe"
+python_executable = str(venv_python if venv_python.exists() else Path(sys.executable))
+
 # Clean up any stale processes
 subprocess.run(['taskkill', '/F', '/IM', 'python.exe'], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 time.sleep(2)
 
-# Start server
-server_path = Path(__file__).parent
 print(f"[INFO] Starting FastAPI server from {server_path}")
-print(f"[INFO] Python: {sys.executable}")
+print(f"[INFO] Python: {python_executable}")
 
-env = Path(__file__).parent
 proc = subprocess.Popen(
-    [sys.executable, '-m', 'uvicorn', 'main:app', '--port', '8000', '--host', '127.0.0.1'],
-    cwd=str(env),
+    [python_executable, '-m', 'uvicorn', 'main:app', '--port', '8000', '--host', '127.0.0.1'],
+    cwd=str(server_path),
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
     text=True,
