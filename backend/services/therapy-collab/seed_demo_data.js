@@ -161,10 +161,10 @@ async function seedDemoData() {
     );
 
     const doctor = await ensureUser(
-        { email: 'doctor1@gmail.com' },
+        { email: 'doctor@example.com' },
         {
             name: 'Dr. Sarah Specialist',
-            email: 'doctor1@gmail.com',
+            email: 'doctor@example.com',
             password: 'password123',
             role: 'doctor',
             specialization: 'Child Psychology',

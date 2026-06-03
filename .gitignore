@@ -1,3 +1,58 @@
-# Python bytecode
-*.pyc
+# OS/IDE junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Databases and Local Storage
+mongo-data/
+
+# Logs
+*.log
+**/*.log
+*.err
+*.out
+
+# Node dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python virtualenvs and caches
+*venv/
+**/*venv/
+.tmp-python/
+.python-version
 __pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Local configuration
+.env
+**/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+out/
+.next/
+
+# Large ML/AI model assets (to prevent uploading GBs of checkpoints/weights)
+backend/services/therapy-collab-ai/models/
+**/models/issue_classifier_roberta/
+**/models/urgency_classifier/
+**/models/treatment_recommender/

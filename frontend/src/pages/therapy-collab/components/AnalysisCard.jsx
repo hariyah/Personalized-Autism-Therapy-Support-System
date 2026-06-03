@@ -3,6 +3,9 @@ import { FiChevronDown, FiActivity, FiMessageSquare, FiVolume2, FiClipboard, FiS
 import { format } from 'date-fns';
 import {
     formatAnalysisLabel,
+    getIssueLabel,
+    getIssuePatternData,
+    getUrgencyLabel,
     getCareStageLabel,
     getDisplayedSummary,
     getDisplayedTreatmentSuggestions,
@@ -23,7 +26,10 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
         }
     };
 
-    const config = getUrgencyConfig(analysis.urgencyLabel);
+    const urgencyLabel = getUrgencyLabel(analysis);
+    const issueLabel = getIssueLabel(analysis);
+    const issuePatterns = getIssuePatternData(analysis);
+    const config = getUrgencyConfig(urgencyLabel);
     const review = getDoctorReview(analysis);
     const resultSummary = getDisplayedSummary(analysis);
     const aiSummary = getResultSummary(analysis);
@@ -42,10 +48,10 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
                         <div>
                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className={`text-[9px] uppercase font-black px-2.5 py-1 rounded-md border ${config.bg} ${config.text} ${config.border} tracking-widest`}>
-                                    {formatAnalysisLabel(analysis.urgencyLabel)} Priority
+                                    {formatAnalysisLabel(urgencyLabel)} Priority
                                 </span>
                                 <span className="text-[9px] uppercase font-black px-2.5 py-1 rounded-md border bg-white/[0.04] text-slate-300 border-white/[0.1] tracking-widest">
-                                    {formatAnalysisLabel(analysis.issueLabel)}
+                                    {formatAnalysisLabel(issueLabel)}
                                 </span>
                             </div>
                             <h4 className="text-lg font-bold text-slate-200 leading-snug group-hover:text-violet-300 transition-colors">{analysis.summary}</h4>
@@ -59,9 +65,9 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
 
                 <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.05] pt-5">
                     <div className="flex flex-wrap gap-2">
-                        {analysis.issueTop3?.slice(0, 2).map((issue, i) => (
-                            <span key={i} className="px-3 py-1 bg-white/[0.03] text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-white/[0.05]">
-                                {formatAnalysisLabel(issue.label)}
+                        {issuePatterns.slice(0, 2).map((issue) => (
+                            <span key={issue.key} className="px-3 py-1 bg-white/[0.03] text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-white/[0.05]">
+                                {issue.label}
                             </span>
                         ))}
                         {review?.reviewedAt && (
@@ -109,11 +115,11 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
                                         <div className="mb-4 flex flex-wrap gap-2">
                                             <span className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-300">
                                                 <FiTarget size={11} />
-                                                {formatAnalysisLabel(analysis.issueLabel)}
+                                                {formatAnalysisLabel(issueLabel)}
                                             </span>
                                             <span className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${config.bg} ${config.text} ${config.border}`}>
                                                 <FiActivity size={11} />
-                                                {formatAnalysisLabel(analysis.urgencyLabel)} urgency
+                                                {formatAnalysisLabel(urgencyLabel)} urgency
                                             </span>
                                         </div>
                                         {resultSummary}
@@ -129,17 +135,22 @@ const AnalysisCard = ({ analysis, isDoctorView = false }) => {
                                         <FiActivity className="text-teal-400" /> Pattern Recognition
                                     </p>
                                     <div className="space-y-4">
-                                        {analysis.issueTop3?.map((issue, i) => (
-                                            <div key={i} className="space-y-2">
+                                        {issuePatterns.map((issue) => (
+                                            <div key={issue.key} className="space-y-2">
                                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
-                                                    <span className="text-slate-300">{formatAnalysisLabel(issue.label)}</span>
-                                                    <span className="text-teal-400">{(issue.confidence * 100).toFixed(0)}%</span>
+                                                    <span className="text-slate-300">{issue.label}</span>
+                                                    <span className="text-teal-400">{issue.percentage}%</span>
                                                 </div>
                                                 <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden shadow-inner flex">
-                                                    <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(45,212,191,0.5)]" style={{ width: `${issue.confidence * 100}%` }} />
+                                                    <div className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(45,212,191,0.5)]" style={{ width: `${issue.percentage}%` }} />
                                                 </div>
                                             </div>
                                         ))}
+                                        {issuePatterns.length === 0 && (
+                                            <div className="rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] px-4 py-5 text-xs font-medium uppercase tracking-widest text-slate-500">
+                                                No pattern data available
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

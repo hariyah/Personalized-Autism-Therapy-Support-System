@@ -17,7 +17,7 @@ let opts;
 
 if (isWindows) {
   script = path.join(scriptDir, "START_SERVICES.bat");
-  args = ["/c", script];
+  args = ["/c", `"${script}"`];
   opts = { stdio: "inherit", shell: true, cwd: scriptDir };
 } else {
   script = path.join(scriptDir, "START_SERVICES.sh");

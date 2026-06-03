@@ -1,14 +1,13 @@
 {
-  "name": "server",
+  "name": "therapy-collab-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Clinical collaboration API service",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed": "node seed.js",
     "seed:demo": "node seed_demo_data.js",
-    "seed:activities": "node seed_activities.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
