@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { ChildProfile, ChildProfileCreate, CommunicationLevel, AutismLevel, SensoryLevel, Goal } from '../types';
 
-const MAX_CHILD_AGE = 14;
+const MAX_CHILD_AGE = 16;
 const MIN_CHILD_AGE = 2;
 const MIN_NAME_LEN = 4;
 

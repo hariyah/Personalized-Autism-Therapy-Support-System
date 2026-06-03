@@ -56,6 +56,23 @@ router.post('/children', async (req, res) => {
     }
 });
 
+// @route   DELETE /api/parent/children/:id
+router.delete('/children/:id', async (req, res) => {
+    try {
+        const child = await Child.findOneAndDelete({ _id: req.params.id, parent: req.user._id });
+        if (!child) return res.status(404).json({ success: false, message: 'Child not found' });
+        
+        // Clean up associated analyses
+        await Analysis.deleteMany({ child: req.params.id });
+        // Clean up associated notifications
+        await Notification.deleteMany({ child: req.params.id });
+
+        res.json({ success: true, message: 'Child profile deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // @route   GET /api/parent/children/:id
 router.get('/children/:id', async (req, res) => {
     try {
